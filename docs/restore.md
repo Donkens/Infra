@@ -38,6 +38,6 @@ sudo apt install -y git unbound dnsutils curl ca-certificates
 ## 2) Klona infra-repo
 
 Skapa repo-katalog
-   bash
+```bash
 mkdir -p ~/repos
 cd ~/repos
