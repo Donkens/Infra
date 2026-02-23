@@ -1,0 +1,11 @@
+[Unit]
+Description=DNS health check (AdGuardHome + Unbound)
+Wants=network-online.target
+After=network-online.target
+[Service]
+Type=oneshot
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/repos/infra
+ExecStart=/home/pi/repos/infra/scripts/maintenance/health-dns.sh
+Nice=10

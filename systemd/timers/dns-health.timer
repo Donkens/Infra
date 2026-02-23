@@ -1,0 +1,10 @@
+[Unit]
+Description=Run DNS health check periodically
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=10min
+AccuracySec=30s
+Persistent=true
+Unit=dns-health.service
+[Install]
+WantedBy=timers.target
