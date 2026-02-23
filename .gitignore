@@ -1,0 +1,15 @@
+# OS / editor
+.DS_Store
+*.swp
+*.tmp
+# Secrets (never commit)
+*.key
+*.pem
+*.p12
+*.pass
+secrets/
+.env
+.env.*
+# Logs/state
+logs/
+state/
