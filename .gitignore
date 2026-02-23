@@ -1,15 +1,22 @@
 # OS / editor
 .DS_Store
 *.swp
+*.swo
 *.tmp
+*.bak
+*.orig
+*~
 # Secrets (never commit)
 *.key
 *.pem
 *.p12
+*.pfx
 *.pass
 secrets/
 .env
 .env.*
-# Logs/state
-logs/
-state/
+# Logs/state (keep dirs, ignore contents)
+logs/*
+!logs/.gitkeep
+state/*
+!state/.gitkeep
