@@ -27,9 +27,11 @@ Efter restore ska följande fungera:
 ### Uppdatera system
 ```bash
 sudo apt update && sudo apt upgrade -y
+```
+
 ---
+
 ### Installera paket
 ```bash
 sudo apt install -y git unbound dnsutils curl ca-certificates
-
-
+```
