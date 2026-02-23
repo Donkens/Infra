@@ -1,0 +1,10 @@
+[Unit]
+Description=Run backup health check periodically
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=12h
+AccuracySec=1min
+Persistent=true
+Unit=backup-health.service
+[Install]
+WantedBy=timers.target

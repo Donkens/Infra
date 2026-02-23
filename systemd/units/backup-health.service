@@ -1,0 +1,12 @@
+[Unit]
+Description=Backup health check (latest DNS backup)
+Wants=network-online.target
+After=network-online.target
+[Service]
+Type=oneshot
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/repos/infra
+Environment=MAX_AGE_HOURS=48
+ExecStart=/home/pi/repos/infra/scripts/maintenance/check-backups.sh
+Nice=10
