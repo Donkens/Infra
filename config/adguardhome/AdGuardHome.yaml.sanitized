@@ -114,15 +114,7 @@ filters:
     id: 1764554712
 whitelist_filters: []
 user_rules:
-  - '||graph.facebook.com^'
-  - '||analytics.facebook.com^'
-  - '||connect.facebook.net^'
-  - '||pixel.facebook.com^'
-  - '||events.facebook.com^'
-  - '||analytics.tiktok.com^'
-  - '||ads.tiktok.com^'
-  - '||log.byteoversea.com^'
-  - '||mon.byteoversea.com^'
+  - ""
 dhcp:
   enabled: false
   interface_name: ""
