@@ -7,5 +7,5 @@ Type=oneshot
 User=pi
 Group=pi
 WorkingDirectory=/home/pi/repos/infra
-ExecStart=/home/pi/repos/infra/scripts/maintenance/health-dns.sh
+ExecStart=/home/pi/repos/infra/scripts/maintenance/dns-health-monitor.sh
 Nice=10
