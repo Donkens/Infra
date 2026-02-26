@@ -13,7 +13,7 @@ set -euo pipefail
 # ── Static config ─────────────────────────────────────────────────────────────
 AUTH_IPS=( 128.231.128.251  128.231.64.1  165.112.4.230 )
 DOMAINS=(  nih.gov  nlm.nih.gov  ncbi.nlm.nih.gov  pubmed.ncbi.nlm.nih.gov )
-DROPIN="/etc/unbound/unbound.conf.d/31-nih-workaround.conf"
+DROPIN="/etc/unbound/unbound.conf.d/31-nih-https-synthetic.conf"
 TIMEOUT=3
 TRIES=1
 APPLY=0
@@ -257,19 +257,26 @@ case "$CASE" in
         WA_BLAST="nih.gov. zone only. Zero impact on other zones or query types."
         ;;
     B)
-        WA_TYPE="domain-insecure"
+        WA_TYPE="synthetic-local-data"
         WA_CONTENT='server:
-    # nih.gov auth NS is broken for TYPE65 — returns SERVFAIL/TIMEOUT.
-    # domain-insecure disables DNSSEC validation for this zone only,
-    # allowing Unbound to accept whatever the broken auth returns.
-    # Use only if typetransparent is insufficient.
-    domain-insecure: "nih.gov."'
-        WA_REASON="Auth is broken for HTTPS — DNSSEC validation fails on a bad
-             SERVFAIL/TIMEOUT response. domain-insecure prevents Unbound
-             from treating auth errors as BOGUS. Strictly scoped to nih.gov."
-        WA_SAFE="Weakens DNSSEC for nih.gov. zone only. All other zones
-         retain full DNSSEC. Use with caution."
-        WA_BLAST="nih.gov. zone only — DNSSEC disabled for all record types."
+    # nih.gov auth NS drops/breaks TYPE65 (HTTPS/SVCB) — returns TIMEOUT/SERVFAIL.
+    # This is NOT a DNSSEC issue; domain-insecure cannot fix missing auth responses.
+    # Synthetic local-data: Unbound answers HTTPS queries immediately with NOERROR.
+    # SvcPriority=1 TargetName="." → ServiceMode, clients use A/AAAA of owner name.
+    # No local-zone directive: ONLY TYPE65 for these exact FQDNs is intercepted.
+    # All other record types (A, AAAA, MX, TXT, ...) recurse normally.
+    local-data: "nih.gov. 300 IN HTTPS 1 ."
+    local-data: "nlm.nih.gov. 300 IN HTTPS 1 ."
+    local-data: "ncbi.nlm.nih.gov. 300 IN HTTPS 1 ."
+    local-data: "pubmed.ncbi.nlm.nih.gov. 300 IN HTTPS 1 ."'
+        WA_REASON="Auth NS drops TYPE65 entirely — not a DNSSEC issue. domain-insecure
+             cannot fix missing/broken authoritative responses; it only affects
+             DNSSEC validation. Synthetic local-data gives clients an immediate
+             NOERROR with SvcPriority=1 (use A/AAAA of owner). No DNSSEC weakening."
+        WA_SAFE="DNSSEC fully preserved globally. No local-zone directive — only
+         TYPE65 queries for the exact 4 FQDNs are intercepted by local-data.
+         A/AAAA/MX/TXT and all other names recurse normally."
+        WA_BLAST="Exact 4 FQDNs only, TYPE65 only. Zero impact on any other name or RR type."
         ;;
     C)
         WA_TYPE="none"
@@ -281,16 +288,21 @@ case "$CASE" in
         echo ""
         ;;
     D)
-        WA_TYPE="typetransparent"
+        WA_TYPE="synthetic-local-data"
         WA_CONTENT='server:
     # nih.gov auth NS is inconsistent for TYPE65 (mixed NODATA/SERVFAIL).
-    # typetransparent provides fail-fast behavior without DNSSEC weakening.
-    local-zone: "nih.gov." typetransparent'
-        WA_REASON="Inconsistent auth — some NS return NODATA, others SERVFAIL.
-             typetransparent is the safest option: fails fast, preserves
-             DNSSEC, does not mask errors for other record types."
-        WA_SAFE="DNSSEC fully preserved. Fail-fast approach — no masking."
-        WA_BLAST="nih.gov. zone only."
+    # Synthetic local-data: fail-fast NOERROR without DNSSEC weakening.
+    # No local-zone directive: only TYPE65 for these exact FQDNs is intercepted.
+    local-data: "nih.gov. 300 IN HTTPS 1 ."
+    local-data: "nlm.nih.gov. 300 IN HTTPS 1 ."
+    local-data: "ncbi.nlm.nih.gov. 300 IN HTTPS 1 ."
+    local-data: "pubmed.ncbi.nlm.nih.gov. 300 IN HTTPS 1 ."'
+        WA_REASON="Inconsistent auth — some NS return NODATA, others TIMEOUT/SERVFAIL.
+             Synthetic local-data is the fail-fast approach: Unbound answers
+             immediately from local-data, DNSSEC fully preserved, no masking
+             of other record types."
+        WA_SAFE="DNSSEC fully preserved. Only TYPE65 for the exact 4 FQDNs intercepted."
+        WA_BLAST="Exact 4 FQDNs only, TYPE65 only. Zero impact on any other name or RR type."
         ;;
 esac
 
@@ -392,8 +404,7 @@ if [ -n "$WA_REASON" ]; then
     printf "  %-18s %s\n" "Why safe:"    "$WA_SAFE"
     printf "  %-18s %s\n" "Blast radius:" "$WA_BLAST"
 fi
-printf "  %-18s %s\n" "DNSSEC intact:" \
-    "$([ "$WA_TYPE" = "domain-insecure" ] && echo "NO — nih.gov. zone only" || echo "YES — unchanged globally")"
+printf "  %-18s %s\n" "DNSSEC intact:" "YES — unchanged globally"
 printf "  %-18s %s\n" "Applied:" \
     "$([ "$APPLY" -eq 1 ] && [ "$WA_TYPE" != "none" ] && echo "YES — $DROPIN" || echo "NO — read-only mode")"
 sep
