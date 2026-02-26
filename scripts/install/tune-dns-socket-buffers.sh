@@ -55,20 +55,25 @@ measure_latency() {
     echo "${times[*]}"
 }
 
-# Compute avg and p95 from space-separated integers
+# Compute avg and p95 from space-separated integers (portable: no asort)
 stats_from() {
-    echo "$1" | tr ' ' '\n' | awk '
-        { a[NR]=$1; sum+=$1 }
-        END {
-            n=NR
-            avg=sum/n
-            asort(a)
-            p95_idx=int(n*0.95+0.5)
-            if(p95_idx<1) p95_idx=1
-            if(p95_idx>n) p95_idx=n
-            printf "avg=%.1f p95=%d", avg, a[p95_idx]
-        }
-    '
+    local _tf
+    _tf=$(mktemp)
+    echo "$1" | tr ' ' '\n' > "$_tf"
+    local _avg
+    _avg=$(awk '{s+=$1} END{ if(NR) printf "%.1f", s/NR; else print "0" }' "$_tf")
+    local _p95
+    _p95=$(sort -n "$_tf" | awk '
+        {a[NR]=$1}
+        END{
+            if(!NR){print "0"; exit}
+            i=int((NR*95+99)/100)
+            if(i<1) i=1
+            if(i>NR) i=NR
+            print a[i]
+        }')
+    rm -f "$_tf"
+    printf "avg=%s p95=%d" "$_avg" "$_p95"
 }
 
 # Snapshot UDP error counters — prints "InErrors RcvbufErrors" pair
