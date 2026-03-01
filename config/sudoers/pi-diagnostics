@@ -1,0 +1,15 @@
+# Pi diagnostic NOPASSWD rules
+# Managed in: /etc/sudoers.d/pi-diagnostics
+Defaults:pi !requiretty
+Defaults:pi !use_pty
+pi ALL=(ALL) NOPASSWD: /bin/systemctl is-active AdGuardHome
+pi ALL=(ALL) NOPASSWD: /bin/systemctl is-active unbound
+pi ALL=(ALL) NOPASSWD: /bin/systemctl status AdGuardHome
+pi ALL=(ALL) NOPASSWD: /bin/systemctl status unbound
+pi ALL=(ALL) NOPASSWD: /bin/systemctl restart AdGuardHome
+pi ALL=(ALL) NOPASSWD: /bin/systemctl restart unbound
+pi ALL=(ALL) NOPASSWD: /usr/local/bin/unbound-control status
+pi ALL=(ALL) NOPASSWD: /usr/local/bin/unbound-control stats_noreset
+pi ALL=(ALL) NOPASSWD: /usr/local/bin/unbound-control flush_zone *
+pi ALL=(ALL) NOPASSWD: /usr/local/bin/unbound-control flush *
+pi ALL=(root) NOPASSWD: /usr/bin/cat /home/pi/AdGuardHome/AdGuardHome.yaml
