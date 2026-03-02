@@ -183,6 +183,9 @@ filtering:
     - domain: cockpit.home.lan
       answer: 192.168.1.55
       enabled: true
+    - domain: dns.home.lan
+      answer: 192.168.1.55
+      enabled: true
   safe_fs_patterns:
     - /home/pi/AdGuardHome/userfilters/*
   safebrowsing_cache_size: 1048576
