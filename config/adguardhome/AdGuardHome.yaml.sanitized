@@ -26,7 +26,8 @@ dns:
     - 127.0.0.1:5335
   upstream_dns_file: ""
   bootstrap_dns:
-    - 127.0.0.1
+    - 9.9.9.9
+    - 149.112.112.112
   fallback_dns: []
   upstream_mode: load_balance
   fastest_timeout: 1s
@@ -181,9 +182,6 @@ filtering:
       answer: 192.168.1.78
       enabled: true
     - domain: cockpit.home.lan
-      answer: 192.168.1.55
-      enabled: true
-    - domain: dns.home.lan
       answer: 192.168.1.55
       enabled: true
   safe_fs_patterns:
