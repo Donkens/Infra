@@ -59,10 +59,14 @@ dns:
   ipset: []
   ipset_file: ""
   bootstrap_prefer_ipv6: false
-  upstream_timeout: 10s
-  private_networks: []
-  use_private_ptr_resolvers: false
-  local_ptr_upstreams: []
+  upstream_timeout: 4s
+  private_networks:
+    - 192.168.0.0/16
+    - 10.0.0.0/8
+    - 172.16.0.0/12
+  use_private_ptr_resolvers: true
+  local_ptr_upstreams:
+    - 127.0.0.1:5335
   use_dns64: false
   dns64_prefixes: []
   serve_http3: false
@@ -184,6 +188,21 @@ filtering:
     - domain: cockpit.home.lan
       answer: 192.168.1.55
       enabled: true
+    - domain: mini
+      answer: 192.168.1.86
+      enabled: true
+    - domain: iphone.home.lan
+      answer: 192.168.40.207
+      enabled: true
+    - domain: unbound.home.lan
+      answer: 192.168.1.55
+      enabled: true
+    - domain: router.home.lan
+      answer: 192.168.1.1
+      enabled: true
+    - domain: gateway.home.lan
+      answer: 192.168.1.1
+      enabled: true
   safe_fs_patterns:
     - /home/pi/AdGuardHome/userfilters/*
   safebrowsing_cache_size: 1048576
@@ -218,10 +237,43 @@ clients:
         schedule:
           time_zone: Local
         ids: []
+      name: iot-vlan10
+      ids:
+        - 192.168.10.0/24
+      tags:
+        - device_other
+        - os_other
+      upstreams: []
+      uid: 019cf3da-955e-7077-877a-ed3a2b611cbe
+      upstreams_cache_size: 0
+      upstreams_cache_enabled: false
+      use_global_settings: true
+      filtering_enabled: false
+      parental_enabled: false
+      safebrowsing_enabled: false
+      use_global_blocked_services: true
+      ignore_querylog: false
+      ignore_statistics: false
+    - safe_search:
+        enabled: false
+        bing: true
+        duckduckgo: true
+        ecosia: true
+        google: true
+        pixabay: true
+        yandex: true
+        youtube: true
+      blocked_services:
+        schedule:
+          time_zone: Local
+        ids: []
       name: iphone17pro-mlo-6ghz-wifi
       ids:
         - 192.168.40.207
-      tags: []
+      tags:
+        - device_phone
+        - os_ios
+        - user_regular
       upstreams: []
       uid: 019bb964-9bb7-7025-a820-b4c62ccf1be4
       upstreams_cache_size: 0
@@ -249,7 +301,10 @@ clients:
       name: macbook-intel-lan
       ids:
         - 192.168.1.78
-      tags: []
+      tags:
+        - device_laptop
+        - os_macos
+        - user_regular
       upstreams: []
       uid: 019bb962-d593-73cd-9baf-e925c1d042c5
       upstreams_cache_size: 0
@@ -277,7 +332,10 @@ clients:
       name: macmini-main-lan
       ids:
         - 192.168.1.86
-      tags: []
+      tags:
+        - device_pc
+        - os_macos
+        - user_regular
       upstreams: []
       uid: 019bb95d-fdcf-71e5-9225-cb1bddefef15
       upstreams_cache_size: 0
@@ -305,7 +363,10 @@ clients:
       name: macmini-secondary-wifi
       ids:
         - 192.168.1.84
-      tags: []
+      tags:
+        - device_pc
+        - os_macos
+        - user_regular
       upstreams: []
       uid: 019bb95e-c306-724a-a47c-0f5545f526bf
       upstreams_cache_size: 0
@@ -333,7 +394,9 @@ clients:
       name: raspberrypi-dns
       ids:
         - 192.168.1.55
-      tags: []
+      tags:
+        - device_other
+        - os_linux
       upstreams: []
       uid: 019bb95f-5a86-7855-ba3b-4bc7b375dd1d
       upstreams_cache_size: 0
@@ -343,8 +406,8 @@ clients:
       parental_enabled: false
       safebrowsing_enabled: false
       use_global_blocked_services: true
-      ignore_querylog: false
-      ignore_statistics: false
+      ignore_querylog: true
+      ignore_statistics: true
     - safe_search:
         enabled: false
         bing: true
@@ -361,7 +424,9 @@ clients:
       name: udr-gateway
       ids:
         - 192.168.1.1
-      tags: []
+      tags:
+        - device_other
+        - os_other
       upstreams: []
       uid: 019bb960-194d-74a9-a1b3-d84d4e016fb0
       upstreams_cache_size: 0
@@ -371,8 +436,8 @@ clients:
       parental_enabled: false
       safebrowsing_enabled: false
       use_global_blocked_services: true
-      ignore_querylog: false
-      ignore_statistics: false
+      ignore_querylog: true
+      ignore_statistics: true
 log:
   enabled: true
   file: ""
