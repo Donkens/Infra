@@ -117,9 +117,17 @@ filters:
     url: https://adguardteam.github.io/HostlistsRegistry/assets/filter_17.txt
     name: 'SWE: Frellwit''s Swedish Hosts File'
     id: 1764554712
+  - enabled: true
+    url: https://adguardteam.github.io/HostlistsRegistry/assets/filter_27.txt
+    name: OISD Full
+    id: 27
 whitelist_filters: []
 user_rules:
   - ""
+  - '||variations.brave.com^'
+  - '||mobile.pipe.aria.microsoft.com^'
+  - '||browser.events.data.microsoft.com^'
+  - '||www.googletagmanager.com^'
 dhcp:
   enabled: false
   interface_name: ""
