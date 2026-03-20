@@ -97,7 +97,7 @@ querylog:
   size_memory: 1000
   enabled: true
   ignored_enabled: false
-  file_enabled: true
+  file_enabled: false
 statistics:
   dir_path: ""
   ignored: []
