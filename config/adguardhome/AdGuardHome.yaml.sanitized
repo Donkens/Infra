@@ -167,7 +167,7 @@ filtering:
   rewrites:
     - domain: pi.home.lan
       answer: 192.168.1.55
-      enabled: false
+      enabled: true
     - domain: adguard.home.lan
       answer: 192.168.1.55
       enabled: true
@@ -209,6 +209,27 @@ filtering:
       enabled: true
     - domain: gateway.home.lan
       answer: 192.168.1.1
+      enabled: true
+    - domain: macmini.home.lan
+      answer: fd12:3456:7801::86
+      enabled: true
+    - domain: mbp.home.lan
+      answer: fd12:3456:7801::78
+      enabled: true
+    - domain: pi.home.lan
+      answer: fd12:3456:7801::55
+      enabled: true
+    - domain: adguard.home.lan
+      answer: fd12:3456:7801::55
+      enabled: true
+    - domain: dns.home.lan
+      answer: fd12:3456:7801::55
+      enabled: true
+    - domain: unbound.home.lan
+      answer: fd12:3456:7801::55
+      enabled: true
+    - domain: cockpit.home.lan
+      answer: fd12:3456:7801::55
       enabled: true
   safe_fs_patterns:
     - /home/pi/AdGuardHome/userfilters/*
@@ -283,6 +304,36 @@ clients:
         - user_regular
       upstreams: []
       uid: 019bb964-9bb7-7025-a820-b4c62ccf1be4
+      upstreams_cache_size: 0
+      upstreams_cache_enabled: false
+      use_global_settings: true
+      filtering_enabled: false
+      parental_enabled: false
+      safebrowsing_enabled: false
+      use_global_blocked_services: true
+      ignore_querylog: false
+      ignore_statistics: false
+    - safe_search:
+        enabled: false
+        bing: true
+        duckduckgo: true
+        ecosia: true
+        google: true
+        pixabay: true
+        yandex: true
+        youtube: true
+      blocked_services:
+        schedule:
+          time_zone: Local
+        ids: []
+      name: iphone17pro-wireguard-vpn
+      ids:
+        - 10.10.10.2
+      tags:
+        - device_phone
+        - os_ios
+      upstreams: []
+      uid: 019d4cec-5ed1-7a8a-8571-926168e6635b
       upstreams_cache_size: 0
       upstreams_cache_enabled: false
       use_global_settings: true
