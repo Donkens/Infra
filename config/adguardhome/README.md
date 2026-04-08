@@ -1,3 +1,3 @@
 # Exported from /home/pi/AdGuardHome/AdGuardHome.yaml
-# Generated: 2026-04-07 03:02:05 BST
+# Generated: 2026-04-08 03:01:16 BST
 # NOTE: sanitized for git safety
