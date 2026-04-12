@@ -87,7 +87,8 @@ Do not execute SSH against a remote target until the exact command or script has
 
 ### Phase 1 — Plan
 Propose specific changes. State exact commands. State blast radius.
-Do NOT execute. Wait for explicit GO.
+Do NOT execute planned changes. Read-only inspection/recon commands may run without GO.
+Wait for explicit GO before any write, remote action, or other approved execution step.
 
 ### Phase 2 — Execute
 Execute approved plan. Show output for each step. Verify after each change.

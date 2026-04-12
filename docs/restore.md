@@ -18,6 +18,7 @@ Efter restore ska följande fungera:
 - DNS fungerar via AdGuard → Unbound
 - `dns-health.sh`, `check-backups.sh`, `infra-status.sh` finns och fungerar
 - systemd timers är aktiva
+- AdGuard API credentials hämtas från Bitwarden item `AdGuard API` och lagras aldrig i repo eller scripts
 - repo är kopplat till GitHub (`origin`)
 
 ---

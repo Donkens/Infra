@@ -38,6 +38,8 @@ Command: <exact command>
 → Reply GO to proceed
 ```
 
+Read-only commands do not require `GO` unless they also cross another explicit approval gate.
+
 ---
 
 ## COMMAND EXECUTION POLICY
