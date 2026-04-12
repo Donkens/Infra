@@ -51,6 +51,17 @@ ping, dig, nslookup, traceroute
 python3 --version, which <tool>
 ```
 
+### Host Identification Before Phase 0
+Before starting Phase 0, detect and report:
+- `hostname`
+- OS (`uname -a`)
+- architecture (`uname -m`)
+- current git repository path (`pwd`)
+- git branch (`git status --short --branch`)
+- brew prefix if available (`brew --prefix 2>/dev/null || true`)
+
+Summarize this output before proceeding with Phase 0.
+
 ### Require Showing Intent Before Running
 - Any write to existing file
 - Any `pip install` or `brew install`
