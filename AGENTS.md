@@ -69,6 +69,9 @@ Never hardcode `/opt/homebrew` or `/usr/local`. Use `$(brew --prefix)` or detect
 
 This project uses a 3-phase model for any non-trivial change:
 
+Execution hosts for Codex are the local Macs in this environment.
+Raspberry Pi and UDR-7 are managed remote targets, not execution hosts.
+
 ### Phase 0 — Read-Only Recon
 Collect facts. Run only diagnostic/read commands. No writes.
 Output: clear summary of current state + proposed action plan.
@@ -78,6 +81,9 @@ DNS, firewall, routing, VLANs, network topology, remote hosts (Pi, Mac mini, UDR
 system services (systemd, launchd), SSH config, or any change that affects another
 machine on the network. Do not proceed to Phase 1 without completing Phase 0 for
 these categories.
+
+Any planned change to a managed remote target requires Phase 0 first.
+Do not execute SSH against a remote target until the exact command or script has been shown and explicitly approved.
 
 ### Phase 1 — Plan
 Propose specific changes. State exact commands. State blast radius.

@@ -66,7 +66,7 @@ Summarize this output before proceeding with Phase 0.
 - Any write to existing file
 - Any `pip install` or `brew install`
 - Any script execution (`bash script.sh`, `python3 script.py`)
-- SSH commands to remote hosts
+- Any SSH command to a remote infrastructure target — show the exact SSH command or script first and wait for explicit approval
 
 ### Hard Blocked (never run without explicit instruction)
 ```
