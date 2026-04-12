@@ -73,6 +73,12 @@ This project uses a 3-phase model for any non-trivial change:
 Collect facts. Run only diagnostic/read commands. No writes.
 Output: clear summary of current state + proposed action plan.
 
+**Phase 0 is mandatory when the task involves any of:**
+DNS, firewall, routing, VLANs, network topology, remote hosts (Pi, Mac mini, UDR-7),
+system services (systemd, launchd), SSH config, or any change that affects another
+machine on the network. Do not proceed to Phase 1 without completing Phase 0 for
+these categories.
+
 ### Phase 1 — Plan
 Propose specific changes. State exact commands. State blast radius.
 Do NOT execute. Wait for explicit GO.
@@ -81,7 +87,8 @@ Do NOT execute. Wait for explicit GO.
 Execute approved plan. Show output for each step. Verify after each change.
 Propose rollback if verification fails.
 
-**For trivial tasks (single file, no infra impact): skip Phase 0/1, execute directly.**
+**Phase 0 may be skipped only for trivial tasks: single-file, local, documentation
+or text-only edits with no infrastructure or cross-host impact.**
 
 ---
 
