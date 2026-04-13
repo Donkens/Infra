@@ -4,6 +4,7 @@
 *.swo
 *.tmp
 *.bak
+*.bak.*
 *.orig
 *~
 # Secrets (never commit)
