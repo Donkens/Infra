@@ -107,7 +107,7 @@ never as repeated report labels.
 **Fast path (trivial tasks):** Act → Verify → Done. No phases.
 
 **Phase 0 — Recon** *(mandatory for infra/network/remote tasks)*
-Read-only only. Collect: `hostname`, `uname -a`, `uname -m`, `git status --short --branch`,
+Read-only commands only. Collect: `hostname`, `uname -a`, `uname -m`, `git status --short --branch`,
 `brew --prefix`. No writes. Output: current state + proposed action plan.
 
 **Phase 1 — Plan**

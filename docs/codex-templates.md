@@ -89,9 +89,9 @@ Expected outputs:
 
 ---
 
-### Template D — Optional External Handoff
+### Template D — Special-Case External Handoff
 
-Use only when another agent or reviewer has already produced a plan.
+Use only if an external handoff or approved plan already exists. This is not the default Codex workflow.
 
 ```
 [HANDOFF]
@@ -141,30 +141,15 @@ Wait for GO before committing.
 
 ---
 
-## PART 3 — Optional External-Planner Workflow (reference only)
+## PART 3 — Optional External Handoff Sequence (reference only)
+
+Use this only when external planning or review context already exists.
 
 ```
-User request
-     │
-     ▼
-┌─────────────┐
-│  Planner /  │  ← Optional planning, architecture, approval gates
-│  Reviewer   │
-│  Phase 0/1  │    Produces handoff or approval context
-└──────┬──────┘
-       │  [User approves]
-       ▼
-┌─────────────┐
-│    CODEX    │  ← Execution only
-│  Phase 2    │    Executes approved plan
-│             │    Reports concise STATUS/SUMMARY/CHANGED/EVIDENCE/NEXT
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│  Planner /  │  ← Optional verification or synthesis
-│  Reviewer   │
-└─────────────┘
+Default: user request → Codex
+
+Optional reference path when a handoff already exists:
+user request → planner/reviewer → Codex executes approved plan → planner/reviewer
 ```
 
 Codex escalates back to the planner/reviewer when:
