@@ -24,7 +24,7 @@ Pause and request approval before:
 - Deleting or overwriting existing files
 - Modifying any config in `/etc/`, `~/Library/LaunchAgents/`, or network-related paths
 - Pushing to any remote
-- Anything that affects another machine on the network
+- Anything that changes another machine on the network
 - Any command with `--force`, `-f`, or `--hard`
 
 Format for approval requests:
@@ -38,7 +38,7 @@ Command: <exact command>
 → Reply GO to proceed
 ```
 
-Read-only commands do not require `GO` unless they also cross another explicit approval gate.
+Read-only commands do not require `GO` unless they also cross another explicit approval gate. Read-only SSH discovery against managed remote targets is allowed when the exact command is shown first.
 
 ---
 
@@ -68,7 +68,7 @@ Summarize this output before proceeding with Phase 0.
 - Any write to existing file
 - Any `pip install` or `brew install`
 - Any script execution (`bash script.sh`, `python3 script.py`)
-- Any SSH command to a remote infrastructure target — show the exact SSH command or script first and wait for explicit approval
+- Any SSH command to a remote infrastructure target — show the exact SSH command or script first; wait for explicit approval only for non-read-only remote actions
 
 ### Hard Blocked (never run without explicit instruction)
 ```

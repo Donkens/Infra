@@ -2,7 +2,7 @@
 
 > This file is read by OpenAI Codex agents before any task execution.
 > It defines environment constraints, safety rules, and behavioral contracts.
-> Last updated: 2026-04-12
+> Last updated: 2026-04-13
 
 ---
 ## Agent Boot Sequence
@@ -83,12 +83,12 @@ machine on the network. Do not proceed to Phase 1 without completing Phase 0 for
 these categories.
 
 Any planned change to a managed remote target requires Phase 0 first.
-Do not execute SSH against a remote target until the exact command or script has been shown and explicitly approved.
+Read-only SSH discovery against a managed remote target may run during Phase 0 without explicit approval, but the exact command or script must be shown first.
 
 ### Phase 1 — Plan
 Propose specific changes. State exact commands. State blast radius.
-Do NOT execute planned changes. Read-only inspection/recon commands may run without GO.
-Wait for explicit GO before any write, remote action, or other approved execution step.
+Do NOT execute planned changes. Read-only inspection/recon commands may run without GO, including read-only SSH discovery whose exact command has been shown first.
+Wait for explicit GO before any write, config change, service action, or other non-read-only remote action.
 
 ### Phase 2 — Execute
 Execute approved plan. Show output for each step. Verify after each change.
