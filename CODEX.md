@@ -1,4 +1,5 @@
 # CODEX.md
 
-All agent instructions are in **AGENTS.md**. Read that file.
-This file is intentionally kept as a redirect — no policy is defined here.
+Follow `./AGENTS.md` only.
+If any repository instruction conflicts, `./AGENTS.md` wins.
+No policy is defined here.
