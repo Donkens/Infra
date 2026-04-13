@@ -1,45 +1,17 @@
-# Codex Prompts & Agent Instruction Templates
+# Codex Task Templates & Reference
 
-> Ready-to-paste prompts and templates for the Claude → Codex workflow.
-> Tailored for infrastructure repositories, scripting, and automation.
+> Reference-only examples for infrastructure repositories, scripting, and automation.
+> Live Codex Instructions and repo-local `AGENTS.md` are authoritative.
+> Optional handoff material in this file is secondary and does not define Codex policy.
 
 ---
 
-## PART 1 — SYSTEM PROMPT (paste into Codex "Instructions" field)
+## PART 1 — Authority Note
 
-```
-You are an infrastructure-aware coding agent operating in a macOS environment.
-
-ENVIRONMENT:
-- Primary machine: Mac mini M1, ARM64, Homebrew at /opt/homebrew
-- Secondary: MacBook Pro 2015, Intel x86_64, /usr/local
-- Always detect arch with: arch=$(uname -m)
-- Scripts source of truth: ~/Library/Mobile Documents/com~apple~CloudDocs/Scripts/
-- Shell: zsh, always use set -euo pipefail
-- Python: 3.12, always use python3
-
-SAFETY:
-- Never run destructive commands (rm -rf, git push --force, reset --hard) without explicit GO
-- Never commit or expose secrets — use Bitwarden references only
-- Never modify network/DNS/firewall config autonomously
-- Always show git diff before staging
-- For any sudo command: state intent, state risk, wait for GO
-
-STYLE:
-- Minimal blast radius — smallest change that works
-- One concern per commit
-- Verify after every non-trivial change
-- Label uncertainty: [VERIFIED] | [LIKELY] | [HYPOTHESIS]
-- For unknown flags: run --help first, never invent
-
-WORKFLOW:
-- You operate as the executor in a Claude→Codex pipeline
-- Claude handles planning and approval gates
-- You handle code generation, edits, and execution
-- End every task with: STATUS / CHANGED / VERIFIED / ISSUES / NEXT
-
-Read AGENTS.md and CODEX.md in this repository before any task.
-```
+This file is examples only.
+Do not paste a replacement system prompt from here.
+If anything in this file conflicts with live Codex Instructions or repo-local
+`AGENTS.md`, `AGENTS.md` wins.
 
 ---
 
@@ -117,18 +89,20 @@ Expected outputs:
 
 ---
 
-### Template D — Multi-Agent Handoff (Claude → Codex)
+### Template D — Optional External Handoff
+
+Use only when another agent or reviewer has already produced a plan.
 
 ```
-[HANDOFF FROM CLAUDE]
+[HANDOFF]
 Task ID: <id>
 Type: <script | config-edit | refactor | debug>
 
 Architecture decision (already made, do not redesign):
-<Claude's decision here>
+<decision here>
 
 Approved plan:
-<Step-by-step plan Claude produced>
+<Step-by-step approved plan>
 
 Files in scope:
 <explicit list>
@@ -136,10 +110,11 @@ Files in scope:
 Execute the plan. Report back using:
 TASK: <id>
 STATUS: DONE | PARTIAL | BLOCKED
+SUMMARY: <1-2 lines, Swedish>
 CHANGED: <files>
-VERIFIED: <output>
-ISSUES: <anything unexpected>
-NEXT: <recommendation>
+EVIDENCE: <key verification output>
+ISSUES: <anything unexpected, if any>
+NEXT: <one concrete next step>
 ```
 
 ---
@@ -166,33 +141,33 @@ Wait for GO before committing.
 
 ---
 
-## PART 3 — CLAUDE → CODEX WORKFLOW
+## PART 3 — Optional External-Planner Workflow (reference only)
 
 ```
 User request
      │
      ▼
 ┌─────────────┐
-│   CLAUDE    │  ← Planning, architecture, approval gates
-│  Phase 0    │    Recon: reads files, checks git state
-│  Phase 1    │    Plan: produces structured handoff
+│  Planner /  │  ← Optional planning, architecture, approval gates
+│  Reviewer   │
+│  Phase 0/1  │    Produces handoff or approval context
 └──────┬──────┘
        │  [User approves]
        ▼
 ┌─────────────┐
 │    CODEX    │  ← Execution only
 │  Phase 2    │    Executes approved plan
-│             │    Reports STATUS/CHANGED/VERIFIED
+│             │    Reports concise STATUS/SUMMARY/CHANGED/EVIDENCE/NEXT
 └──────┬──────┘
        │
        ▼
 ┌─────────────┐
-│   CLAUDE    │  ← Verification & synthesis
-│             │    Reviews output, flags issues
+│  Planner /  │  ← Optional verification or synthesis
+│  Reviewer   │
 └─────────────┘
 ```
 
-Codex escalates back to Claude when:
+Codex escalates back to the planner/reviewer when:
 - Unexpected state encountered
 - An architectural decision is needed
 - A destructive operation was not in the approved plan

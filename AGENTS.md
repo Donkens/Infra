@@ -17,6 +17,15 @@ Trivial = single-file local edit, docs/text only, no infra/network/cross-host im
 
 ---
 
+## OPERATING MODEL
+
+- Default: standalone Codex. Read repo state, plan within scope, execute, and report under this file.
+- External planner/reviewer workflows are optional. If the user provides a handoff,
+  approved plan, or review context, use it as input, not as a dependency.
+- Escalate when architecture is ambiguous, tradeoffs are material, or approval is required.
+
+---
+
 ## EXECUTION CONTEXT
 
 ### If running in Codex Cloud
@@ -32,6 +41,15 @@ Trivial = single-file local edit, docs/text only, no infra/network/cross-host im
 ### If running locally (Codex desktop)
 Full execution context. SSH available via `ssh pi` / `ssh udr` / `ssh mini`.
 Follow Phase 0/1/2 below for any infra/network/remote task.
+
+---
+
+## LANGUAGE
+
+- Swedish for summaries, explanations, planning, and status reporting.
+- Original language for commands, paths, config keys, code, error messages, and
+  technical terms.
+- Do not translate literals.
 
 ---
 
@@ -77,6 +95,10 @@ git status/log/diff  |  ls/find/cat/head/tail  |  uname -m
 brew list  |  ping/dig/nslookup/traceroute  |  python3 --version
 ```
 Read-only SSH to managed targets: allowed — show exact command first.
+
+`[APPROVAL REQUIRED]` and `[CLOUD BLOCKED — requires local execution]` are
+structural control markers. Use them only as standalone blocks when applicable,
+never as repeated report labels.
 
 ---
 
@@ -143,17 +165,24 @@ Debug order: routing → firewall → DNS → application — don't skip layers 
 
 ---
 
-## CONFIDENCE LABELS
+## UNCERTAINTY HANDLING
 
-- `[VERIFIED]` — tested/confirmed output
-- `[LIKELY]` — high confidence, context-based
-- `[HYPOTHESIS]` — needs verification before acting
-
-If unsure about a flag, path, or behavior: run `--help` or `man` first. Never invent.
+- State confirmed facts plainly. Do not add bracket tags such as `[VERIFIED]`,
+  `[LIKELY]`, or `[HYPOTHESIS]`.
+- Mention uncertainty only when it is real and actionable, in natural language.
+  Examples: `Could not verify without sudo`, `Likely caused by X`,
+  `Not confirmed from current API surface`.
+- If unsure about a flag, path, or behavior: run `--help` or `man` first.
+  Never invent.
 
 ---
 
 ## OUTPUT FORMAT
+
+Write for fast human scanning. Conclusions first, evidence second.
+Default to compact mode. If the output feels like an audit log, compress it further.
+Bracketed markers are not part of normal reporting except the structural safety/runtime
+markers defined above.
 
 ### Diagnostic / analytic tasks
 
@@ -161,40 +190,65 @@ Tasks involving health checks, diagnostics, network/DNS work, infra changes,
 service changes, or system status analysis.
 
 ```
-## Summary       <human-readable overview — Swedish, 2–6 lines>
-                 Optional status indicator: 🟢 OK  🟡 warning  🔴 problem
-                 Answer: how is the system? anything broken? anything to improve?
-## Status        [DONE | BLOCKED | NEEDS_APPROVAL]
-## Actions       <what was done or checked>
-## Verification  Concise technical evidence.
-                 One status label for the whole section:
-                 [VERIFIED] — checks succeeded
-                 [PARTIAL] — mixed results
-                 [FAILED]  — verification failed
-                 Avoid repeating the label on each line.
-## Risks         <only if risks observed — omit if none>
-## Follow-up     <only if action recommended — omit if none>
-                 Separate: Immediate action | Recommended | Optional future
-                 Only when supported by evidence. No generic tips.
+## Summary
+- 2-5 bullets max
+- Current state
+- Biggest issue(s)
+- What matters most
+- Whether action is needed now
+
+## Recommended changes
+1. <Change>
+   - Why: <reason>
+   - Benefit: <impact>
+   - Risk: <risk or "none">
+
+2. <Optional cleanup>
+   - Why: <reason>
+   - Benefit: <impact>
+   - Risk: <risk or "none">
+
+## Evidence
+- Group compactly by topic, for example: Runtime/API, Config, Logs, System state
+- Evidence supports the summary and recommendations; do not attach proof to every sentence
+
+## Uncertainties
+- Only when something is genuinely unconfirmed
+- Write naturally; no bracket tags
+
+## Next step
+- Exactly one concrete next step by default unless the user asked for options
 ```
 
-Risks and Follow-up should only appear when relevant information exists.
+Add `## Status [DONE | PARTIAL | BLOCKED | NEEDS_APPROVAL]` only when the
+execution state needs to be explicit. Use it once, not on every line.
+
+Do not emit giant "Verified findings" dumps, inline source spam, or cosmetic
+findings as standalone items. Compress low-value findings under one optional
+cleanup item.
 
 ### Non-diagnostic tasks (non-trivial)
 
 ```
-## Status        [DONE | BLOCKED | NEEDS_APPROVAL]
+## Status        [DONE | PARTIAL | BLOCKED | NEEDS_APPROVAL]
+## Summary       <1-3 lines, Swedish>
 ## Actions       <specific files / commands / configs changed>
-## Verification  <output proving the change works>
+## Evidence      <compact proof the change works>
+## Next step     <one concrete next step only if needed>
 ## Risks         <only if applicable — omit if none>
 ```
 
-### Multi-agent reporting (Codex → Claude)
+### Optional handoff format
+
+Use only when the user explicitly wants a structured handoff to another agent or reviewer.
 
 ```
 TASK: <name>  STATUS: DONE|PARTIAL|BLOCKED
 SUMMARY: <1–2 lines, Swedish>
-CHANGED: <files>  VERIFIED: <output>  ISSUES: <unexpected>  NEXT: <recommendation>
+CHANGED: <files>
+EVIDENCE: <key verification output or "not run">
+ISSUES: <unexpected, if any>
+NEXT: <one concrete next step>
 ```
 
 ### Trivial tasks
@@ -202,12 +256,3 @@ CHANGED: <files>  VERIFIED: <output>  ISSUES: <unexpected>  NEXT: <recommendatio
 Trivial tasks (local file operations without system effect) do not require a structured report.
 A short confirmation line is sufficient.
 Example: `File updated successfully.`
-
----
-
-## MULTI-AGENT ROLES
-
-- **Claude:** planning, architecture decisions, approval gates
-- **Codex:** code generation, file edits, execution, structured reporting
-- Surface architectural decisions and tradeoffs to Claude — don't decide autonomously.
-- On unexpected state, ambiguity, or competing approaches: escalate, don't assume.
