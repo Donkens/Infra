@@ -137,19 +137,53 @@ If unsure about a flag, path, or behavior: run `--help` or `man` first. Never in
 
 ## OUTPUT FORMAT
 
-**Non-trivial tasks:**
+### Diagnostic / analytic tasks
+
+Tasks involving health checks, diagnostics, network/DNS work, infra changes,
+service changes, or system status analysis.
+
 ```
+## Summary       <human-readable overview — Swedish, 2–6 lines>
+                 Optional status indicator: 🟢 OK  🟡 warning  🔴 problem
+                 Answer: how is the system? anything broken? anything to improve?
 ## Status        [DONE | BLOCKED | NEEDS_APPROVAL]
-## What changed  <specific files / commands / configs>
-## Verification  <output proving the change works>
-## Risks         <anything needing human attention>
+## Actions       <what was done or checked>
+## Verification  Concise technical evidence.
+                 One status label for the whole section:
+                 [VERIFIED] — checks succeeded
+                 [PARTIAL] — mixed results
+                 [FAILED]  — verification failed
+                 Avoid repeating the label on each line.
+## Risks         <only if risks observed — omit if none>
+## Follow-up     <only if action recommended — omit if none>
+                 Separate: Immediate action | Recommended | Optional future
+                 Only when supported by evidence. No generic tips.
 ```
 
-**Multi-agent reporting (Codex → Claude):**
+Risks and Follow-up should only appear when relevant information exists.
+
+### Non-diagnostic tasks (non-trivial)
+
+```
+## Status        [DONE | BLOCKED | NEEDS_APPROVAL]
+## Actions       <specific files / commands / configs changed>
+## Verification  <output proving the change works>
+## Risks         <only if applicable — omit if none>
+```
+
+### Multi-agent reporting (Codex → Claude)
+
 ```
 TASK: <name>  STATUS: DONE|PARTIAL|BLOCKED
+SUMMARY: <1–2 lines, Swedish>
 CHANGED: <files>  VERIFIED: <output>  ISSUES: <unexpected>  NEXT: <recommendation>
 ```
+
+### Trivial tasks
+
+Trivial tasks (local file operations without system effect) do not require a structured report.
+A short confirmation line is sufficient.
+Example: `File updated successfully.`
 
 ---
 
