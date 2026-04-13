@@ -231,6 +231,9 @@ filtering:
     - domain: cockpit.home.lan
       answer: fd12:3456:7801::55
       enabled: true
+    - domain: udr.home.lan
+      answer: 192.168.1.1
+      enabled: true
   safe_fs_patterns:
     - /home/pi/AdGuardHome/userfilters/*
   safebrowsing_cache_size: 1048576
@@ -252,6 +255,66 @@ clients:
     dhcp: true
     hosts: true
   persistent:
+    - safe_search:
+        enabled: false
+        bing: true
+        duckduckgo: true
+        ecosia: true
+        google: true
+        pixabay: true
+        yandex: true
+        youtube: true
+      blocked_services:
+        schedule:
+          time_zone: Local
+        ids: []
+      name: dns-pi
+      ids:
+        - 192.168.1.55
+      tags:
+        - device_other
+        - os_linux
+      upstreams: []
+      uid: 019bb95f-5a86-7855-ba3b-4bc7b375dd1d
+      upstreams_cache_size: 0
+      upstreams_cache_enabled: false
+      use_global_settings: true
+      filtering_enabled: false
+      parental_enabled: false
+      safebrowsing_enabled: false
+      use_global_blocked_services: true
+      ignore_querylog: true
+      ignore_statistics: true
+    - safe_search:
+        enabled: false
+        bing: false
+        duckduckgo: false
+        ecosia: false
+        google: false
+        pixabay: false
+        yandex: false
+        youtube: false
+      blocked_services:
+        schedule:
+          time_zone: Local
+        ids: []
+      name: ghome-mini
+      ids:
+        - 192.168.10.180
+      tags:
+        - device_audio
+        - os_other
+      upstreams: []
+      uid: 019d8149-84d0-7e92-ab97-f3955a9f9269
+      upstreams_cache_size: 0
+      upstreams_cache_enabled: false
+      use_global_settings: true
+      filtering_enabled: false
+      parental_enabled: false
+      safebrowsing_enabled: false
+      use_global_blocked_services: true
+      ignore_querylog: false
+      ignore_statistics: false
     - safe_search:
         enabled: false
         bing: true
@@ -295,7 +358,7 @@ clients:
         schedule:
           time_zone: Local
         ids: []
-      name: iphone17pro-mlo-6ghz-wifi
+      name: iphone17pro-mlo
       ids:
         - 192.168.40.207
       tags:
@@ -356,38 +419,7 @@ clients:
         schedule:
           time_zone: Local
         ids: []
-      name: macbook-intel-lan
-      ids:
-        - 192.168.1.78
-      tags:
-        - device_laptop
-        - os_macos
-        - user_regular
-      upstreams: []
-      uid: 019bb962-d593-73cd-9baf-e925c1d042c5
-      upstreams_cache_size: 0
-      upstreams_cache_enabled: false
-      use_global_settings: true
-      filtering_enabled: false
-      parental_enabled: false
-      safebrowsing_enabled: false
-      use_global_blocked_services: true
-      ignore_querylog: false
-      ignore_statistics: false
-    - safe_search:
-        enabled: false
-        bing: true
-        duckduckgo: true
-        ecosia: true
-        google: true
-        pixabay: true
-        yandex: true
-        youtube: true
-      blocked_services:
-        schedule:
-          time_zone: Local
-        ids: []
-      name: macmini-main-lan
+      name: macmini-eth
       ids:
         - 192.168.1.86
       tags:
@@ -418,7 +450,7 @@ clients:
         schedule:
           time_zone: Local
         ids: []
-      name: macmini-secondary-wifi
+      name: macmini-wifi
       ids:
         - 192.168.1.84
       tags:
@@ -449,14 +481,15 @@ clients:
         schedule:
           time_zone: Local
         ids: []
-      name: raspberrypi-dns
+      name: mbp-wifi
       ids:
-        - 192.168.1.55
+        - 192.168.1.78
       tags:
-        - device_other
-        - os_linux
+        - device_laptop
+        - os_macos
+        - user_regular
       upstreams: []
-      uid: 019bb95f-5a86-7855-ba3b-4bc7b375dd1d
+      uid: 019bb962-d593-73cd-9baf-e925c1d042c5
       upstreams_cache_size: 0
       upstreams_cache_enabled: false
       use_global_settings: true
@@ -464,8 +497,69 @@ clients:
       parental_enabled: false
       safebrowsing_enabled: false
       use_global_blocked_services: true
-      ignore_querylog: true
-      ignore_statistics: true
+      ignore_querylog: false
+      ignore_statistics: false
+    - safe_search:
+        enabled: false
+        bing: false
+        duckduckgo: false
+        ecosia: false
+        google: false
+        pixabay: false
+        yandex: false
+        youtube: false
+      blocked_services:
+        schedule:
+          time_zone: Local
+        ids: []
+      name: nest-protect
+      ids:
+        - 192.168.10.153
+      tags:
+        - device_securityalarm
+        - os_other
+      upstreams: []
+      uid: 291538e4-1d58-499f-99f4-11edf4a8bfff
+      upstreams_cache_size: 0
+      upstreams_cache_enabled: false
+      use_global_settings: true
+      filtering_enabled: false
+      parental_enabled: false
+      safebrowsing_enabled: false
+      use_global_blocked_services: true
+      ignore_querylog: false
+      ignore_statistics: false
+    - safe_search:
+        enabled: false
+        bing: false
+        duckduckgo: false
+        ecosia: false
+        google: false
+        pixabay: false
+        yandex: false
+        youtube: false
+      blocked_services:
+        schedule:
+          time_zone: Local
+        ids: []
+      name: roborock-vacuum
+      ids:
+        - 192.168.10.6
+        - b0:4a:39:17:2b:e7
+      tags:
+        - device_other
+        - os_other
+      upstreams: []
+      uid: 019d8149-73e5-7d9c-a195-6d3c797ac4ef
+      upstreams_cache_size: 0
+      upstreams_cache_enabled: false
+      use_global_settings: true
+      filtering_enabled: false
+      parental_enabled: false
+      safebrowsing_enabled: false
+      use_global_blocked_services: true
+      ignore_querylog: false
+      ignore_statistics: false
     - safe_search:
         enabled: false
         bing: true
