@@ -17,6 +17,24 @@ Trivial = single-file local edit, docs/text only, no infra/network/cross-host im
 
 ---
 
+## EXECUTION CONTEXT
+
+### If running in Codex Cloud
+- **No SSH.** Do not attempt `ssh pi`, `ssh mini`, `ssh udr` or any remote host.
+- **No runtime verification.** Cannot verify DNS, systemd status, service health, or network state.
+  Do not fabricate verification output.
+- **No Pi/UDR changes.** Flag any task requiring runtime access as:
+  `[CLOUD BLOCKED — requires local execution]`
+- **Permitted:** repo editing, script writing, config drafting, docs, refactoring, shellcheck.
+  All output is draft — user verifies locally.
+- Uncertain whether Cloud or local? **Assume Cloud restrictions apply.**
+
+### If running locally (Codex desktop)
+Full execution context. SSH available via `ssh pi` / `ssh udr` / `ssh mini`.
+Follow Phase 0/1/2 below for any infra/network/remote task.
+
+---
+
 ## ENVIRONMENT
 
 ```bash
