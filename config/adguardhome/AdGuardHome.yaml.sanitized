@@ -127,6 +127,8 @@ user_rules:
   - '||mobile.pipe.aria.microsoft.com^'
   - '||browser.events.data.microsoft.com^'
   - '||www.googletagmanager.com^'
+  - '||sentry.io^'
+  - '||datadoghq.com^'
 dhcp:
   enabled: false
   interface_name: ""
