@@ -88,8 +88,11 @@ Phase 2 — Execute
 - Scripts: `set -euo pipefail`
 - Python: `python3`
 - Prefer venv; use `--break-system-packages` only outside venv
-- Scripts source of truth: `~/Library/Mobile Documents/com~apple~CloudDocs/Scripts/`
-- `~/bin` contains symlinks into iCloud Scripts; do not duplicate or break them
+- Scripts currently live in TWO iCloud locations (temporary split; do not assume a single path):
+  - `~/Library/Mobile Documents/com~apple~CloudDocs/Projects/scripts/` — most infra scripts (audio, dns, host, maintenance, mcp, setup, udr)
+  - `~/Library/Mobile Documents/com~apple~CloudDocs/Scripts/` — legacy root (timberborn, pi-monitor, game_*, open-xcode, Scripts/infra/*)
+- Always verify actual file placement before editing; never assume a single script path.
+- `~/bin` contains symlinks into those iCloud locations; do not duplicate or break them.
 - Never hardcode brew paths; always use `$(brew --prefix)`
 
 ## SCRIPTING STANDARD
