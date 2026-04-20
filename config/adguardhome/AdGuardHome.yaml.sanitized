@@ -179,20 +179,11 @@ filtering:
     - domain: adguard.home.lan
       answer: 192.168.1.55
       enabled: true
-    - domain: udr7.home.lan
-      answer: 192.168.1.1
-      enabled: true
     - domain: macmini.home.lan
       answer: 192.168.1.86
       enabled: true
     - domain: unifi.home.lan
       answer: 192.168.1.1
-      enabled: true
-    - domain: dns.home.lan
-      answer: 192.168.1.55
-      enabled: true
-    - domain: macmini-lan.home.lan
-      answer: 192.168.1.86
       enabled: true
     - domain: macmini-wifi.home.lan
       answer: 192.168.1.84
@@ -203,19 +194,10 @@ filtering:
     - domain: cockpit.home.lan
       answer: 192.168.1.55
       enabled: true
-    - domain: mini
-      answer: 192.168.1.86
-      enabled: true
     - domain: iphone.home.lan
       answer: 192.168.40.207
       enabled: true
-    - domain: unbound.home.lan
-      answer: 192.168.1.55
-      enabled: true
     - domain: router.home.lan
-      answer: 192.168.1.1
-      enabled: true
-    - domain: gateway.home.lan
       answer: 192.168.1.1
       enabled: true
     - domain: macmini.home.lan
@@ -228,12 +210,6 @@ filtering:
       answer: fd12:3456:7801::55
       enabled: true
     - domain: adguard.home.lan
-      answer: fd12:3456:7801::55
-      enabled: true
-    - domain: dns.home.lan
-      answer: fd12:3456:7801::55
-      enabled: true
-    - domain: unbound.home.lan
       answer: fd12:3456:7801::55
       enabled: true
     - domain: cockpit.home.lan
