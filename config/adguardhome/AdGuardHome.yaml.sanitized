@@ -218,6 +218,15 @@ filtering:
     - domain: udr.home.lan
       answer: 192.168.1.1
       enabled: true
+    - domain: udr.home.lan
+      answer: 'fd12:3456:7801::'
+      enabled: true
+    - domain: unifi.home.lan
+      answer: 'fd12:3456:7801::'
+      enabled: true
+    - domain: router.home.lan
+      answer: 'fd12:3456:7801::'
+      enabled: true
   safe_fs_patterns:
     - /home/pi/AdGuardHome/userfilters/*
   safebrowsing_cache_size: 1048576
