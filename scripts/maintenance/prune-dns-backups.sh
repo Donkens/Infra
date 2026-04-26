@@ -3,7 +3,6 @@
 # Author:  codex-agent | Date: 2026-04-26
 set -euo pipefail
 
-readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly DEFAULT_BACKUP_DIR="/home/pi/repos/infra/state/backups"
 readonly DEFAULT_DAYS=45
 readonly DEFAULT_MIN_KEEP=10

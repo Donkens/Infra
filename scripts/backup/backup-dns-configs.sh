@@ -30,7 +30,7 @@ USAGE
       ;;
   esac
 done
-SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+SCRIPT_DIR="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 TS="$(date '+%Y%m%d_%H%M%S')"
 HOST="$(hostname)"
@@ -115,9 +115,9 @@ if [ -d "$UNBOUND_ETC" ]; then
     log "Backed up Unbound conf.d"
   fi
   # Useful extra files if present
-  for f in root.key; do
-    [ -f "$UNBOUND_ETC/$f" ] && cp -a "$UNBOUND_ETC/$f" "$DEST/unbound/etc-unbound/" || true
-  done
+  if [ -f "$UNBOUND_ETC/root.key" ]; then
+    cp -a "$UNBOUND_ETC/root.key" "$DEST/unbound/etc-unbound/"
+  fi
 else
   warn "Unbound etc dir not found at $UNBOUND_ETC"
 fi
