@@ -126,6 +126,9 @@ Managed hosts:
 - `state/backups/` is Pi-local backup state and may contain sensitive service configs.
 - `state/backups/latest` is a Pi-local symlink to the newest backup.
 - Never print, track, commit, or paste raw backup files such as `AdGuardHome.yaml`.
+- Use `scripts/maintenance/prune-dns-backups.sh` for DNS backup retention.
+- DNS backup retention defaults to dry-run, keeps 45 days, and preserves at least the newest 10 backup directories.
+- Applying DNS backup retention requires explicit `--apply`; never use `git clean` for Pi runtime/backups.
 
 ## ADGUARD API POLICY
 - Use session-cookie auth via `POST /control/login`; do not assume Basic Auth works for `/control/*` endpoints.
