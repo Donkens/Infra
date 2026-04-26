@@ -116,11 +116,13 @@ Managed hosts:
 - `ssh mini` : Mac mini
 - `ssh udr`  : UDR-7
 
-## LOCAL RUNTIME AND BACKUP POLICY
-- GitHub `Donkens/Infra` `main` is canonical.
+## SOURCE OF TRUTH AND LOCAL STATE
+- The Pi is the operational source of truth for live DNS service state.
+- GitHub `Donkens/Infra` `main` is canonical for repo history, docs, scripts, and sanitized snapshots.
+- The Pi produces nightly sanitized snapshots from live state.
+- Mac repos are working copies and should stay clean except ignored tool state such as `.codex/`.
+- Raw Pi runtime/backups are local sensitive state and must never be printed, tracked, committed, or pasted.
 - The Pi repo may contain ignored local runtime files under `logs/` and `state/`.
-- The Pi is the producer for nightly sanitized config snapshots.
-- Mac repos are working copies and should stay free of local junk except ignored tool state such as `.codex/`.
 - `state/backups/` is Pi-local backup state and may contain sensitive service configs.
 - `state/backups/latest` is a Pi-local symlink to the newest backup.
 - Never print, track, commit, or paste raw backup files such as `AdGuardHome.yaml`.
