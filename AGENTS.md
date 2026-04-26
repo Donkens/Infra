@@ -116,6 +116,15 @@ Managed hosts:
 - `ssh mini` : Mac mini
 - `ssh udr`  : UDR-7
 
+## LOCAL RUNTIME AND BACKUP POLICY
+- GitHub `Donkens/Infra` `main` is canonical.
+- The Pi repo may contain ignored local runtime files under `logs/` and `state/`.
+- The Pi is the producer for nightly sanitized config snapshots.
+- Mac repos are working copies and should stay free of local junk except ignored tool state such as `.codex/`.
+- `state/backups/` is Pi-local backup state and may contain sensitive service configs.
+- `state/backups/latest` is a Pi-local symlink to the newest backup.
+- Never print, track, commit, or paste raw backup files such as `AdGuardHome.yaml`.
+
 ## UNCERTAINTY
 - State confirmed facts plainly.
 - Mention uncertainty only when it is real and actionable.

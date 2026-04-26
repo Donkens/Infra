@@ -1,8 +1,10 @@
-# OS / editor
+# macOS junk and editor scratch files
 .DS_Store
 *.swp
 *.swo
 *.tmp
+
+# Local backup files; quarantine or delete intentionally, never commit.
 *.bak
 *.bak.*
 *.orig
@@ -16,9 +18,14 @@
 secrets/
 .env
 .env.*
-# Logs/state (keep dirs, ignore contents)
+# Local runtime logs/state; keep tracked .gitkeep placeholders only.
 logs/*
 !logs/.gitkeep
 state/*
 !state/.gitkeep
+
+# Pi-local backups may contain sensitive service configs such as AdGuardHome.yaml.
+state/backups/
+
+# Local Codex state; machine-specific and never tracked.
 .codex/
