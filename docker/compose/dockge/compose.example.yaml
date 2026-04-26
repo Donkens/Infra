@@ -1,0 +1,20 @@
+---
+# Example only. Pin image tags before production use.
+services:
+  dockge:
+    image: louislam/dockge:1
+    container_name: dockge
+    restart: unless-stopped
+    env_file:
+      - env.example
+    ports:
+      - "127.0.0.1:5001:5001"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /srv/appdata/dockge:/app/data
+      - /srv/compose:/opt/stacks
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

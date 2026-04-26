@@ -1,0 +1,18 @@
+---
+# Example only. Copy into a service-specific directory and pin image tags before use.
+services:
+  app:
+    image: example/app:1.0.0
+    container_name: example-app
+    restart: unless-stopped
+    env_file:
+      - env.example
+    volumes:
+      - /srv/appdata/example:/data
+    ports:
+      - "127.0.0.1:8080:8080"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

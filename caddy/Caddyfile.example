@@ -1,0 +1,24 @@
+# Example only. Internal home.lan Caddy routes.
+# No public/WAN exposure.
+# Assumes Caddy and services share a Docker network.
+# Use Docker service names as upstreams, not 127.0.0.1.
+
+dockge.home.lan {
+    reverse_proxy dockge:5001
+}
+
+uptime.home.lan {
+    reverse_proxy uptime-kuma:3001
+}
+
+dozzle.home.lan {
+    reverse_proxy dozzle:8080
+}
+
+stremio.home.lan {
+    reverse_proxy stremio:11470
+}
+
+# HAOS is direct initially:
+# ha.home.lan -> 192.168.30.20:8123
+# Add HAOS behind Caddy only as a later explicit decision.

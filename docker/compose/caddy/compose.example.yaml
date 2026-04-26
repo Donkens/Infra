@@ -1,0 +1,21 @@
+---
+# Example only. Internal home.lan reverse proxy, no WAN exposure.
+services:
+  caddy:
+    image: caddy:2.8.4
+    container_name: caddy
+    restart: unless-stopped
+    env_file:
+      - env.example
+    ports:
+      - "192.168.30.10:80:80"
+      - "192.168.30.10:443:443"
+    volumes:
+      - /srv/compose/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - /srv/appdata/caddy/data:/data
+      - /srv/appdata/caddy/config:/config
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

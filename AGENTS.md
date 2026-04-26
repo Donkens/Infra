@@ -116,6 +116,30 @@ Managed hosts:
 - `ssh mini` : Mac mini
 - `ssh udr`  : UDR-7
 
+## OPTI / PROXMOX WORKSPACE
+- Opti/Proxmox material in this repo is documentation/templates only until an explicit implementation task says otherwise.
+- Use Phase 0/1/2 for Opti, Proxmox, HAOS, Docker, firewall, backup, or remote-access work:
+  - Phase 0 = read-only discovery.
+  - Phase 1 = plan with exact files/commands/blast radius.
+  - Phase 2 = apply only after explicit `GO`.
+- Never print or commit secrets, private keys, tokens, cookies, raw backups, or real `.env` files.
+- Use only `env.example`, `.env.example`, `compose.example.yaml`, `Caddyfile.example`, and other clearly marked examples.
+- No WAN port forwards.
+- No `0.0.0.0` binds without approval.
+- Every new service plan should include DNS name, Caddy plan where relevant, Uptime Kuma check plan, restart policy, and log limits.
+- No `latest` image tags in production examples unless the exception is documented.
+- Take a HAOS backup before HAOS changes.
+- Back up compose and env material before Docker stack changes.
+- No long-lived Proxmox snapshots; use `take -> test -> delete`.
+- Mac GUI automation stays on Mac.
+- Pi remains DNS primary.
+- UDR-7 remains gateway/VLAN/firewall/WireGuard authority.
+- 32 GB RAM is the Opti target profile.
+- If host RAM is below 32 GB, use the low-RAM bootstrap profile and skip heavy workloads.
+- Do not add Tailscale initially; document it only as a later optional path.
+- Do not add Jellyfin initially.
+- Do not add Vaultwarden until backup destination, backup process, and restore-test are documented and completed.
+
 ## SOURCE OF TRUTH AND LOCAL STATE
 - The Pi is the operational source of truth for live DNS service state.
 - GitHub `Donkens/Infra` `main` is canonical for repo history, docs, scripts, and sanitized snapshots.

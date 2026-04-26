@@ -1,0 +1,18 @@
+# Example only. Verify the real NIC name on the Opti before applying.
+# Do not paste blindly into /etc/network/interfaces.
+
+auto lo
+iface lo inet loopback
+
+auto <physical-nic>
+iface <physical-nic> inet manual
+
+auto vmbr0
+iface vmbr0 inet static
+    address 192.168.1.60/24
+    gateway 192.168.1.1
+    bridge-ports <physical-nic>
+    bridge-stp off
+    bridge-fd 0
+    bridge-vlan-aware yes
+    bridge-vids 2-4094

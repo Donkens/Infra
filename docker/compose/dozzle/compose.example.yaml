@@ -1,0 +1,18 @@
+---
+# Example only. Pin image tags before production use.
+services:
+  dozzle:
+    image: amir20/dozzle:v8.14.2
+    container_name: dozzle
+    restart: unless-stopped
+    env_file:
+      - env.example
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

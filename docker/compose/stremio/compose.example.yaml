@@ -1,0 +1,19 @@
+---
+# Example only. Pin image tags before production use.
+services:
+  stremio-server:
+    # Verify the upstream image and pin a concrete version before use.
+    image: stremio/server:pin-version-after-verification
+    container_name: stremio-server
+    restart: unless-stopped
+    env_file:
+      - env.example
+    ports:
+      - "127.0.0.1:11470:11470"
+    volumes:
+      - /srv/appdata/stremio:/root/.stremio-server
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

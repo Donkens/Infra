@@ -9,6 +9,12 @@ systemd units, and operational scripts.
 - **MacBook Pro 2015** — Intel/OCLP, secondary host
 - **UDR-7** — gateway, VLAN routing, zone-based firewall
 
+## Opti / Proxmox workspace
+Planning docs for the Dell OptiPlex 7080 Micro live under `docs/opti/`.
+Start with [Opti baseline](docs/opti/00-baseline.md),
+[IP plan](inventory/ip-plan.md), and
+[Phase 0 checklist](runbooks/opti-phase-0.md).
+
 ## Layout
 - `config/`     Service configs (AdGuardHome, Unbound, SSH)
 - `systemd/`    Unit + timer files
