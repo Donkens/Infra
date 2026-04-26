@@ -1,0 +1,8 @@
+# Pi runtime operator NOPASSWD rules
+# Managed in: /etc/sudoers.d/pi-operator
+Defaults:pi !requiretty
+Defaults:pi !use_pty
+pi ALL=(ALL) NOPASSWD: /bin/systemctl restart AdGuardHome
+pi ALL=(ALL) NOPASSWD: /bin/systemctl restart unbound
+pi ALL=(ALL) NOPASSWD: /usr/local/bin/unbound-control flush_zone *
+pi ALL=(ALL) NOPASSWD: /usr/local/bin/unbound-control flush *
