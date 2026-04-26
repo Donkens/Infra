@@ -18,10 +18,14 @@ systemd units, and operational scripts.
 - `logs/`, `state/`  Local-only, gitignored
 
 ## Principles
-- iCloud Drive = single source of truth for scripts
+- `AGENTS.md` is canonical policy for AI agents and repo operators.
+- GitHub `Donkens/Infra` `main` is canonical for repo history, docs, scripts, and sanitized snapshots.
+- Pi is the operational source of truth for live DNS service state.
+- Mac repos are working copies.
+- iCloud scripts may exist as operational/local script storage, but are not canonical repo source of truth.
 - One DNS chain: AdGuard → Unbound → upstream — no splits
 - Pi = stability > experiments. No Docker on Pi3, native systemd only.
 - Scripts: portable, ARM/Intel-safe, no hardcoded secrets
 
 ## Agent instructions
-See `AGENTS.md`.
+See `AGENTS.md`. If this README and `AGENTS.md` differ, `AGENTS.md` wins.
