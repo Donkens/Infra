@@ -125,6 +125,13 @@ Managed hosts:
 - `state/backups/latest` is a Pi-local symlink to the newest backup.
 - Never print, track, commit, or paste raw backup files such as `AdGuardHome.yaml`.
 
+## ADGUARD API POLICY
+- Use session-cookie auth via `POST /control/login`; do not assume Basic Auth works for `/control/*` endpoints.
+- Never hardcode AdGuard credentials in prompts, shell history, scripts, or logs.
+- Read API data as safe summaries and counts only.
+- Never print raw clients, rewrites, upstreams, user rules, cookies, or config bodies.
+- If credential input is echoed or leaks in terminal/chat, rotate the password.
+
 ## UNCERTAINTY
 - State confirmed facts plainly.
 - Mention uncertainty only when it is real and actionable.
