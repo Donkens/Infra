@@ -12,4 +12,3 @@ pi ALL=(ALL) NOPASSWD: /usr/local/bin/unbound-control status
 pi ALL=(ALL) NOPASSWD: /usr/local/bin/unbound-control stats_noreset
 pi ALL=(ALL) NOPASSWD: /usr/local/bin/unbound-control flush_zone *
 pi ALL=(ALL) NOPASSWD: /usr/local/bin/unbound-control flush *
-pi ALL=(root) NOPASSWD: /usr/bin/cat /home/pi/AdGuardHome/AdGuardHome.yaml
