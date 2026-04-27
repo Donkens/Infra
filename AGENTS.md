@@ -115,6 +115,16 @@ Phase 2 — Execute
 - `~/bin` contains symlinks into those iCloud locations; do not duplicate or break them.
 - Never hardcode brew paths; always use `$(brew --prefix)`
 
+## REPO STRUCTURE
+- `inventory/`  — maskinläsbar infrastrukturdata (hosts, IP, VLAN, DNS, tjänster). Börja här vid diagnostik.
+- `docs/`       — bakgrund, baselines, policy och historiska snapshots. Referensmaterial, inte operativt.
+- `runbooks/`   — steg-för-steg operativa guider för specifika uppgifter (Opti-faser, restore m.m.).
+- `scripts/`    — körbara scripts. Se `scripts/README.md` för inventering och iCloud-placering.
+- `caddy/`      — Caddy route-map och config. Komplement till `inventory/services.md`.
+- `config/`     — saniterade config-templates och summary-exports. Aldrig live-secrets.
+- `state/`      — Pi-lokal runtime-state. Aldrig tracked utom `.gitkeep`. Skriv aldrig hit från Mac.
+- `logs/`       — Pi-lokal runtime-logs. Aldrig tracked utom `.gitkeep`.
+
 ## SCRIPTING STANDARD
 ```bash
 #!/usr/bin/env bash
