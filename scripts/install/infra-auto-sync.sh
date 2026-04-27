@@ -8,6 +8,12 @@ set -euo pipefail
 REPO_DIR="/home/pi/repos/infra"
 BACKUP_SCRIPT="/home/pi/repos/infra/scripts/backup/backup-dns-configs.sh"
 BACKUP_ARGS="--export-repo"
+AUTO_SYNC_STAGE_PATHS=(
+  "config/adguardhome/AdGuardHome.yaml.sanitized"
+  "config/adguardhome/README.md"
+  "config/unbound/unbound.conf"
+  "config/unbound/unbound.conf.d/*.conf"
+)
 export HOME="/home/pi"
 export GIT_SSH_COMMAND="ssh -o BatchMode=yes -o ConnectTimeout=10"
 
@@ -45,6 +51,22 @@ ensure_clean_worktree() {
   fi
 }
 
+stage_allowlisted_changes() {
+  local remaining_status
+  local unstaged_changes
+  local untracked_changes
+
+  git -C "$REPO_DIR" add -- "${AUTO_SYNC_STAGE_PATHS[@]}"
+
+  unstaged_changes="$(git -C "$REPO_DIR" diff --name-only)"
+  untracked_changes="$(git -C "$REPO_DIR" ls-files --others --exclude-standard)"
+  if [[ -n "$unstaged_changes" || -n "$untracked_changes" ]]; then
+    remaining_status="$(git -C "$REPO_DIR" status --short --untracked-files=all)"
+    log "Auto-sync produced changes outside the allowlist:"
+    log_multiline "$remaining_status"
+    fail "Auto-sync aborting before commit"
+  fi
+}
 update_divergence() {
   local counts
   counts="$(git -C "$REPO_DIR" rev-list --left-right --count HEAD...origin/main)"
@@ -129,7 +151,7 @@ fi
 TS="$(date --iso-8601=seconds)"
 if [[ -n "$(git -C "$REPO_DIR" status --porcelain)" ]]; then
   log "Changes detected — committing"
-  git -C "$REPO_DIR" add -A
+  stage_allowlisted_changes
   git -C "$REPO_DIR" commit -m "auto: nightly config snapshot ${TS}"
 fi
 
