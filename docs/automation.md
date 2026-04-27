@@ -1,0 +1,154 @@
+# Automation
+
+## Summary
+
+This document maps the Pi infra automation model: timers, services, scripts, write paths, Git behavior, and operator approval boundaries.
+
+The repo has three active timers in scope:
+
+- `dns-health`
+- `backup-health`
+- `infra-auto-sync`
+
+`infra-auto-sync` is HIGH risk because it can create commits and push to GitHub. That risk is mitigated by explicit allowlist staging. If the nightly allowlist model has not already run since the latest patch, verify it after the next timer run.
+
+## Safety model
+
+- Phase 0 read-only first for infra, network, remote, system-service, or automation work.
+- No `sudo`, service restart, install, `prune-dns-backups.sh --apply`, runtime update, commit, or push without explicit `GO`.
+- Raw backups, logs, and state are local-only.
+- Do not print, paste, document, or commit secrets, raw `AdGuardHome.yaml`, raw query logs, raw backup contents, sessions, tokens, credentials, private keys, or certificate private keys.
+
+## Timers
+
+| Timer | Schedule | Service | Purpose | Writes | Risk |
+| --- | --- | --- | --- | --- | --- |
+| `dns-health.timer` | `OnBootSec=2min`, then every `10min` | `dns-health.service` | Periodic AdGuard/Unbound service and DNS health checks | Local `logs/` and `state/` health files | LOW/MEDIUM |
+| `backup-health.timer` | `OnBootSec=5min`, then every `12h` | `backup-health.service` | Periodic latest DNS backup freshness check | Local `logs/` and `state/` backup health files | LOW/MEDIUM |
+| `infra-auto-sync.timer` | Daily `03:00` with `RandomizedDelaySec=5m` | `infra-auto-sync.service` | Nightly config snapshot, allowlisted staging, commit, and push | Repo config snapshots, local backups through backup script, Git commit/push | HIGH |
+
+## Services
+
+| Service | User | ExecStart | Purpose | Risk |
+| --- | --- | --- | --- | --- |
+| `dns-health.service` | `pi` | `/home/pi/repos/infra/scripts/maintenance/dns-health-monitor.sh` | One-shot DNS health check for AdGuard Home and Unbound | LOW/MEDIUM |
+| `backup-health.service` | `pi` | `/home/pi/repos/infra/scripts/maintenance/check-backups.sh` | One-shot latest DNS backup freshness check | LOW/MEDIUM |
+| `infra-auto-sync.service` | `pi` | `/usr/local/bin/infra-auto-sync.sh` | One-shot nightly snapshot automation with Git commit/push | HIGH |
+
+## Scripts
+
+| Script | Purpose | Writes | Git behavior | Risk |
+| --- | --- | --- | --- | --- |
+| `scripts/maintenance/dns-health-monitor.sh` | Checks `AdGuardHome` and `unbound`, then runs DNS probes | `logs/dns-health.log`, `logs/dns-health-fail.log`, `state/dns-health.last` | No commit/push | LOW/MEDIUM |
+| `scripts/maintenance/check-backups.sh` | Checks latest DNS backup age, manifest, and checksums | `logs/backup-health.log`, `logs/backup-health-fail.log`, `state/backup-health.last` | No commit/push | LOW/MEDIUM |
+| `scripts/backup/backup-dns-configs.sh` | Creates local DNS config backups and optional repo exports | `state/backups/`, `config/adguardhome/`, `config/unbound/` | No commit/push by itself | HIGH with `--export-repo` |
+| `scripts/install/infra-auto-sync.sh` | Runtime automation script copied to `/usr/local/bin` | Repo config exports via backup script, Git index/commits | Can commit and push | HIGH |
+| `scripts/maintenance/prune-dns-backups.sh` | Dry-run-first DNS backup retention | Deletes old `state/backups/dns-backup-*` only with `--apply` | No commit/push | LOW in dry-run, HIGH with `--apply` |
+| `scripts/install/infra-auto-sync-install.sh` | Installs auto-sync sudoers, runtime script, and systemd unit/timer | `/etc/sudoers.d`, `/usr/local/bin`, systemd | No commit/push | HIGH |
+| `scripts/install/tune-dns-socket-buffers.sh` | Tunes Unbound socket buffers and validates/restarts Unbound | `/etc/unbound`, local tuning logs, service state | No commit/push | HIGH |
+| `scripts/debug/debug-https-rr.sh` | Debugs and can install synthetic HTTPS RR Unbound drop-in | `/etc/unbound`, service state | No commit/push | HIGH |
+| `scripts/maintenance/dns-health-report.sh` | Prints DNS/service diagnostic report | stdout only | No commit/push | MEDIUM because output may include operational log excerpts |
+| `scripts/maintenance/infra-status.sh` | Summarizes local health status files and timer state | read-only | No commit/push | LOW |
+| `scripts/maintenance/monitor-cpu.sh` | Reads CPU frequency/governor state | read-only, may use `sudo` for reads | No commit/push | LOW/MEDIUM |
+| `scripts/maintenance/unbound-mini-top.sh` | Summarizes Unbound stats | read-only | No commit/push | LOW |
+
+## Write paths
+
+Known automation write paths:
+
+- `logs/dns-health.log`
+- `logs/dns-health-fail.log`
+- `logs/backup-health.log`
+- `logs/backup-health-fail.log`
+- `state/dns-health.last`
+- `state/backup-health.last`
+- `state/backups/`
+- `config/adguardhome/AdGuardHome.summary.sanitized.yml`
+- `config/adguardhome/README.md`
+- `config/unbound/unbound.conf`
+- `config/unbound/unbound.conf.d/*.conf`
+- `/usr/local/bin/infra-auto-sync.sh`, runtime target for explicit install/update only
+- `/etc/unbound`, only for operator-approved scripts
+- `/etc/sudoers.d` and systemd paths, only via install scripts with explicit `GO`
+
+## Git behavior
+
+- `scripts/install/infra-auto-sync.sh` can commit and push when installed as `/usr/local/bin/infra-auto-sync.sh` and run by `infra-auto-sync.service`.
+- `scripts/backup/backup-dns-configs.sh` creates local backups and repo export files, but does not commit or push by itself.
+- Health scripts do not commit or push.
+- `docs/`, `scripts/`, `inventory/`, `runbooks/`, and `systemd/` must not be auto-staged by nightly auto-sync.
+- Auto-sync uses allowlist staging, not broad `git add -A`.
+
+## Auto-sync allowlist
+
+Nightly auto-sync may stage only these paths:
+
+- `config/adguardhome/AdGuardHome.summary.sanitized.yml`
+- `config/adguardhome/README.md`
+- `config/unbound/unbound.conf`
+- `config/unbound/unbound.conf.d/*.conf`
+
+If export creates changes outside the allowlist, auto-sync must abort before commit.
+
+`state/` and `logs/` must remain ignored and local-only.
+
+The old detailed `AdGuardHome.yaml.sanitized` file is no longer the tracked export model.
+
+## Local-only state
+
+- `state/backups/` can contain raw AdGuard/Unbound backups.
+- `logs/` can contain operational details.
+- These paths must not be printed, pasted, committed, or used as pasteable analysis material.
+- Only `.gitkeep` placeholders are tracked under `logs/` and `state/`.
+
+## Operator-only actions
+
+These actions require explicit `GO`:
+
+- Install or update `/usr/local/bin/infra-auto-sync.sh`.
+- Enable or disable timers.
+- Restart, stop, or start services.
+- Run `sudo`.
+- Run `scripts/maintenance/prune-dns-backups.sh --apply`.
+- Run scripts that write `/etc/unbound`.
+- Run scripts that write `/etc/sudoers.d` or systemd paths.
+- Run `git push` when it is not the approved nightly auto-sync behavior.
+- Restore from raw backups.
+
+## Health checks
+
+Read-only checks:
+
+```bash
+systemctl status dns-health.timer --no-pager -l
+systemctl status backup-health.timer --no-pager -l
+systemctl status infra-auto-sync.timer --no-pager -l
+systemctl status infra-auto-sync.service --no-pager -l
+cd /home/pi/repos/infra && git status --short --branch
+grep -RniE 'domain:|answer:|user_rules:|clients:|password|token|session|BEGIN .*PRIVATE KEY' config/adguardhome/AdGuardHome.summary.sanitized.yml || true
+```
+
+## Failure modes
+
+- Auto-sync aborts if the repo is not clean before the run.
+- Auto-sync aborts if export creates changes outside the allowlist.
+- Push can fail because of branch divergence, network failure, or SSH authentication failure.
+- Backup export can fail if AdGuard/Unbound paths are missing or non-interactive `sudo` fails.
+- Health scripts can mark FAIL without changing services.
+
+## Rollback
+
+- Disabling a timer is operator-only.
+- Restore `/usr/local/bin/infra-auto-sync.sh` from a timestamped backup if a runtime update is bad.
+- Revert a bad repo commit through normal Git review and an explicit commit/push flow.
+- Use local timestamped backups for config restore.
+- Never use `git clean` against runtime `state/` or backups.
+- Prefer move-aside rollback over destructive delete.
+
+## Related docs
+
+- [Raspberry Pi baseline](raspberry-pi-baseline.md)
+- [AdGuard Home change policy](adguard-home-change-policy.md)
+- [Restore guide](restore.md)
+- [Pi DNS runbook](runbook.md)
+- [Repo analysis dossier](repo-analysis-dossier.md)
