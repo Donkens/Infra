@@ -27,6 +27,26 @@ If running locally (Codex desktop):
 - Full local execution allowed within the rules below.
 - SSH to managed hosts is allowed for read-only recon; show the exact command first.
 
+## HOST VERIFICATION
+Before any audit or write, verify the current host:
+```bash
+hostname; whoami; id; echo "$HOME"; uname -a
+cat ~/.machine-identity 2>/dev/null || echo "no identity file"
+```
+Cross-check against `inventory/identity-map.md`. If values conflict, stop and report.
+
+Rules:
+1. Read `~/.machine-identity` if it exists.
+2. Never assume identity from path alone — `/Users/hd` does not prove MacBook, `/Users/yasse` does not prove Mac mini.
+3. If target host differs from current host, SSH and verify remote too.
+4. UDR-7 SSH user is `root` (not `ubnt`). UDR hostname is `udrhomelan`.
+5. Pi repo path is lowercase: `/home/pi/repos/infra`.
+6. Workspace/sandbox path is not the target host.
+7. If `~/.machine-identity` conflicts with `inventory/identity-map.md`, stop and report mismatch.
+8. No writes until Phase 2 approval.
+
+See `docs/agent-host-verification.md` for the full runbook.
+
 ## SAFETY
 Hard blocked unless explicitly instructed:
 `rm -rf *`
