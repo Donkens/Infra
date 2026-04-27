@@ -27,8 +27,9 @@ state/*
 # Pi-local backups may contain sensitive service configs such as AdGuardHome.yaml.
 state/backups/
 
-# Local Codex state; machine-specific and never tracked.
+# Local agent/tool state; machine-specific and never tracked.
 .codex/
+.claude/
 
 # Generated analysis and dossier files — do not commit
 docs/*-dossier.md
