@@ -29,3 +29,7 @@ state/backups/
 
 # Local Codex state; machine-specific and never tracked.
 .codex/
+
+# Generated analysis and dossier files — do not commit
+docs/*-dossier.md
+docs/repo-analysis-*.md
