@@ -1,0 +1,48 @@
+generated_at: '2026-04-27T18:20:53+00:00'
+source_path: /home/pi/AdGuardHome/AdGuardHome.yaml
+schema_version: 34
+http:
+  address_summary: specific_bind_hosts
+  port: null
+dns:
+  bind_hosts_count: 1
+  bind_hosts_summary: all_interfaces
+  port: 53
+  upstream_dns_count: 1
+  upstream_dns_type_summary:
+    loopback: 1
+  bootstrap_dns_count: 2
+  protection_enabled: true
+  filtering_enabled: true
+  blocking_mode: nxdomain
+  cache_size: 33554432
+  cache_ttl_min: 300
+  cache_ttl_max: 86400
+  optimistic_cache: true
+  enable_dnssec: false
+  handle_ddr: false
+filtering_summary:
+  filters_count: 4
+  whitelist_filters_count: 0
+  rewrites_count: 25
+  user_rule_count: 6
+client_summary:
+  persistent_client_count: 11
+  runtime_client_sources_count: 5
+querylog:
+  enabled: true
+  file_enabled: false
+  interval: 24h
+  size_memory: 1000
+statistics:
+  enabled: true
+  interval: 168h
+tls:
+  enabled: true
+  server_name: adguard.home.lan
+  port_https: 443
+  port_dns_over_tls: 853
+  certificate_path: /home/pi/AdGuardHome/certs/fullchain.pem
+  private_key_path: /home/pi/AdGuardHome/certs/privkey.pem
+redaction_note: Summary only. Detailed lists and sensitive values are omitted from
+  Git artifacts.

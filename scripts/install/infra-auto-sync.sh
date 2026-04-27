@@ -9,7 +9,7 @@ REPO_DIR="/home/pi/repos/infra"
 BACKUP_SCRIPT="/home/pi/repos/infra/scripts/backup/backup-dns-configs.sh"
 BACKUP_ARGS="--export-repo"
 AUTO_SYNC_STAGE_PATHS=(
-  "config/adguardhome/AdGuardHome.yaml.sanitized"
+  "config/adguardhome/AdGuardHome.summary.sanitized.yml"
   "config/adguardhome/README.md"
   "config/unbound/unbound.conf"
   "config/unbound/unbound.conf.d/*.conf"

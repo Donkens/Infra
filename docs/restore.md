@@ -163,7 +163,7 @@ Rules:
 - Prefer Web UI first.
 - Prefer authenticated API second, only with non-logged secret input.
 - Use YAML fallback only according to `docs/adguard-home-change-policy.md`.
-- `config/adguardhome/AdGuardHome.yaml.sanitized` is a sanitized reference snapshot, not a raw restore source.
+- `config/adguardhome/AdGuardHome.summary.sanitized.yml` is a summary/counts reference, not a raw restore source.
 - Raw `AdGuardHome.yaml` must not be printed, committed, or pasted.
 - Blind copy of `/home/pi/AdGuardHome` is forbidden.
 

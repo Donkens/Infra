@@ -137,19 +137,169 @@ fi
 if [ "$EXPORT_REPO" -eq 1 ]; then
   mkdir -p "$REPO_ROOT/config/adguardhome" "$REPO_ROOT/config/unbound/unbound.conf.d"
   if [ -n "$AG_CONFIG" ] && [ -f "$AG_CONFIG" ]; then
-    # Basic redaction (keeps structure useful for repo)
-    sed -E \
-      -e 's/^([[:space:]]*password:).*/\1 REDACTED/' \
-      -e 's/^([[:space:]]*password_hash:).*/\1 REDACTED/' \
-      -e 's/^([[:space:]]*private_key:).*/\1 REDACTED/' \
-      -e 's/^([[:space:]]*certificate_chain:).*/\1 REDACTED/' \
-      "$AG_CONFIG" > "$REPO_ROOT/config/adguardhome/AdGuardHome.yaml.sanitized"
-    {
-      echo "# Exported from $AG_CONFIG"
-      echo "# Generated: $(date '+%Y-%m-%d %H:%M:%S %Z')"
-      echo "# NOTE: sanitized for git safety"
-    } > "$REPO_ROOT/config/adguardhome/README.md"
-    log "Exported sanitized AdGuard config to repo config/adguardhome/"
+    python3 - "$AG_CONFIG" "$REPO_ROOT/config/adguardhome/AdGuardHome.summary.sanitized.yml" <<'PY'
+from datetime import datetime, timezone
+from pathlib import Path
+import sys
+import yaml
+
+source = Path(sys.argv[1])
+dest = Path(sys.argv[2])
+
+def as_dict(value):
+    return value if isinstance(value, dict) else {}
+
+def as_list(value):
+    return value if isinstance(value, list) else []
+
+def bool_or_none(value):
+    return value if isinstance(value, bool) else None
+
+def scalar_or_none(value):
+    if isinstance(value, (str, int, float, bool)) or value is None:
+        return value
+    return None
+
+def first_present(*values):
+    for value in values:
+        if value is not None:
+            return value
+    return None
+
+def count(value):
+    if isinstance(value, (list, tuple, set, dict)):
+        return len(value)
+    return 0
+
+def classify_bind_hosts(hosts):
+    values = as_list(hosts)
+    if not values:
+        return "default"
+    if any(str(v) in {"0.0.0.0", "::"} for v in values):
+        return "all_interfaces"
+    if all(str(v).startswith("127.") or str(v) == "::1" for v in values):
+        return "loopback_only"
+    return "specific_bind_hosts"
+
+def upstream_kind(value):
+    s = str(value).strip().lower()
+    if not s:
+        return "empty"
+    if s.startswith("https://"):
+        return "https"
+    if s.startswith("tls://"):
+        return "tls"
+    if s.startswith("quic://"):
+        return "quic"
+    if s.startswith("sdns://"):
+        return "sdns"
+    if s.startswith("[/"):
+        return "domain_routing_rule"
+    if s.startswith("127.") or s.startswith("localhost") or s.startswith("::1"):
+        return "loopback"
+    if "://" in s:
+        return "other_url"
+    return "plain_host_or_ip"
+
+def kind_counts(values):
+    result = {}
+    for item in as_list(values):
+        kind = upstream_kind(item)
+        result[kind] = result.get(kind, 0) + 1
+    return dict(sorted(result.items()))
+
+with source.open("r", encoding="utf-8", errors="replace") as fh:
+    data = yaml.safe_load(fh) or {}
+
+data = as_dict(data)
+http = as_dict(data.get("http"))
+dns = as_dict(data.get("dns"))
+tls = as_dict(data.get("tls"))
+querylog = as_dict(data.get("querylog"))
+statistics = as_dict(data.get("statistics"))
+filtering = as_dict(data.get("filtering"))
+client_cfg = as_dict(data.get("clients"))
+
+summary = {
+    "generated_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
+    "source_path": str(source),
+    "schema_version": scalar_or_none(data.get("schema_version")),
+    "http": {
+        "address_summary": classify_bind_hosts([http.get("address")] if http.get("address") is not None else []),
+        "port": scalar_or_none(http.get("port")),
+    },
+    "dns": {
+        "bind_hosts_count": count(dns.get("bind_hosts")),
+        "bind_hosts_summary": classify_bind_hosts(dns.get("bind_hosts")),
+        "port": scalar_or_none(dns.get("port")),
+        "upstream_dns_count": count(dns.get("upstream_dns")),
+        "upstream_dns_type_summary": kind_counts(dns.get("upstream_dns")),
+        "bootstrap_dns_count": count(dns.get("bootstrap_dns")),
+        "protection_enabled": bool_or_none(first_present(dns.get("protection_enabled"), filtering.get("protection_enabled"))),
+        "filtering_enabled": bool_or_none(first_present(dns.get("filtering_enabled"), filtering.get("filtering_enabled"))),
+        "blocking_mode": scalar_or_none(first_present(dns.get("blocking_mode"), filtering.get("blocking_mode"))),
+        "cache_size": scalar_or_none(dns.get("cache_size")),
+        "cache_ttl_min": scalar_or_none(dns.get("cache_ttl_min")),
+        "cache_ttl_max": scalar_or_none(dns.get("cache_ttl_max")),
+        "optimistic_cache": bool_or_none(first_present(dns.get("optimistic_cache"), dns.get("cache_optimistic"))),
+        "enable_dnssec": bool_or_none(dns.get("enable_dnssec")),
+        "handle_ddr": bool_or_none(dns.get("handle_ddr")),
+    },
+    "filtering_summary": {
+        "filters_count": count(data.get("filters")),
+        "whitelist_filters_count": count(data.get("whitelist_filters")),
+        "rewrites_count": count(filtering.get("rewrites")),
+        "user_rule_count": count(data.get("user_rules")),
+    },
+    "client_summary": {
+        "persistent_client_count": count(client_cfg.get("persistent")),
+        "runtime_client_sources_count": count(client_cfg.get("runtime_sources")),
+    },
+    "querylog": {
+        "enabled": bool_or_none(querylog.get("enabled")),
+        "file_enabled": bool_or_none(querylog.get("file_enabled")),
+        "interval": scalar_or_none(querylog.get("interval")),
+        "size_memory": scalar_or_none(querylog.get("size_memory")),
+    },
+    "statistics": {
+        "enabled": bool_or_none(statistics.get("enabled")),
+        "interval": scalar_or_none(statistics.get("interval")),
+    },
+    "tls": {
+        "enabled": bool_or_none(tls.get("enabled")),
+        "server_name": scalar_or_none(tls.get("server_name")),
+        "port_https": scalar_or_none(tls.get("port_https")),
+        "port_dns_over_tls": scalar_or_none(tls.get("port_dns_over_tls")),
+        "certificate_path": scalar_or_none(tls.get("certificate_path")),
+        "private_key_path": scalar_or_none(tls.get("private_key_path")),
+    },
+    "redaction_note": "Summary only. Detailed lists and sensitive values are omitted from Git artifacts.",
+}
+
+dest.parent.mkdir(parents=True, exist_ok=True)
+with dest.open("w", encoding="utf-8") as fh:
+    yaml.safe_dump(summary, fh, sort_keys=False, allow_unicode=False)
+PY
+    cat > "$REPO_ROOT/config/adguardhome/README.md" <<'EOF'
+# AdGuard Home Git export
+
+This directory contains the Git-tracked AdGuard Home summary artifact for the Raspberry Pi DNS node.
+
+Tracked artifact:
+
+- `AdGuardHome.summary.sanitized.yml`
+
+Policy:
+
+- Raw `AdGuardHome.yaml` must never be committed, pasted, or printed.
+- Git-tracked AdGuard data must be summary/count metadata only.
+- Detailed clients, rewrites, and user rules must remain counts only in Git.
+- Detailed local artifacts, if needed for restore or debugging, belong under ignored `state/` paths and must not be pasted into prompts or docs.
+- Restore and YAML fallback work must follow `docs/adguard-home-change-policy.md`.
+
+The summary artifact is a reference for inventory and policy review. It is not a raw restore source.
+EOF
+    log "Exported sanitized AdGuard summary to repo config/adguardhome/"
   fi
   if [ -f "$UNBOUND_MAIN" ]; then
     cp -a "$UNBOUND_MAIN" "$REPO_ROOT/config/unbound/unbound.conf"
