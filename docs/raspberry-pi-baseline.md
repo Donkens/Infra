@@ -9,6 +9,7 @@ This is the sanitized baseline for the Raspberry Pi 3B+ DNS node.
 - DNS chain: client -> AdGuard Home (`192.168.1.55`) -> Unbound (`127.0.0.1:5335`) -> upstream
 - Repo source of truth on the Pi: `/home/pi/repos/infra`
 - Baseline captured: 2026-04-27 after reboot and package maintenance
+- Metadata refreshed: 2026-04-27 after AdGuard summary-only export and auto-sync allowlist updates
 
 This document is a baseline, not a forensic dump. It intentionally excludes secrets, raw service configs, private keys, session data, and raw logs.
 
@@ -40,7 +41,7 @@ Primary responsibilities:
 - Receive LAN DNS traffic on `192.168.1.55`
 - Run AdGuard Home as the front DNS policy and TLS/UI service
 - Run Unbound as local recursive/cache resolver on loopback
-- Keep sanitized infra snapshots and docs in `/home/pi/repos/infra`
+- Keep sanitized infra snapshots and docs in `/home/pi/repos/infra`; AdGuard Git exports are summary/count metadata only
 
 ## Services
 
@@ -89,6 +90,8 @@ Unbound is also the local PTR authority for documented local reverse records. Fi
 - Unbound include directory: `/etc/unbound/unbound.conf.d`
 - Active Unbound baseline config: `/etc/unbound/unbound.conf.d/pi.conf`
 - Local reverse records: `/etc/unbound/unbound.conf.d/ptr-local.conf`
+- Git-tracked AdGuard summary artifact: `config/adguardhome/AdGuardHome.summary.sanitized.yml`
+- Installed auto-sync runtime script: `/usr/local/bin/infra-auto-sync.sh`
 
 ## AdGuard Home
 
@@ -120,6 +123,13 @@ Sanitized config summary from Phase 0 inventory:
 - Clients: persistent `11`, runtime sources `5`, counts only
 
 `AdGuardHome.yaml` is root-owned and mode `600`. Do not paste or commit raw AdGuard config, credentials, session data, user hashes, rewrites, clients, upstream bodies, query logs, or backups. Change policy: [AdGuard Home change policy](adguard-home-change-policy.md).
+
+Git-tracked AdGuard export model:
+
+- `config/adguardhome/AdGuardHome.summary.sanitized.yml` is the tracked AdGuard artifact.
+- The artifact contains summary/count metadata only.
+- `config/adguardhome/AdGuardHome.yaml.sanitized` is no longer the tracked restore/export model.
+- Detailed `clients`, `rewrites`, and `user_rules` must not be stored in Git; counts only.
 
 ## Unbound
 
@@ -154,10 +164,21 @@ For current TLS cleanup context and certificate deployment notes, see [DNS/TLS c
 ## Repo and automation
 
 - Pi repo: `/home/pi/repos/infra`
-- Branch during Phase 0: `main`
+- Branch during refresh: `main`
 - Remote: `git@github.com:Donkens/Infra.git`
-- HEAD during Phase 0: `264592e docs: document raspberry pi sdram oc baseline`
+- HEAD during refresh: `6ad6925 fix(adguard): export summary-only config metadata`
 - Relevant automation: `infra-auto-sync.timer`, `backup-health.timer`, `dpkg-db-backup.timer`
+- `infra-auto-sync.timer` runs `/usr/local/bin/infra-auto-sync.sh`.
+- Auto-sync uses explicit allowlist staging for repo exports.
+
+Auto-sync allowlist:
+
+- `config/adguardhome/AdGuardHome.summary.sanitized.yml`
+- `config/adguardhome/README.md`
+- `config/unbound/unbound.conf`
+- `config/unbound/unbound.conf.d/*.conf`
+
+Broad `git add -A` must not be used for nightly auto-sync.
 
 No commits or pushes should happen without explicit instruction.
 
@@ -220,6 +241,9 @@ Do not document, paste, copy broadly, or commit:
 - no raw clients, rewrites, upstreams, or user rules
 - no password hashes
 - no raw backup files such as `AdGuardHome.yaml` backups
+- no structure-preserving AdGuard YAML snapshots in Git
+- no detailed `clients`, `rewrites`, or `user_rules` in Git; counts only
+- no raw `AdGuardHome.yaml.sanitized` tracked artifact
 - no broad copies of `/home/pi/AdGuardHome`
 - no sockets, pid files, locks, or runtime device state
 
