@@ -62,7 +62,7 @@ dns:
     enabled: false
     use_custom: false
   max_goroutines: 300
-  handle_ddr: true
+  handle_ddr: false
   ipset: []
   ipset_file: ""
   bootstrap_prefer_ipv6: false
@@ -218,14 +218,35 @@ filtering:
     - domain: udr.home.lan
       answer: 192.168.1.1
       enabled: true
-    - domain: udr.home.lan
-      answer: 'fd12:3456:7801::'
+    - domain: opti.home.lan
+      answer: 192.168.1.60
       enabled: true
-    - domain: unifi.home.lan
-      answer: 'fd12:3456:7801::'
+    - domain: proxmox.home.lan
+      answer: 192.168.1.60
       enabled: true
-    - domain: router.home.lan
-      answer: 'fd12:3456:7801::'
+    - domain: docker.home.lan
+      answer: 192.168.30.10
+      enabled: true
+    - domain: proxy.home.lan
+      answer: 192.168.30.10
+      enabled: true
+    - domain: ha.home.lan
+      answer: 192.168.30.20
+      enabled: true
+    - domain: haos.home.lan
+      answer: 192.168.30.20
+      enabled: true
+    - domain: dockge.home.lan
+      answer: 192.168.30.10
+      enabled: true
+    - domain: uptime.home.lan
+      answer: 192.168.30.10
+      enabled: true
+    - domain: dozzle.home.lan
+      answer: 192.168.30.10
+      enabled: true
+    - domain: stremio.home.lan
+      answer: 192.168.30.10
       enabled: true
   safe_fs_patterns:
     - /home/pi/AdGuardHome/userfilters/*
