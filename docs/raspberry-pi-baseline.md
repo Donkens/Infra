@@ -98,7 +98,28 @@ Service baseline:
 - `WorkingDirectory=/home/pi/AdGuardHome`
 - `Restart=always`
 
-`AdGuardHome.yaml` is root-owned and mode `600`. It was not read for this baseline. Do not paste or commit raw AdGuard config, credentials, session data, user hashes, rewrites, clients, upstream bodies, query logs, or backups.
+Sanitized config summary from Phase 0 inventory:
+
+- Schema version: `34`
+- UI: `0.0.0.0:3000`
+- DNS: `0.0.0.0:53`
+- HTTPS: `443`
+- DNS-over-TLS: `853`
+- TLS server name: `adguard.home.lan`
+- TLS paths: `/home/pi/AdGuardHome/certs/fullchain.pem`, `/home/pi/AdGuardHome/certs/privkey.pem`
+- Upstream DNS: local Unbound at `127.0.0.1:5335`
+- Bootstrap DNS count: `2`
+- Protection/filtering: enabled; blocking mode `nxdomain`
+- Cache: size `33554432`, TTL min/max `300` / `86400`, optimistic cache enabled
+- DNSSEC: disabled
+- DDR: disabled
+- Rewrites: `25` count only
+- Filters: `4`; whitelist filters: `0`; user rules: `6` count only
+- Query log: enabled, memory-only, `file_enabled=false`, interval `24h`, memory size `1000`
+- Statistics: enabled, interval `168h`
+- Clients: persistent `11`, runtime sources `5`, counts only
+
+`AdGuardHome.yaml` is root-owned and mode `600`. Do not paste or commit raw AdGuard config, credentials, session data, user hashes, rewrites, clients, upstream bodies, query logs, or backups. Change policy: [AdGuard Home change policy](adguard-home-change-policy.md).
 
 ## Unbound
 
@@ -206,6 +227,7 @@ Do not document, paste, copy broadly, or commit:
 
 - [Raspberry Pi 3B+ SDRAM OC baseline](raspberry-pi-3b-plus-sdram-oc-baseline-2026-04-27.md)
 - [DNS/TLS cleanup baseline](dns-tls-baseline-2026-04-26.md)
+- [AdGuard Home change policy](adguard-home-change-policy.md)
 - [Pi DNS Runbook](runbook.md)
 - [Restore Guide](restore.md)
 - [IP plan](../inventory/ip-plan.md)

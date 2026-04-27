@@ -1,4 +1,6 @@
 # Pi DNS Runbook (AdGuard Home + Unbound)
+
+Policy for AdGuard inspection and changes: [AdGuard Home change policy](adguard-home-change-policy.md).
 ## Status
 sudo systemctl status AdGuardHome --no-pager
 sudo systemctl status unbound --no-pager
