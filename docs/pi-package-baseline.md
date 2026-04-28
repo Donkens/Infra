@@ -1,7 +1,7 @@
 # Pi package baseline
 
 > Status: current package posture for Raspberry Pi DNS/infra node.
-> Updated: 2026-04-29 after approved diagnostic tool install.
+> Updated: 2026-04-29 after approved package cleanup Round 1.
 
 ## Summary
 
@@ -20,7 +20,7 @@ Approved diagnostic tools installed on 2026-04-29:
 - `mtr-tiny`
 - `ripgrep`
 
-Install used `--no-install-recommends`. No package removals, purge, autoremove, service changes, AdGuard config changes, Unbound config changes, or firewall changes were part of this install.
+Install used `--no-install-recommends`. Package cleanup Round 1 later removed only `rpi-connect-lite` and `rpi-update`. No purge, autoremove, package installs, apt upgrade, service changes, AdGuard config changes, Unbound config changes, or firewall changes were part of that cleanup.
 
 ## Keep packages
 
@@ -63,6 +63,15 @@ These belong on the future Opti/Debian VM unless explicitly approved for Pi:
 
 Do not add parallel service platforms to the DNS node without a Phase 0/1/2 plan and explicit `GO`.
 
+## Removed packages
+
+Removed in package cleanup Round 1 on 2026-04-29:
+
+- `rpi-connect-lite` - removed because Raspberry Pi Connect is not part of the DNS/infra role.
+- `rpi-update` - removed because manual firmware update tooling is not needed for stable apt-managed infra.
+
+No `autoremove` or `purge` was run.
+
 ## Future review candidates
 
 These are not approved for removal by this document. Review separately before action:
@@ -71,8 +80,6 @@ These are not approved for removal by this document. Review separately before ac
 | --- | --- | --- |
 | `avahi-daemon` | installed, service/socket disabled | Remove candidate only if `pi.local`/mDNS is intentionally retired permanently. |
 | `cloud-init`, `rpi-cloud-init-mods` | installed, cloud-init disabled by marker file and units disabled | Remove candidate only after confirming no future NoCloud/provisioning workflow depends on it. |
-| `rpi-connect-lite` | installed | Review whether Raspberry Pi Connect is used. |
-| `rpi-update` | installed | Powerful firmware update tool; keep only if intentionally used. |
 | `mkvtoolnix` | installed | Not DNS/infra-core; review usage before removal. |
 | `p7zip-full` | installed | Useful for archives; review usage before removal. |
 | `build-essential`, `gcc`, `make`, `gdb` | installed | Keep if local build/debug work is expected; otherwise review later. |
