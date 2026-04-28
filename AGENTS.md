@@ -136,6 +136,15 @@ log() { echo "[$(basename "$0")] $*" >&2; }
 die() { log "ERROR: $*"; exit 1; }
 ```
 
+
+## TMUX POLICY
+- Pi has a persistent tmux session named `infra`.
+- Use tmux for long-running, interactive, or disconnect-sensitive Pi work.
+- Do not use tmux for simple one-shot SSH commands unless needed.
+- Prefer the existing `infra` session; do not create random sessions.
+- If the session is missing, create it intentionally: `tmux new -d -s infra -n repo`.
+- UDR-7 and HAOS should not be modified to use tmux.
+
 ## INFRA DEFAULTS
 - DNS chain: client -> AdGuard (192.168.1.55) -> Unbound -> upstream
 - Do not add parallel resolvers
