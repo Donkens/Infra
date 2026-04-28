@@ -27,6 +27,7 @@ klient
 - Inga parallella resolvers tillåtna. En kedja, alltid.
 - AdGuard är det enda LAN-synliga DNS-gränssnittet.
 - Unbound lyssnar enbart på localhost (`127.0.0.1` och `::1`).
+- Pi tillhandahåller inte längre `pi.local`/mDNS discovery efter att `avahi-daemon.service` och `avahi-daemon.socket` disabled 2026-04-29. `home.lan` via AdGuard/Unbound är oförändrat.
 
 
 ## Kända upstream-undantag

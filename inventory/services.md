@@ -31,17 +31,17 @@ Related current inventories:
 | Unbound | 5335 | UDP+TCP | live | Local-only runtime listener på `127.0.0.1:5335`; AdGuard upstream. `::1@5335` finns i config men `do-ip6: no` gör IPv6-bind inert. Verifierad via `ss` i Pi service audit 2026-04-28. |
 | Cockpit | 9090 | HTTPS | live | Intentional admin UI service. Socket-activated: `cockpit.socket` är enabled och lyssnar på `*`:9090 / `[::]`:9090 även när `cockpit.service` är inactive. Keep enabled. |
 | SSH | 22 | TCP | live | LAN/IPv6-exposed listener på `0.0.0.0:22` och `[::]:22`. Verifierad i Pi service audit 2026-04-28. |
-| Avahi / mDNS | 5353 + ephemeral UDP | UDP | live | `avahi-daemon.service` är active och exponerar mDNS på `5353/udp` plus ephemeral UDP sockets. Disable candidate om `pi.local`/mDNS discovery inte behövs; `home.lan`/AdGuard/Unbound DNS påverkas inte. |
+| Avahi / mDNS | 5353 + ephemeral UDP | UDP | disabled | `avahi-daemon.service` och `avahi-daemon.socket` är disabled sedan 2026-04-29. Pi annonserar inte längre `pi.local`/mDNS discovery; `home.lan`/AdGuard/Unbound DNS påverkas inte. |
 
 > AdGuard DDR setting: `handle_ddr=false` sedan 2026-04-26. Inaktiverad medvetet — se `docs/dns-tls-baseline-2026-04-26.md`.
 
-### Cleanup candidates from Pi service audit 2026-04-28
+### Cleanup state from Pi service audit 2026-04-28
 
-Ej brådskande. Ingen åtgärd utan explicit approval:
+Applied 2026-04-29. Ingen package removal, ingen maskning, och Cockpit lämnades enabled:
 
-- `avahi-daemon.service` — disable candidate om `pi.local`/mDNS discovery inte behövs. Risk: `pi.local` slutar fungera; `home.lan`/AdGuard/Unbound DNS påverkas inte.
-- `cloud-init-*` units — post-provision disable candidate. `cloud-init status` är disabled via `/etc/cloud/cloud-init.disabled`; units är enabled men inactive. Ingen package removal rekommenderas.
-- Gamla Unbound `.bak`-filer under `/etc/unbound/unbound.conf.d/` — archive/move-aside candidate, inte delete direkt. De är inte aktiva eftersom Unbound include pattern bara matchar `*.conf`.
+- `avahi-daemon.service` / `avahi-daemon.socket` — disabled. Risk/effekt: `pi.local`/mDNS discovery tillhandahålls inte längre av Pi; `home.lan`/AdGuard/Unbound DNS påverkas inte.
+- `cloud-init-*` units — disabled post-provision. `cloud-init status` är fortsatt disabled via `/etc/cloud/cloud-init.disabled`; ingen package removal gjord eller rekommenderad.
+- Gamla Unbound `.bak*`-filer under `/etc/unbound/unbound.conf.d/` — flyttade till `/etc/unbound/archive/unbound-conf-d-bak-20260429-002313`. De var inte aktiva eftersom Unbound include pattern bara matchar `*.conf`.
 
 ## Opti / Proxmox — 192.168.1.60
 

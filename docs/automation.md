@@ -62,13 +62,13 @@ The latest Pi service audit found these active infra timers in scope:
 | `scripts/maintenance/unbound-mini-top.sh` | Summarizes Unbound stats | read-only | No commit/push | LOW |
 
 
-## Cleanup candidates from Pi service audit 2026-04-28
+## Cleanup state from Pi service audit 2026-04-28
 
-Not urgent. These require explicit `GO` before any action:
+Applied 2026-04-29 with explicit approval. No package removal, no masking, and no Cockpit changes:
 
-- `avahi-daemon.service` is a disable candidate only if `pi.local`/mDNS discovery is not needed. Disabling it breaks `pi.local`; `home.lan`/AdGuard/Unbound DNS is unaffected.
-- `cloud-init-*` units are post-provision disable candidates: `cloud-init status` is disabled by `/etc/cloud/cloud-init.disabled`, while units remain enabled but inactive. No package removal is recommended.
-- Old Unbound `.bak` files under `/etc/unbound/unbound.conf.d/` are archive/move-aside candidates, not direct delete candidates. They are not active because Unbound includes only `*.conf`.
+- `avahi-daemon.service` and `avahi-daemon.socket` are disabled. Pi no longer provides `pi.local`/mDNS discovery; `home.lan`/AdGuard/Unbound DNS is unaffected.
+- `cloud-init-*` units are disabled post-provision. `cloud-init status` remains disabled by `/etc/cloud/cloud-init.disabled`. No package removal is recommended.
+- Old Unbound `.bak*` files were moved aside to `/etc/unbound/archive/unbound-conf-d-bak-20260429-002313`. They were not active because Unbound includes only `*.conf`. Do not delete this archive without a separate approval.
 
 ## Write paths
 
