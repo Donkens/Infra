@@ -1,0 +1,68 @@
+# DNS-arkitektur — home.lan
+
+> Single source-of-truth för DNS-auktoritetsmodellen.
+> Senast verifierad: 2026-04-26.
+
+## DNS-kedja
+
+```
+klient
+  └─► AdGuard Home  192.168.1.55 : 53 (UDP/TCP)
+                                  : 443 (DoH  /dns-query)
+                                  : 853 (DoT)
+        └─► Unbound  127.0.0.1 : 5335
+                     ::1       : 5335
+              └─► upstream (rekursiv, internet)
+```
+
+- Inga parallella resolvers tillåtna. En kedja, alltid.
+- AdGuard är det enda LAN-synliga DNS-gränssnittet.
+- Unbound lyssnar enbart på localhost (`127.0.0.1` och `::1`).
+
+## Rollfördelning — vem äger vad
+
+| Record-typ | Auktoritet | Var konfigurerat |
+|---|---|---|
+| A/AAAA för tjänster (Caddy, HAOS, Dockge m.fl.) | **AdGuard Home** — DNS rewrites | AdGuard UI / `AdGuardHome.yaml` |
+| A/AAAA för infra-hosts (Pi, UDR, Mac mini, MacBook) | **Unbound** — `local-data` | `config/unbound/unbound.conf.d/ptr-local.conf` |
+| PTR (reverse DNS) för alla hosts | **Unbound** — `local-data-ptr` | `config/unbound/unbound.conf.d/ptr-local.conf` |
+| Rekursiv resolution (internet-namn) | **Unbound** | upstream via root-hints |
+| Blocklists / filtering | **AdGuard Home** | filter-listor i AdGuard UI |
+
+### `home.lan`-zonen
+
+Unbound är auktoritativ för `home.lan.` med `local-zone: "home.lan." static`.  
+AdGuard rewrites för tjänste-namn pekar vidare mot `192.168.30.x` (Docker VM / HAOS).  
+Det är ingen konflikt — AdGuard rewrites löses av AdGuard, Unbound löser PTR och infra-hosts.
+
+## DoT / DoH / DDR
+
+| Protokoll | Status | Detalj |
+|---|---|---|
+| DoT (DNS-over-TLS) | ✅ live | Port `853`. Cert: `adguard.home.lan`, giltig t.o.m. 2028-07-29. |
+| DoH (DNS-over-HTTPS) | `verify` | Endpoint `/dns-query` på port `443` — ej explicit verifierad. |
+| DDR | ❌ av | `handle_ddr: false` sedan 2026-04-26. Apple DDR orsakade TLS-friction mot privat CA. |
+| DNSSEC | ❌ av | `dnssec: false`. Inte aktiverat — Unbound gör inte DNSSEC-validering nedströms. |
+
+## Firewall-enforcement
+
+UDR-7 blockerar DNS-bypass på Default LAN:
+- `192.168.1.55` (Pi) → WAN port 53: tillåtet (Pi behöver nå upstream).
+- Alla andra LAN-klienter → WAN port 53: blockerat.
+- Gateway `192.168.1.1` port 53 internt: blockerat.
+
+Detaljer: [`docs/unifi-firewall-state-2026-04-15.md`](unifi-firewall-state-2026-04-15.md)
+
+## Backup och snapshot
+
+- Live state ägs av Pi (runtime source of truth).
+- Saniterade Unbound-snapshots spåras i `config/unbound/`.
+- AdGuard-summary (counts only, inga secrets) spåras i `config/adguardhome/AdGuardHome.summary.sanitized.yml`.
+- Nightly `infra-auto-sync` exporterar och committar snapshots automatiskt.
+
+## Relaterade dokument
+
+- [`docs/adguard-home-change-policy.md`](adguard-home-change-policy.md) — hur AdGuard ändras säkert
+- [`docs/dns-tls-baseline-2026-04-26.md`](dns-tls-baseline-2026-04-26.md) — TLS/DDR cleanup baseline
+- [`inventory/dns-names.md`](../inventory/dns-names.md) — fullständig DNS-namnlista
+- [`config/unbound/unbound.conf.d/ptr-local.conf`](../config/unbound/unbound.conf.d/ptr-local.conf) — PTR + infra A-records

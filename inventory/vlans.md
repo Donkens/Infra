@@ -16,7 +16,7 @@
 | DHCP range | `192.168.30.100` – `192.168.30.199` |
 | Static / reserved | `.10` Docker VM, `.20` HAOS VM (no DHCP reservation until MAC known) |
 | DNS | `192.168.1.55` |
-| Firewall zone | Shared LAN zone — dedicated zone required at `GO firewall` step |
+| Firewall zone | Shared LAN zone — dedicated zone required at `GO firewall` step. Current firewall state: [`docs/unifi-firewall-state-2026-04-15.md`](../docs/unifi-firewall-state-2026-04-15.md) |
 
 ## Opti Trunk port profile
 
