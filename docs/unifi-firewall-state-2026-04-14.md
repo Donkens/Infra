@@ -1,5 +1,7 @@
 # UniFi firewall state — 2026-04-14
 
+> **Superseded by:** [unifi-firewall-state-2026-04-15.md](unifi-firewall-state-2026-04-15.md)
+
 ## Sammanfattning
 UniFi har nu två kvarvarande custom policies.
 `IoT DNS to Pi` är aktiv och host-scopad till Pi DNS på `192.168.1.55` och `fd12:3456:7801::55`, port `53`.

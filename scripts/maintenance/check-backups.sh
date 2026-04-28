@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -u
+set -euo pipefail
 REPO="/home/pi/repos/infra"
 LOG_DIR="$REPO/logs"
 STATE_DIR="$REPO/state"

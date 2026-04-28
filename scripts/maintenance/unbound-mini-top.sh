@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 INTERVAL="${1:-2}"          # sek mellan uppdateringar (default 2s)
 CONF="/etc/unbound/unbound.conf"

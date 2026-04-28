@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -u
+set -euo pipefail
 # Pi DNS health check (AdGuard Home + Unbound) - low overhead / Pi3-safe
 TS="$(date '+%Y-%m-%d %H:%M:%S %Z')"
 HOST="$(hostname)"

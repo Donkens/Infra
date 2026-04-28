@@ -151,4 +151,3 @@ grep -RniE 'domain:|answer:|user_rules:|clients:|password|token|session|BEGIN .*
 - [AdGuard Home change policy](adguard-home-change-policy.md)
 - [Restore guide](restore.md)
 - [Pi DNS runbook](runbook.md)
-- [Repo analysis dossier](repo-analysis-dossier.md)
