@@ -23,6 +23,9 @@ Current source-of-truth entry points:
 - [Pi reboot validation](runbooks/pi-reboot-validation.md)
 - [Verify backup-health timer](runbooks/verify-backup-health-timer.md)
 - [Unbound optimization audit](runbooks/unbound-optimization-audit.md)
+- [AdGuard optimization audit](runbooks/adguard-optimization-audit.md)
+- [AdGuard client policy](docs/adguard-home-client-policy.md)
+- [AdGuard false-positive allowlist](docs/adguard-home-false-positive-allowlist.md)
 
 ## Hosts managed
 - **Raspberry Pi 3** — AdGuard Home + Unbound (DNS authority)

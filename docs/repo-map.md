@@ -30,6 +30,9 @@
 | Pi reboot validation | [runbooks/pi-reboot-validation.md](../runbooks/pi-reboot-validation.md) | Read-only post-reboot validation runbook. |
 | Backup-health timer verification | [runbooks/verify-backup-health-timer.md](../runbooks/verify-backup-health-timer.md) | Verify automatic backup-health timer after rollout. |
 | Unbound optimization audit | [runbooks/unbound-optimization-audit.md](../runbooks/unbound-optimization-audit.md) | Read-only Unbound performance and stability audit. |
+| AdGuard optimization audit | [runbooks/adguard-optimization-audit.md](../runbooks/adguard-optimization-audit.md) | Read-only AdGuard Home performance and stability audit. |
+| AdGuard client policy | [docs/adguard-home-client-policy.md](adguard-home-client-policy.md) | Proposed client group strategy (PLANNED, not live). |
+| AdGuard false-positive allowlist | [docs/adguard-home-false-positive-allowlist.md](adguard-home-false-positive-allowlist.md) | Candidate safe domains by service category. |
 | Local runtime state | `state/`, `logs/` | Ignored/local only except `.gitkeep`; never source-of-truth for Git. |
 
 ## Precedence principles

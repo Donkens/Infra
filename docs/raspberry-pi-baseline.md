@@ -122,6 +122,12 @@ Sanitized config summary from Phase 0 inventory:
 - Statistics: enabled, interval `168h`
 - Clients: persistent `11`, runtime sources `5`, counts only
 
+Audit notes from 2026-04-28 optimization audit:
+
+- AdGuard version `v0.107.74` observed; follow upstream releases for updates.
+- AdGuard process runs as root (no `User=`/`Group=` in the systemd unit); this is a documented baseline fact, not an action recommendation.
+- `HTTPS`/type-65 queries are common from Apple/iOS clients (observed ~24% of Unbound-bound query volume); avoid broad blocking of Apple CDN or SVCB records without prior validation.
+
 `AdGuardHome.yaml` is root-owned and mode `600`. Do not paste or commit raw AdGuard config, credentials, session data, user hashes, rewrites, clients, upstream bodies, query logs, or backups. Change policy: [AdGuard Home change policy](adguard-home-change-policy.md).
 
 Git-tracked AdGuard export model:
