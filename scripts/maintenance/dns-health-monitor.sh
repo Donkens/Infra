@@ -10,7 +10,7 @@ mkdir -p "$LOG_DIR" "$STATE_DIR"
 ts="$(date '+%F %T')"
 host="$(hostname -s)"
 # Lock to avoid overlaps if timer runs while previous check hangs
-LOCKFILE="/tmp/dns-health.lock"
+LOCKFILE="$STATE_DIR/dns-health.lock"
 exec 9>"$LOCKFILE"
 if ! flock -n 9; then
   echo "[$ts] host=$host status=SKIP reason=lock_busy" >> "$LOG_FILE"

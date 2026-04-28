@@ -8,16 +8,72 @@ permissions:
   contents: read
 
 jobs:
-  shellcheck:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run shellcheck
+      - name: Check whitespace
+        run: git diff --check
+
+      - name: Shell syntax
         run: |
-          mapfile -d '' files < <(find . -name "*.sh" -not -path "./.git/*" -print0)
+          mapfile -t files < <(git ls-files '*.sh')
+          if [[ "${#files[@]}" -eq 0 ]]; then
+            echo "No shell files found"
+            exit 0
+          fi
+          bash -n "${files[@]}"
+
+      - name: ShellCheck
+        run: |
+          if ! command -v shellcheck >/dev/null 2>&1; then
+            echo "shellcheck not installed; skipping"
+            exit 0
+          fi
+          mapfile -t files < <(git ls-files '*.sh')
           if [[ "${#files[@]}" -eq 0 ]]; then
             echo "No shell files found"
             exit 0
           fi
           shellcheck --severity=warning "${files[@]}"
+
+      - name: systemd unit syntax
+        run: |
+          if ! command -v systemd-analyze >/dev/null 2>&1; then
+            echo "systemd-analyze not installed; skipping"
+            exit 0
+          fi
+          mapfile -t files < <(git ls-files 'systemd/units/*.service' 'systemd/timers/*.timer')
+          if [[ "${#files[@]}" -eq 0 ]]; then
+            echo "No systemd unit files found"
+            exit 0
+          fi
+
+          root="$(mktemp -d)"
+          trap 'rm -rf "$root"' EXIT
+          mkdir -p "$root/home/pi/repos/infra" "$root/usr/local/bin" "$root/etc/systemd/system" "$root/usr/lib/systemd/system" "$root/etc"
+          for unit_dir in /usr/lib/systemd/system /lib/systemd/system; do
+            if [[ -d "$unit_dir" ]]; then
+              cp "$unit_dir"/*.target "$root/usr/lib/systemd/system/" 2>/dev/null || true
+            fi
+          done
+          printf 'root:x:0:0:root:/root:/bin/bash
+pi:x:1000:1000:pi:/home/pi:/bin/bash
+' > "$root/etc/passwd"
+          printf 'root:x:0:
+pi:x:1000:
+' > "$root/etc/group"
+          cp -a scripts systemd "$root/home/pi/repos/infra/"
+          ln -sf /home/pi/repos/infra/scripts/install/infra-auto-sync.sh "$root/usr/local/bin/infra-auto-sync.sh"
+
+          verify_files=()
+          for file in "${files[@]}"; do
+            target="$root/etc/systemd/system/$(basename "$file")"
+            cp "$file" "$target"
+            verify_files+=("$target")
+          done
+          systemd-analyze verify --root="$root" "${verify_files[@]}"
+
+      - name: Markdown links
+        run: python3 scripts/ci/check-markdown-links.py

@@ -1,5 +1,7 @@
 # Infra repo — kontext och audit 2026-04-28
 
+> **SUPERSEDED / HISTORICAL:** This context snapshot was written before later repo updates on 2026-04-28. Current source-of-truth starts at `README.md`, `docs/repo-map.md`, `inventory/unifi-networks.md`, `inventory/unifi-firewall.md`, `inventory/unifi-wifi.md`, `inventory/dhcp-reservations.md`, and `docs/udr7-baseline.md`.
+
 > Genererat av Claude Code (Phase 0/1 audit).
 > Syfte: ge en AI-assistent (ChatGPT eller annan) fullständig kontext om repot,
 > infrastrukturen, nuläget och föreslagna förbättringar.
@@ -153,100 +155,12 @@ Tre aktiva systemd-timers på Pi:
 
 ---
 
-## Phase 0 Audit — Findings (2026-04-28)
+## Historical audit note
 
-### Gap 1 — DNS-auktoritetsmodellen odokumenterad som helhet (PRIORITET 1)
+The original Phase 0/1 patch plan in this snapshot is now superseded by later repo updates on 2026-04-28. Several gaps it listed were resolved after this file was written, including the DNS architecture document, stricter shell settings in maintenance scripts, runbook structure, stale firewall-state markers, and VLAN/firewall cross-references.
 
-Nuläge: modellen är splittrad över `AGENTS.md`, `inventory/dns-names.md`, `config/unbound/unbound.conf.d/ptr-local.conf` och `docs/adguard-home-change-policy.md`. Inget enskilt dokument förklarar vem som äger vilka record-typer.
-
-Konsekvens: AI-agenter måste läsa 4+ filer för att förstå authority-modellen. Risk för felaktiga parallella resolvers.
-
-### Gap 2 — 5 scripts saknar `set -euo pipefail` (PRIORITET 2)
-
-Per AGENTS.md scripting standard. Dessa har bara `set -u` eller ingenting:
-
-| Script | Nuläge |
-|---|---|
-| `scripts/maintenance/dns-health-monitor.sh` | `set -u` |
-| `scripts/maintenance/check-backups.sh` | `set -u` |
-| `scripts/maintenance/dns-health-report.sh` | `set -u` |
-| `scripts/maintenance/infra-status.sh` | `set -u` |
-| `scripts/maintenance/unbound-mini-top.sh` | (ingenting) |
-
-`dns-health-monitor.sh` och `check-backups.sh` körs av systemd-timers — pipe-fel kan passera obemärkt.
-
-### Gap 3 — Dangling reference i `docs/automation.md` (PRIORITET 3)
-
-Rad 155 refererar `docs/repo-analysis-dossier.md` — en fil som är explicit gitignorerad och aldrig existerar i repot. Länken är alltid bruten.
-
-### Gap 4 — Duplicerade UniFi firewall state-dokument (PRIORITET 4)
-
-`docs/unifi-firewall-state-2026-04-14.md` (50 rader) och `docs/unifi-firewall-state-2026-04-15.md` (84 rader) är överlappande. Oklart vilket som är auktoritativt current state.
-
-### Gap 5 — `docs/runbook.md` saknar struktur (PRIORITET 5)
-
-20-raders bash-cheat-sheet utan scenario-headers, approval-gate-reminder eller success criteria. Kontrasterar mot kvaliteten i `docs/adguard-home-change-policy.md` och `docs/restore.md`.
-
-### Gap 6 — Firewall cross-reference saknas i `inventory/vlans.md` (PRIORITET 6)
-
-VLAN 30 nämner "GO firewall step" utan länk till aktuellt firewall-state-dokument.
+Keep this file only as historical context. For current operator guidance and source-of-truth routing, start with `README.md`, `docs/repo-map.md`, current `inventory/` files, and `AGENTS.md`.
 
 ---
 
-## Phase 1 — Föreslagen patch-plan
-
-> Ej utförd. Kräver explicit `GO PHASE 2` för genomförande.
-
-### Ändring 1 — Skapa `docs/dns-architecture.md` (ny fil)
-
-**Why:** Ingen fil samlar DNS-auktoritetsmodellen.  
-**Benefit:** Agenter förstår direkt vem som äger vad — minskar risk för parallella resolvers.  
-**Risk:** Låg. Ny fil, inga befintliga filer ändras.  
-**Innehåll:** DNS-kedja, AdGuard-roll, Unbound-roll (PTR + infra A-records), DNSSEC/DoT/DoH/DDR-status, source-of-truth per record-typ.
-
-### Ändring 2 — `set -euo pipefail` i 5 maintenance scripts
-
-**Why:** AGENTS.md standard. Systemd-timers kör dessa.  
-**Benefit:** Pipe-fel avbryter script istället för att tyst fortsätta.  
-**Risk:** Låg. Scripts är read-heavy diagnostics.  
-**Files:** `dns-health-monitor.sh`, `check-backups.sh`, `dns-health-report.sh`, `infra-status.sh`, `unbound-mini-top.sh`  
-**Change:** `set -u` → `set -euo pipefail` (eller lägg till om det saknas helt).
-
-### Ändring 3 — Ta bort dangling reference i `docs/automation.md`
-
-**Why:** Rad 155 pekar på gitignorerad fil.  
-**Benefit:** Ingen bruten länk.  
-**Risk:** Ingen.  
-**Files:** `docs/automation.md` rad 155 — ta bort `- [Repo analysis dossier](repo-analysis-dossier.md)`.
-
-### Ändring 4 — Markera `docs/unifi-firewall-state-2026-04-14.md` som superseded
-
-**Why:** Två överlappande dokument, oklart vilket som gäller.  
-**Benefit:** Tydlighet — `-04-15` är current state.  
-**Risk:** Ingen.  
-**Files:** `docs/unifi-firewall-state-2026-04-14.md` — lägg till superseded-notering under rubriken.
-
-### Ändring 5 — Förbättra `docs/runbook.md` med minimal struktur
-
-**Why:** Nuvarande fil är osäker att använda utan kontext om vilka kommandon som kräver approval.  
-**Benefit:** Tydlig uppdelning read-only vs operator-only + reminder om AGENTS.md § SAFETY.  
-**Risk:** Låg.  
-**Files:** `docs/runbook.md` — lägg till section-headers och approval-gate-reminder.
-
-### Ändring 6 — Firewall cross-reference i `inventory/vlans.md`
-
-**Why:** VLAN 30 refererar "GO firewall step" utan länk.  
-**Benefit:** Agenter hittar aktuellt firewall-state direkt från VLAN-inventariet.  
-**Risk:** Ingen.  
-**Files:** `inventory/vlans.md` — lägg till länk till `../docs/unifi-firewall-state-2026-04-15.md`.
-
----
-
-## Approvals
-
-För att köra alla 6 ändringar: `GO PHASE 2`  
-För selektiva ändringar: `GO PHASE 2 ändringar 1 2 3`
-
----
-
-*Fil skapad av Claude Code — Donkens/Infra audit 2026-04-28*
+*Fil skapad av Claude Code — Donkens/Infra audit 2026-04-28; markerad som historisk efter senare repo-uppdateringar.*

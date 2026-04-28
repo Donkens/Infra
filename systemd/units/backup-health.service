@@ -10,3 +10,9 @@ WorkingDirectory=/home/pi/repos/infra
 Environment=MAX_AGE_HOURS=48
 ExecStart=/home/pi/repos/infra/scripts/maintenance/check-backups.sh
 Nice=10
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=true
+ReadWritePaths=/home/pi/repos/infra/logs /home/pi/repos/infra/state
+TimeoutStartSec=2min

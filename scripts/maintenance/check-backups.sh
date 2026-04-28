@@ -13,7 +13,7 @@ mkdir -p "$LOG_DIR" "$STATE_DIR"
 ts="$(date '+%F %T')"
 host="$(hostname -s)"
 # Prevent overlap
-LOCKFILE="/tmp/backup-health.lock"
+LOCKFILE="$STATE_DIR/backup-health.lock"
 exec 9>"$LOCKFILE"
 if ! flock -n 9; then
   echo "[$ts] host=$host status=SKIP reason=lock_busy" >> "$LOG_FILE"

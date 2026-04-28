@@ -6,7 +6,9 @@ After=network-online.target
 [Service]
 Type=oneshot
 User=pi
+WorkingDirectory=/home/pi/repos/infra
 ExecStart=/usr/local/bin/infra-auto-sync.sh
+TimeoutStartSec=30min
 Nice=10
 IOSchedulingClass=best-effort
 IOSchedulingPriority=7
