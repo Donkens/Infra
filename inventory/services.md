@@ -15,6 +15,7 @@ Related current inventories:
 
 > Auktoritativ tjänst/port-inventering.
 > Status: `live` = verifierad i baseline-doc | `planned` = ej live-verifierad | `verify` = osäker
+> DNS records may exist before a service is live. A DNS name resolving is not enough to mark a service `live`; verify the service port/process from the target host or client path first.
 > Relaterat: `caddy/services.md` (Caddy-routes), `inventory/dns-names.md` (DNS-rewrites).
 > Uppdatera vid nya tjänster. Inga secrets här.
 

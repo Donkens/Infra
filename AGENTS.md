@@ -1,6 +1,6 @@
 # AGENTS.md — Infra Repo
 > Canonical agent policy for this repository.
-> Updated: 2026-04-14
+> Updated: 2026-04-28
 
 ## CORE RULES
 - Read this file before any task.
@@ -169,6 +169,24 @@ Managed hosts:
 - Do not add Tailscale initially; document it only as a later optional path.
 - Do not add Jellyfin initially.
 - Do not add Vaultwarden until backup destination, backup process, and restore-test are documented and completed.
+
+## NETWORK SOURCE OF TRUTH ORDER
+
+1. `AGENTS.md` = agent/operator policy.
+2. `inventory/unifi-networks.md` = current UniFi networks/VLANs.
+3. `inventory/unifi-firewall.md` = current custom firewall policy inventory.
+4. `inventory/unifi-wifi.md` = current WLAN/SSID inventory.
+5. `inventory/dhcp-reservations.md` = important fixed-IP reservations.
+6. `inventory/dns-names.md` = important forward/PTR DNS names.
+7. `docs/udr7-baseline.md` = gateway/controller baseline.
+8. `docs/network-validation.md` = read-only validation commands.
+9. `docs/open-network-checks.md` = known follow-up checks.
+10. Dated docs are historical unless explicitly marked current.
+
+Rules:
+- If current inventory conflicts with dated historical docs, current inventory wins.
+- Do not update historical docs except to add superseded/stale banners.
+- Do not treat planned DNS names as live services without runtime validation.
 
 ## SOURCE OF TRUTH AND LOCAL STATE
 - The Pi is the operational source of truth for live DNS service state.

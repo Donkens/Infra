@@ -1,0 +1,34 @@
+# Repo map
+
+> Which file owns what for agents and operators.
+
+## Source-of-truth map
+
+| Area | Source-of-truth | Notes |
+|---|---|---|
+| Agent/operator policy | [AGENTS.md](../AGENTS.md) | Canonical for agent behavior and safety gates. |
+| Repo overview | [README.md](../README.md) | Human entry point; `AGENTS.md` wins on policy conflicts. |
+| DNS names | [inventory/dns-names.md](../inventory/dns-names.md) | Important live and planned `home.lan` names. |
+| DNS architecture | [docs/dns-architecture.md](dns-architecture.md) | Authority model: AdGuard, Unbound, UDR, Pi. |
+| Pi runtime/DNS baseline | [docs/raspberry-pi-baseline.md](raspberry-pi-baseline.md) | Sanitized Pi DNS baseline. |
+| UDR7 baseline | [docs/udr7-baseline.md](udr7-baseline.md) | Gateway/controller baseline. |
+| UniFi networks/VLANs | [inventory/unifi-networks.md](../inventory/unifi-networks.md) | Current UniFi network inventory. |
+| UniFi firewall | [inventory/unifi-firewall.md](../inventory/unifi-firewall.md) | Current custom firewall policy inventory. |
+| UniFi WiFi/SSID | [inventory/unifi-wifi.md](../inventory/unifi-wifi.md) | Current WLAN/SSID inventory. |
+| DHCP reservations | [inventory/dhcp-reservations.md](../inventory/dhcp-reservations.md) | Important fixed-IP reservations with masked MACs. |
+| VLAN summary | [inventory/vlans.md](../inventory/vlans.md) | Compact VLAN summary; defer details to UniFi network inventory. |
+| Services/ports | [inventory/services.md](../inventory/services.md) | Service status and port inventory. |
+| Validation commands | [docs/network-validation.md](network-validation.md) | Read-only validation command set. |
+| Open follow-ups | [docs/open-network-checks.md](open-network-checks.md) | Current network validation backlog. |
+| Opti/Proxmox plan | [docs/opti/](opti/) | Planning docs only until explicit implementation task. |
+| Restore | [docs/restore.md](restore.md) | Pi DNS restore guide and constraints. |
+| Automation | [docs/automation.md](automation.md) | Timers, scripts, Git behavior, and risk boundaries. |
+| Historical snapshots | dated docs | Historical unless explicitly marked current. |
+| Local runtime state | `state/`, `logs/` | Ignored/local only except `.gitkeep`; never source-of-truth for Git. |
+
+## Precedence principles
+
+- If current inventory and historical docs say different things, current inventory wins.
+- If `README.md` and `AGENTS.md` differ, `AGENTS.md` wins.
+- Raw runtime/backups never win over repo policy and must not be committed.
+- Planned DNS names are not live services until runtime validation proves the service path.
