@@ -28,6 +28,13 @@ klient
 - AdGuard är det enda LAN-synliga DNS-gränssnittet.
 - Unbound lyssnar enbart på localhost (`127.0.0.1` och `::1`).
 
+
+## Kända upstream-undantag
+
+- `forward-dxcloud.conf` är ett avsiktligt smalt Unbound-undantag för en specifik zone. Den forwardar zonen till Cloudflare (`1.1.1.1`, `1.0.0.1`) och ska inte tolkas som en generell parallell resolver.
+- AdGuard `bootstrap_dns` använder Quad9 för bootstrap av krypterad/namnbaserad upstream-kontext. Det är en bootstrap-only dependency, inte klienternas primära DNS-kedja.
+- Standardflödet är fortsatt klient -> AdGuard (`192.168.1.55:53`) -> Unbound (`127.0.0.1:5335`) -> rekursiv upstream/root resolution.
+
 ## Rollfördelning — vem äger vad
 
 | Record-typ | Auktoritet | Var konfigurerat |
