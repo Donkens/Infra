@@ -22,6 +22,7 @@ Current source-of-truth entry points:
 - [Health rollout 2026-04-28](docs/health-rollout-2026-04-28.md)
 - [Pi reboot validation](runbooks/pi-reboot-validation.md)
 - [Verify backup-health timer](runbooks/verify-backup-health-timer.md)
+- [Unbound optimization audit](runbooks/unbound-optimization-audit.md)
 
 ## Hosts managed
 - **Raspberry Pi 3** — AdGuard Home + Unbound (DNS authority)

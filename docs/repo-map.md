@@ -29,6 +29,7 @@
 | Health rollout history | [docs/health-rollout-2026-04-28.md](health-rollout-2026-04-28.md) | Record of 2026-04-28 unit hardening rollout. |
 | Pi reboot validation | [runbooks/pi-reboot-validation.md](../runbooks/pi-reboot-validation.md) | Read-only post-reboot validation runbook. |
 | Backup-health timer verification | [runbooks/verify-backup-health-timer.md](../runbooks/verify-backup-health-timer.md) | Verify automatic backup-health timer after rollout. |
+| Unbound optimization audit | [runbooks/unbound-optimization-audit.md](../runbooks/unbound-optimization-audit.md) | Read-only Unbound performance and stability audit. |
 | Local runtime state | `state/`, `logs/` | Ignored/local only except `.gitkeep`; never source-of-truth for Git. |
 
 ## Precedence principles
