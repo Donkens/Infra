@@ -9,7 +9,10 @@ get_stat() {
 }
 
 while true; do
-  STATS="$(unbound-control -c "$CONF" stats_noreset 2>/dev/null)"
+  STATS="$(unbound-control -c "$CONF" stats_noreset 2>/dev/null || true)"
+  if [[ -z "${STATS:-}" ]]; then
+    STATS=""
+  fi
   TS="$(date '+%H:%M:%S')"
 
   TOTAL_Q=$(get_stat "total.num.queries")
