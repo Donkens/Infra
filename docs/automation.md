@@ -66,9 +66,9 @@ The latest Pi service audit found these active infra timers in scope:
 
 Not urgent. These require explicit `GO` before any action:
 
-- `avahi-daemon.service` is active and exposes `5353/udp` plus ephemeral UDP sockets.
-- `cloud-init-*` units are enabled but inactive after provisioning.
-- Old Unbound `.bak` files exist under `/etc/unbound/unbound.conf.d/`.
+- `avahi-daemon.service` is a disable candidate only if `pi.local`/mDNS discovery is not needed. Disabling it breaks `pi.local`; `home.lan`/AdGuard/Unbound DNS is unaffected.
+- `cloud-init-*` units are post-provision disable candidates: `cloud-init status` is disabled by `/etc/cloud/cloud-init.disabled`, while units remain enabled but inactive. No package removal is recommended.
+- Old Unbound `.bak` files under `/etc/unbound/unbound.conf.d/` are archive/move-aside candidates, not direct delete candidates. They are not active because Unbound includes only `*.conf`.
 
 ## Write paths
 

@@ -31,7 +31,7 @@ Related current inventories:
 | Unbound | 5335 | UDP+TCP | live | Local-only runtime listener på `127.0.0.1:5335`; AdGuard upstream. `::1@5335` finns i config men `do-ip6: no` gör IPv6-bind inert. Verifierad via `ss` i Pi service audit 2026-04-28. |
 | Cockpit | 9090 | HTTPS | live | Intentional admin UI service. Socket-activated: `cockpit.socket` är enabled och lyssnar på `*`:9090 / `[::]`:9090 även när `cockpit.service` är inactive. Keep enabled. |
 | SSH | 22 | TCP | live | LAN/IPv6-exposed listener på `0.0.0.0:22` och `[::]:22`. Verifierad i Pi service audit 2026-04-28. |
-| Avahi / mDNS | 5353 + ephemeral UDP | UDP | live | `avahi-daemon.service` är active och exponerar mDNS på `5353/udp` plus ephemeral UDP sockets. Cleanup candidate om `pi.local`/mDNS inte behövs på DNS-noden. |
+| Avahi / mDNS | 5353 + ephemeral UDP | UDP | live | `avahi-daemon.service` är active och exponerar mDNS på `5353/udp` plus ephemeral UDP sockets. Disable candidate om `pi.local`/mDNS discovery inte behövs; `home.lan`/AdGuard/Unbound DNS påverkas inte. |
 
 > AdGuard DDR setting: `handle_ddr=false` sedan 2026-04-26. Inaktiverad medvetet — se `docs/dns-tls-baseline-2026-04-26.md`.
 
@@ -39,9 +39,9 @@ Related current inventories:
 
 Ej brådskande. Ingen åtgärd utan explicit approval:
 
-- `avahi-daemon.service` — active mDNS på `5353/udp` plus ephemeral UDP sockets.
-- `cloud-init-*` units — enabled men inactive; dokumentera eller städa endast efter beslut.
-- Gamla Unbound `.bak`-filer under `/etc/unbound/unbound.conf.d/` — lämna kvar tills backup/restore-policy är bekräftad.
+- `avahi-daemon.service` — disable candidate om `pi.local`/mDNS discovery inte behövs. Risk: `pi.local` slutar fungera; `home.lan`/AdGuard/Unbound DNS påverkas inte.
+- `cloud-init-*` units — post-provision disable candidate. `cloud-init status` är disabled via `/etc/cloud/cloud-init.disabled`; units är enabled men inactive. Ingen package removal rekommenderas.
+- Gamla Unbound `.bak`-filer under `/etc/unbound/unbound.conf.d/` — archive/move-aside candidate, inte delete direkt. De är inte aktiva eftersom Unbound include pattern bara matchar `*.conf`.
 
 ## Opti / Proxmox — 192.168.1.60
 
