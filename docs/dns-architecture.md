@@ -3,6 +3,15 @@
 > Single source-of-truth för DNS-auktoritetsmodellen.
 > Senast verifierad: 2026-04-26.
 
+## Network authority roles
+
+| Layer | Authority | Role |
+|---|---|---|
+| DHCP / VLAN / firewall / WiFi | UDR-7 / UniFi | Distributes DNS, owns gateway and client network policy. |
+| DNS node | Pi `192.168.1.55` | Runs AdGuard Home and Unbound. |
+| Client DNS / forward rewrites | AdGuard Home | LAN-facing DNS, filtering, and service aliases. |
+| Recursion / PTR | Unbound | Recursive resolver and local reverse records. |
+
 ## DNS-kedja
 
 ```
@@ -66,3 +75,9 @@ Detaljer: [`docs/unifi-firewall-state-2026-04-15.md`](unifi-firewall-state-2026-
 - [`docs/dns-tls-baseline-2026-04-26.md`](dns-tls-baseline-2026-04-26.md) — TLS/DDR cleanup baseline
 - [`inventory/dns-names.md`](../inventory/dns-names.md) — fullständig DNS-namnlista
 - [`config/unbound/unbound.conf.d/ptr-local.conf`](../config/unbound/unbound.conf.d/ptr-local.conf) — PTR + infra A-records
+
+## DNS bypass risk
+
+UDR dnsmasq listens on gateway IPs such as `192.168.1.1`, `192.168.30.1`, and `192.168.40.1`. Firewall policy is required to keep clients on Pi DNS. Default and MLO client bypass checks were verified blocked on 2026-04-28. Server VLAN 30 and IoT-to-gateway DNS behavior need explicit client-side validation before workloads or policy changes.
+
+Current policy inventory: [UniFi firewall](../inventory/unifi-firewall.md).

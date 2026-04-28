@@ -1,12 +1,14 @@
 # VLANs
 
+> Current UniFi network source-of-truth: [unifi-networks.md](unifi-networks.md).
+
 | VLAN | Name | Subnet | Role | Status |
 | ---: | --- | --- | --- | --- |
 | untagged | Default LAN | `192.168.1.0/24` | Trusted LAN, Proxmox host management | ✅ live |
 | `10` | IOT | `192.168.10.0/24` | IoT devices, limited access | ✅ live |
 | `20` | Guest | `192.168.20.0/24` | Guest network | ⛔ disabled |
-| `30` | Server | `192.168.30.0/24` | HAOS and Docker VM workloads | ✅ live |
-| `40` | MLO-LAN | `192.168.40.0/24` | 6 GHz WiFi clients | ✅ live |
+| `30` | Server | `192.168.30.0/24` | HAOS and Docker VM workloads | ✅ live; workload/firewall readiness needs validation |
+| `40` | MLO-LAN | `192.168.40.0/24` | 6 GHz WiFi clients | ✅ live; WLAN MLO flag currently DRIFT/UNKNOWN |
 
 ## Server VLAN 30
 
@@ -35,3 +37,9 @@
 - Recommended port: UDR-7 port 3
 
 Proxmox `vmbr0` should be VLAN-aware. VM `101` and VM `102` use tag `30`.
+
+## MLO-LAN VLAN 40
+
+- Network exists live in UniFi.
+- iPhone fixed/reserved client exists at `192.168.40.207`.
+- `UniFi MLO/6Ghz` is assigned to VLAN 40, but controller reports `mlo_enabled=false`; see [unifi-wifi.md](unifi-wifi.md).

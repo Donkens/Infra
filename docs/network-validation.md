@@ -1,0 +1,75 @@
+# Network validation
+
+> Read-only validation commands for DNS, UniFi, and repo state.
+
+Do not run write commands, service restarts, package installs, provisioning, or cleanup from this checklist.
+
+## Pi DNS health
+
+```bash
+ssh pi 'hostname; ip -brief addr; ip route'
+ssh pi 'systemctl is-active AdGuardHome || true; systemctl is-active unbound || true'
+ssh pi 'ss -tulpn 2>/dev/null | grep -E "(:53|:443|:3000|:5335|:853)\b" || true'
+```
+
+## Unbound recursion
+
+```bash
+ssh pi 'dig @127.0.0.1 -p 5335 cloudflare.com A +short +time=2 +tries=1'
+ssh pi 'dig @127.0.0.1 -p 5335 cloudflare.com AAAA +short +time=2 +tries=1'
+```
+
+## AdGuard LAN DNS
+
+```bash
+ssh pi 'dig @192.168.1.55 pi.home.lan A +short +time=2 +tries=1'
+ssh pi 'dig @192.168.1.55 adguard.home.lan A +short +time=2 +tries=1'
+ssh pi 'dig @192.168.1.55 macmini.home.lan A +short +time=2 +tries=1'
+ssh pi 'dig @192.168.1.55 -x 192.168.1.55 +short +time=2 +tries=1'
+```
+
+## Mac client resolver check
+
+Run from a normal LAN/MLO client, not only from Pi.
+
+```bash
+scutil --dns | grep -E 'nameserver\[[0-9]+\]|search domain\[[0-9]+\]'
+route -n get default
+ifconfig en0 | grep -E 'inet |inet6 fd12|status'
+```
+
+Expected Default/MLO client DNS: `192.168.1.55` and, where IPv6 resolver delivery is active, `fd12:3456:7801::55`.
+
+## DNS bypass check
+
+Run from ordinary clients. Do not use Pi as the only bypass test, because Pi is intentionally allowed to query upstream DNS.
+
+```bash
+dig @192.168.1.55 pi.home.lan A +short +time=2 +tries=1
+dig @192.168.1.1 pi.home.lan A +short +time=2 +tries=1 || true
+dig @1.1.1.1 cloudflare.com A +short +time=2 +tries=1 || true
+```
+
+Expected on Default/MLO clients when bypass blocking works:
+
+- `@192.168.1.55` answers.
+- `@192.168.1.1` times out.
+- `@1.1.1.1` times out.
+
+Expected on Pi:
+
+- `@1.1.1.1` may answer because Pi DNS upstream is explicitly allowed.
+
+## UDR dnsmasq listener observation
+
+```bash
+ssh udr 'ss -tulpn 2>/dev/null | grep -E "(:53)\b" || true'
+```
+
+UDR listening on gateway DNS is not by itself a failure. Client firewall behavior determines whether it is reachable as a bypass path.
+
+## Git repo state
+
+```bash
+ssh pi 'cd /home/pi/repos/infra && git status --short --branch && git log --oneline -5'
+```

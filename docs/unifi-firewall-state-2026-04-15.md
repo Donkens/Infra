@@ -1,5 +1,7 @@
 # UniFi firewall state — 2026-04-15
 
+> **SUPERSEDED / STALE:** live UniFi now has 8 custom DNS-related policies. Current source-of-truth: [inventory/unifi-firewall.md](../inventory/unifi-firewall.md). This file is historical context only.
+
 ## Sammanfattning
 Efter senaste UniFi-städningen återstår exakt tre custom policies i controllern.
 `IoT DNS to Pi` är enabled och host-scopad till Pi på `192.168.1.55` och `fd12:3456:7801::55`, port `53`.

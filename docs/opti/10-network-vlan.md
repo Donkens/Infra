@@ -84,3 +84,15 @@ The UniFi switch port to the Opti should use:
 | --- | ---: | --- |
 | `101` HAOS | `30` | `ha.home.lan:8123` direct |
 | `102` Debian Docker | `30` | SSH plus Caddy-managed services |
+
+## Pre-workload validation
+
+Server VLAN 30 exists live in UniFi and uses Pi DNS (`192.168.1.55`). The Opti host remains planned on Default LAN/native, while HAOS and Docker VMs remain planned on Server VLAN 30.
+
+Before placing heavy workloads on VLAN 30:
+
+- verify DNS bypass and gateway DNS block coverage from a Server VLAN client
+- verify firewall isolation policy for Server VLAN 30
+- keep WAN port forwards disabled
+- keep Pi as the DNS node
+- do not move Server VLAN into a dedicated firewall zone without a separate `GO` plan

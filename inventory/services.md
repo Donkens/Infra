@@ -1,5 +1,18 @@
 # Services
 
+## Network control plane
+
+UDR-7 / UniFi is the gateway/controller layer for DHCP, VLANs, firewall, WiFi, and WireGuard. Pi services are runtime DNS services.
+
+Related current inventories:
+
+- [UDR-7 baseline](../docs/udr7-baseline.md)
+- [UniFi networks](unifi-networks.md)
+- [UniFi firewall](unifi-firewall.md)
+- [UniFi WiFi](unifi-wifi.md)
+- [DHCP reservations](dhcp-reservations.md)
+
+
 > Auktoritativ tjänst/port-inventering.
 > Status: `live` = verifierad i baseline-doc | `planned` = ej live-verifierad | `verify` = osäker
 > Relaterat: `caddy/services.md` (Caddy-routes), `inventory/dns-names.md` (DNS-rewrites).
@@ -43,6 +56,8 @@
 | Home Assistant | 8123 | HTTP | planned | `ha.home.lan` → `192.168.30.20`. Ej via Caddy. DNS-namn live, tjänst ej live-verifierad i denna audit. |
 
 ## UDR-7 — 192.168.1.1
+
+UDR-7 is the gateway/controller dependency for network policy. Current baseline: [UDR-7 baseline](../docs/udr7-baseline.md).
 
 | Service | Port | Protocol | Status | Note |
 |---|---|---|---|---|
