@@ -29,7 +29,7 @@ Related current inventories:
 | AdGuard Home — DoT/DoQ | 853 | TLS/TCP + QUIC/UDP | live | Wildcard listener (`*`:853) för DNS-over-TLS och DNS-over-QUIC. Konfigurerad i `AdGuardHome.yaml`. Verifierad via `openssl s_client -connect adguard.home.lan:853` 2026-04-26 och Pi service audit 2026-04-28. |
 | AdGuard Home — DoH | 443 `/dns-query` | HTTPS | verify | Endpoint finns om AdGuard HTTPS är aktivt på :443 — ej explicit verifierad i baseline. |
 | Unbound | 5335 | UDP+TCP | live | Local-only runtime listener på `127.0.0.1:5335`; AdGuard upstream. `::1@5335` finns i config men `do-ip6: no` gör IPv6-bind inert. Verifierad via `ss` i Pi service audit 2026-04-28. |
-| Cockpit | 9090 | HTTPS | live | Socket-activated: `cockpit.socket` är enabled och lyssnar på `*`:9090 / `[::]`:9090 även när `cockpit.service` är inactive. Cleanup candidate om web admin inte behövs. |
+| Cockpit | 9090 | HTTPS | live | Intentional admin UI service. Socket-activated: `cockpit.socket` är enabled och lyssnar på `*`:9090 / `[::]`:9090 även när `cockpit.service` är inactive. Keep enabled. |
 | SSH | 22 | TCP | live | LAN/IPv6-exposed listener på `0.0.0.0:22` och `[::]:22`. Verifierad i Pi service audit 2026-04-28. |
 | Avahi / mDNS | 5353 + ephemeral UDP | UDP | live | `avahi-daemon.service` är active och exponerar mDNS på `5353/udp` plus ephemeral UDP sockets. Cleanup candidate om `pi.local`/mDNS inte behövs på DNS-noden. |
 
@@ -39,7 +39,6 @@ Related current inventories:
 
 Ej brådskande. Ingen åtgärd utan explicit approval:
 
-- `cockpit.socket` — enabled och LAN/IPv6-exposed på `9090` även när `cockpit.service` är inactive.
 - `avahi-daemon.service` — active mDNS på `5353/udp` plus ephemeral UDP sockets.
 - `cloud-init-*` units — enabled men inactive; dokumentera eller städa endast efter beslut.
 - Gamla Unbound `.bak`-filer under `/etc/unbound/unbound.conf.d/` — lämna kvar tills backup/restore-policy är bekräftad.

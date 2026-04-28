@@ -66,7 +66,6 @@ The latest Pi service audit found these active infra timers in scope:
 
 Not urgent. These require explicit `GO` before any action:
 
-- `cockpit.socket` is enabled and listens on `*`:9090 / `[::]`:9090 even when `cockpit.service` is inactive.
 - `avahi-daemon.service` is active and exposes `5353/udp` plus ephemeral UDP sockets.
 - `cloud-init-*` units are enabled but inactive after provisioning.
 - Old Unbound `.bak` files exist under `/etc/unbound/unbound.conf.d/`.
