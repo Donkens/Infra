@@ -128,7 +128,7 @@ Git-tracked AdGuard export model:
 
 - `config/adguardhome/AdGuardHome.summary.sanitized.yml` is the tracked AdGuard artifact.
 - The artifact contains summary/count metadata only.
-- `config/adguardhome/AdGuardHome.yaml.sanitized` is no longer the tracked restore/export model.
+- `config/adguardhome/AdGuardHome.summary.sanitized.yml` replaces the previous detailed YAML restore/export model.
 - Detailed `clients`, `rewrites`, and `user_rules` must not be stored in Git; counts only.
 
 ## Unbound
@@ -140,7 +140,7 @@ Observed baseline:
 - Threads: `2`
 - Modules: `validator iterator`
 - Control mode: `reuseport control(namedpipe)`
-- `unbound-checkconf` reported no errors for `/etc/unbound/unbound.conf`
+- `/usr/sbin/unbound-checkconf` reported no errors for `/etc/unbound/unbound.conf`
 
 Important active config traits from sanitized grep:
 
@@ -243,7 +243,7 @@ Do not document, paste, copy broadly, or commit:
 - no raw backup files such as `AdGuardHome.yaml` backups
 - no structure-preserving AdGuard YAML snapshots in Git
 - no detailed `clients`, `rewrites`, or `user_rules` in Git; counts only
-- no raw `AdGuardHome.yaml.sanitized` tracked artifact
+- no raw structure-preserving AdGuard YAML artifact; use `AdGuardHome.summary.sanitized.yml` only
 - no broad copies of `/home/pi/AdGuardHome`
 - no sockets, pid files, locks, or runtime device state
 

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 echo "CPU Frequency Monitoring (Performance Governor)"
 echo "=============================================="
 echo ""

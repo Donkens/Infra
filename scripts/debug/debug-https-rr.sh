@@ -344,7 +344,7 @@ if [ "$APPLY" -eq 1 ] && [ "$WA_TYPE" != "none" ]; then
     echo ""
 
     # Validate
-    if sudo unbound-checkconf 2>&1; then
+    if sudo /usr/sbin/unbound-checkconf 2>&1; then
         pass "unbound-checkconf OK"
     else
         fail "unbound-checkconf failed — reverting"

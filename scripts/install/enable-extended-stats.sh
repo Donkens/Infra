@@ -24,7 +24,7 @@ echo "      Diff:"
 diff "$BACKUP" "$TARGET" || true
 
 echo "[4/5] Validerar config..."
-if unbound-checkconf; then
+if /usr/sbin/unbound-checkconf; then
   echo "      OK: config giltig"
 else
   echo "      FEL: config ogiltig — rullar tillbaka"

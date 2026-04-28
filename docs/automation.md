@@ -92,7 +92,7 @@ If export creates changes outside the allowlist, auto-sync must abort before com
 
 `state/` and `logs/` must remain ignored and local-only.
 
-The old detailed `AdGuardHome.yaml.sanitized` file is no longer the tracked export model.
+`config/adguardhome/AdGuardHome.summary.sanitized.yml` is the tracked AdGuard export model; previous detailed YAML exports are not tracked.
 
 ## Local-only state
 

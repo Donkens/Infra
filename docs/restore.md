@@ -132,7 +132,7 @@ sudo install -m 0644 config/unbound/unbound.conf.d/*.conf /etc/unbound/unbound.c
 Validate before starting or restarting:
 
 ```bash
-sudo unbound-checkconf /etc/unbound/unbound.conf
+sudo /usr/sbin/unbound-checkconf /etc/unbound/unbound.conf
 ```
 
 Enable and verify Unbound:
@@ -146,12 +146,12 @@ dig @127.0.0.1 -p 5335 cloudflare.com A +short
 
 Expected:
 
-- `unbound-checkconf` reports no errors.
+- `/usr/sbin/unbound-checkconf` reports no errors.
 - `unbound.service` is active.
 - Unbound listens on `127.0.0.1:5335`.
 - `dig` through port `5335` returns at least one A record.
 
-Abort if `unbound-checkconf` fails. Do not start/restart Unbound with invalid config.
+Abort if `/usr/sbin/unbound-checkconf` fails. Do not start/restart Unbound with invalid config.
 
 ## 7. Restore AdGuard safely
 
@@ -256,7 +256,7 @@ git status --short --branch
 
 Abort immediately if:
 
-- `unbound-checkconf` fails.
+- `/usr/sbin/unbound-checkconf` fails.
 - AdGuard Home config validation fails.
 - Raw secrets risk being printed to terminal, logs, docs, shell history, or chat.
 - A command would overwrite live runtime state without a timestamped local backup.
@@ -277,7 +277,7 @@ TS=$(date +%Y%m%d-%H%M%S)
 sudo systemctl stop unbound
 sudo mv /etc/unbound /etc/unbound.failed.$TS
 sudo cp -a /etc/unbound.bak.TIMESTAMP /etc/unbound
-sudo unbound-checkconf /etc/unbound/unbound.conf
+sudo /usr/sbin/unbound-checkconf /etc/unbound/unbound.conf
 sudo systemctl start unbound
 ```
 
