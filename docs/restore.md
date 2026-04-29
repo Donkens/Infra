@@ -46,14 +46,16 @@ Current state after the Phase 0 backup/restore audit for issue #6:
 - Git restore is partial for AdGuard Home because the repo contains sanitized summaries and policy, not raw runtime config.
 - Git restore is useful for Unbound tracked snapshots, repo docs, scripts, systemd templates, and validation helpers.
 - Full AdGuard Home restore requires operator-held raw backup/secret material and a separate approved restore task.
-- Backups are currently plain local files unless a later approved backup destination adds encryption/off-Pi storage.
+- The first off-Pi copy target is the Mac mini encrypted sparsebundle at `/Users/yasse/InfraBackups/pi-dns-backups.sparsebundle`.
+- The first verified off-Pi Pi DNS backup is `dns-backup-20260429_030452`.
+- A safe restore drill to `/tmp/pi-dns-restore-drill/` passed on 2026-04-29 without touching live services.
 
 Before Opti/Proxmox expansion:
 
-- Choose and configure an external/off-Pi backup target.
-- Record a completed restore-test result.
+- Move or extend the interim Mac mini target to an external/off-Pi USB-SSD target.
+- Record a completed restore-test result for Opti/Proxmox workload backups.
 - Decide whether to apply DNS backup retention pruning after reviewing dry-run output.
-- Decide encryption policy for the off-Pi backup target.
+- Decide long-term encryption/key handling policy for off-Pi backups.
 
 ## 4. Clone repo
 

@@ -1,6 +1,6 @@
 # Opti backup and restore-test checklist
 
-No completed Opti/Proxmox restore test is documented yet.
+No completed Opti/Proxmox workload restore test is documented yet. A Pi DNS off-Pi backup restore drill was completed on 2026-04-29.
 
 ## Backup destination
 
@@ -23,6 +23,23 @@ Do not include media, downloads, or cache in the initial scope.
 3. Restore a representative file or app dataset into a safe test location.
 4. Confirm ownership and permissions.
 5. Document the result.
+
+## Completed restore tests
+
+### 2026-04-29 — Pi DNS off-Pi backup drill
+
+| Field | Value |
+| --- | --- |
+| Date | 2026-04-29 |
+| Operator | Yasse/Codex |
+| Source backup path / timestamp | Pi `/home/pi/repos/infra/state/backups/latest` -> `dns-backup-20260429_030452` |
+| Target / safe restore location | Encrypted Mac mini sparsebundle `/Users/yasse/InfraBackups/pi-dns-backups.sparsebundle`; mounted copy at `/Volumes/pi-dns-backups/pi/state-backups/`; drill path `/tmp/pi-dns-restore-drill/` |
+| Files restored | Latest Pi DNS backup directory copied to safe temp path; raw file contents were not printed |
+| Ownership / permissions checked | Metadata copied and checksums validated; Mac copy is for recovery staging, not direct live restore |
+| Services touched | None |
+| Validation commands | `shasum -a 256 -c meta/SHA256SUMS.txt`; metadata/count checks; no live restore |
+| Result | PASS |
+| Follow-ups | USB-SSD/offsite migration; retention `--apply` decision; long-term encryption/key handling policy; optional scheduled off-Pi sync |
 
 ## Restore test result template
 

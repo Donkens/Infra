@@ -2,13 +2,22 @@
 
 ## Current status
 
-External USB/offsite backup is planned, not live. Current Pi DNS backups under `state/backups/` are local-only safety net data and are not enough for Opti/Proxmox expansion.
+An interim Mac mini off-Pi target is live for Pi DNS backups:
+
+- Container: `/Users/yasse/InfraBackups/pi-dns-backups.sparsebundle`
+- Volume: `pi-dns-backups`
+- Mounted destination: `/Volumes/pi-dns-backups/pi/state-backups/`
+- Source: Pi `/home/pi/repos/infra/state/backups/`
+- First verified backup copied: `dns-backup-20260429_030452`
+- First safe restore drill: PASS on 2026-04-29.
+
+Current Pi DNS backups under `state/backups/` remain local-only safety net data on the Pi and are not enough by themselves for Opti/Proxmox expansion.
 
 Do not rely on Pi-local `state/backups/` as the only recovery path for Opti services, HAOS, Vaultwarden, or other heavy workloads.
 
 ## Initial destination
 
-Use an external USB-SSD or equivalent off-Pi encrypted backup destination first. Offsite/Backblaze B2 can be added later after local backups and restore tests are boring and repeatable.
+Use the Mac mini encrypted sparsebundle as the interim target. Move the same process to an external USB-SSD or equivalent off-Pi encrypted backup destination next. Offsite/Backblaze B2 can be added later after local backups and restore tests are boring and repeatable.
 
 ## Backup scope
 
@@ -30,7 +39,7 @@ Exclude initially:
 
 Backups are not considered real until a restore-test is documented and completed. Use `runbooks/opti-backup-restore-test.md` for the checklist.
 
-Complete a restore drill before heavy workloads, Vaultwarden, or additional critical services are deployed on Opti/Proxmox.
+The first Pi DNS off-Pi restore drill is documented, but Opti/Proxmox workload backups still need their own restore drill before heavy workloads, Vaultwarden, or additional critical services are deployed.
 
 ## Vaultwarden gate
 
