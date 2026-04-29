@@ -36,7 +36,26 @@ Assumptions:
 
 Abort if any assumption is false and create a new Phase 0/1 plan before continuing.
 
-## 3. Clone repo
+## 3. Current backup posture
+
+Current state after the Phase 0 backup/restore audit for issue #6:
+
+- Pi DNS backups are a Pi-local safety net, not disaster-proof recovery.
+- Backup artifacts live under ignored `state/backups/` and must stay local-only.
+- Raw `AdGuardHome.yaml` exists only in local backup state or other operator-held material, not in Git.
+- Git restore is partial for AdGuard Home because the repo contains sanitized summaries and policy, not raw runtime config.
+- Git restore is useful for Unbound tracked snapshots, repo docs, scripts, systemd templates, and validation helpers.
+- Full AdGuard Home restore requires operator-held raw backup/secret material and a separate approved restore task.
+- Backups are currently plain local files unless a later approved backup destination adds encryption/off-Pi storage.
+
+Before Opti/Proxmox expansion:
+
+- Choose and configure an external/off-Pi backup target.
+- Record a completed restore-test result.
+- Decide whether to apply DNS backup retention pruning after reviewing dry-run output.
+- Decide encryption policy for the off-Pi backup target.
+
+## 4. Clone repo
 
 Read-only until the clone itself; cloning writes only to the operator home directory.
 
@@ -55,7 +74,7 @@ git status --short --branch
 git remote -v
 ```
 
-## 4. Verify repo
+## 5. Verify repo
 
 Read-only checks:
 
@@ -79,7 +98,7 @@ Expected:
 
 Do not continue if the repo is missing `AGENTS.md`, `docs/adguard-home-change-policy.md`, or Unbound snapshots.
 
-## 5. Install base packages
+## 6. Install base packages
 
 **Operator-only / approval required.** This changes system packages.
 
@@ -100,7 +119,7 @@ Package purpose:
 
 Abort if package installation fails or if the host cannot reach the package repositories.
 
-## 6. Restore Unbound from repo snapshots
+## 7. Restore Unbound from repo snapshots
 
 Inputs from repo:
 
@@ -153,7 +172,7 @@ Expected:
 
 Abort if `/usr/sbin/unbound-checkconf` fails. Do not start/restart Unbound with invalid config.
 
-## 7. Restore AdGuard safely
+## 8. Restore AdGuard safely
 
 AdGuard Home restore must follow `docs/adguard-home-change-policy.md`.
 
@@ -191,7 +210,7 @@ dig @192.168.1.55 cloudflare.com A +short
 
 If YAML fallback is used, validate with the installed AdGuard Home binary before starting the service, as described in `docs/adguard-home-change-policy.md`.
 
-## 8. Systemd health timers
+## 9. Systemd health timers
 
 Install or verify health timers only after Unbound and AdGuard Home are restored.
 
@@ -223,7 +242,7 @@ systemctl is-active backup-health.timer
 
 `infra-auto-sync.service` and `infra-auto-sync.timer` must be handled separately because they can commit and push to GitHub. Do not enable them during restore unless a separate approved plan explicitly covers auto-sync behavior, credentials, staging scope, and push risk.
 
-## 9. DNS smoke tests
+## 10. DNS smoke tests
 
 Run after Unbound and AdGuard Home are restored.
 
@@ -252,7 +271,7 @@ ss -tulpn | grep -E ':(53|5335|853|3000|443)\b'
 git status --short --branch
 ```
 
-## 10. Rollback and abort criteria
+## 11. Rollback and abort criteria
 
 Abort immediately if:
 
@@ -283,7 +302,7 @@ sudo systemctl start unbound
 
 Do not run rollback commands until the exact backup timestamp and blast radius are confirmed.
 
-## 11. What not to restore
+## 12. What not to restore
 
 Do not restore these as part of the standard repo restore:
 
@@ -298,7 +317,7 @@ Do not restore these as part of the standard repo restore:
 
 Do not run `git clean` against Pi runtime/backups.
 
-## 12. Final success criteria
+## 13. Final success criteria
 
 Restore is successful when:
 
