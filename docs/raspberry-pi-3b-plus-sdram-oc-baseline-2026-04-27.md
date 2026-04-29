@@ -1,5 +1,8 @@
 # Raspberry Pi 3B+ SDRAM OC baseline — 2026-04-27
 
+> **HISTORICAL SNAPSHOT / STALE:** verify current state in `inventory/` and current runbooks before applying any changes.
+
+
 ## Summary
 
 - Model: Raspberry Pi 3 Model B Plus Rev 1.3

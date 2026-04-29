@@ -1,5 +1,8 @@
 # DNS/TLS cleanup baseline — 2026-04-26
 
+> **HISTORICAL SNAPSHOT / STALE:** verify current state in `inventory/` and current runbooks before applying any changes.
+
+
 ## Summary
 
 Five cleanup tasks completed on 2026-04-26 to establish a clean DNS/TLS baseline for the home.lan infrastructure. No functional regressions. All changes verified live from Mac mini.

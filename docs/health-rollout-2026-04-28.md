@@ -1,5 +1,8 @@
 # Health unit hardening rollout — 2026-04-28
 
+> **HISTORICAL SNAPSHOT / STALE:** verify current state in `inventory/` and current runbooks before applying any changes.
+
+
 > Historical record of the live hardening rollout for `dns-health` and `backup-health` units.
 
 ## Status summary
