@@ -10,6 +10,7 @@ MOUNTPOINT="/Volumes/pi-dns-backups"
 DEST="/Volumes/pi-dns-backups/pi/state-backups"
 LOG_DIR="/Users/yasse/Library/Logs/pi-dns-backups"
 LAST_STATUS="$LOG_DIR/offpi-sync.last"
+NOTIFY_TOPIC_FILE="/Users/yasse/.config/pi-dns-backups/notify-topic"
 
 VERIFY_ONLY=0
 NO_ATTACH=0
@@ -49,12 +50,41 @@ exec 2>>"$ERR_FILE"
 
 timestamp() { date '+%Y-%m-%d %H:%M:%S'; }
 log() { echo "[$(timestamp)] $*"; }
+
+_notify_fail() {
+  local reason="$1"
+  local ts="$2"
+  local host
+  host="$(hostname -s 2>/dev/null || echo unknown)"
+  local msg="off-pi backup FAIL — reason: ${reason} | host: ${host} | job: offpi-sync | ts: ${ts}"
+  # Tier 1: macOS Notification Center. No secrets, no network.
+  osascript << APPLESCRIPT >/dev/null 2>&1 || true
+display notification "${msg}" with title "Pi Backup" subtitle "offpi-sync" sound name "Basso"
+APPLESCRIPT
+  # Tier 2: optional ntfy.sh topic. Topic file is local-only and never stored in repo.
+  if [ -f "$NOTIFY_TOPIC_FILE" ] && [ -r "$NOTIFY_TOPIC_FILE" ]; then
+    local topic
+    topic="$(tr -d '[:space:]' < "$NOTIFY_TOPIC_FILE")"
+    if [ -n "$topic" ]; then
+      curl -s -o /dev/null --max-time 5 \
+        -H "Title: Pi Backup FAIL" \
+        -H "Priority: high" \
+        -d "$msg" \
+        "https://ntfy.sh/${topic}" 2>/dev/null || true
+    fi
+  fi
+}
+
 fail() {
   local reason="$1"
+  local ts
+  ts="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
   log "FAIL: $reason"
-  printf 'timestamp=%s\nresult=FAIL\nreason=%s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "$reason" >"$LAST_STATUS"
+  printf 'timestamp=%s\nresult=FAIL\nreason=%s\n' "$ts" "$reason" >"$LAST_STATUS"
+  _notify_fail "$reason" "$ts"
   exit 1
 }
+
 ok_status() {
   local latest_name="$1"
   local copied_count="$2"
