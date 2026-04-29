@@ -15,6 +15,7 @@ Läs `AGENTS.md § ENVIRONMENT` för iCloud-sökvägar och symlink-policy innan 
 | Script | Körs på | Syfte |
 |---|---|---|
 | `backup-dns-configs.sh` | Pi | Säkerhetskopiera AdGuard Home + Unbound-config till `state/backups/` |
+| `export-pi-dns-backups` | Pi | Least-privilege wrapper för read-only tar export av `/home/pi/repos/infra/state/backups` via `/usr/local/sbin/export-pi-dns-backups` |
 
 ## debug/
 

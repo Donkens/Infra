@@ -107,12 +107,12 @@ if [ "$VERIFY_ONLY" -ne 1 ]; then
   if ! ssh "$PI_HOST" "test -d '$PI_SOURCE'"; then
     fail "pi_source_missing"
   fi
-  if ! ssh "$PI_HOST" "sudo -n true"; then
-    fail "pi_sudo_noninteractive_missing"
+  if ! ssh "$PI_HOST" "sudo -n /usr/local/sbin/export-pi-dns-backups --check"; then
+    fail "pi_backup_export_wrapper_unavailable"
   fi
 
   log "INFO: starting tar stream copy from Pi to off-Pi destination"
-  if ! ssh "$PI_HOST" "cd '$PI_SOURCE' && sudo -n tar --numeric-owner -cpf - ." | (cd "$DEST" && tar -xpf -); then
+  if ! ssh "$PI_HOST" "sudo -n /usr/local/sbin/export-pi-dns-backups" | (cd "$DEST" && tar -xpf -); then
     fail "copy_failed"
   fi
 fi

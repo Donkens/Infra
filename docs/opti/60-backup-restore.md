@@ -13,10 +13,14 @@ An interim Mac mini off-Pi target is live for Pi DNS backups:
 - Recurring sync script: `/Users/yasse/repos/Infra/scripts/maintenance/sync-pi-dns-backups-offpi.sh`
 - LaunchAgent path: `/Users/yasse/Library/LaunchAgents/com.yasse.pi-dns-backups.offpi-sync.plist`
 - Schedule target: daily `04:30`.
+- Pi export wrapper: `/usr/local/sbin/export-pi-dns-backups`
+- Narrow sudoers rule: `/etc/sudoers.d/pi-dns-backup-export`
 
 Current Pi DNS backups under `state/backups/` remain local-only safety net data on the Pi and are not enough by themselves for Opti/Proxmox expansion.
 
 Do not rely on Pi-local `state/backups/` as the only recovery path for Opti services, HAOS, Vaultwarden, or other heavy workloads.
+
+The recurring Mac mini pull uses the Pi wrapper above instead of broad `sudo tar`. The older broad sudo rule in `/etc/sudoers.d/010_pi-nopasswd` is intentionally not removed in this step; observe a scheduled wrapper-based run first, then remove broad sudo in a separate audited change.
 
 ## Initial destination
 
