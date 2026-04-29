@@ -1,31 +1,33 @@
 # DNS names
 
 > Source-of-truth for important `home.lan` names.
-> Last verified: 2026-04-28 19:45 CEST
+> Last verified: 2026-04-29 18:00 CEST
 
 ## Authority model
 
 | Record type | Authority | Notes |
 |---|---|---|
-| Client-facing forward lookups | AdGuard Home on Pi `192.168.1.55` | AdGuard handles service/convenience rewrites and forwards other names to Unbound. |
-| Recursion | Unbound on Pi `127.0.0.1:5335` | AdGuard upstream. |
-| PTR / reverse DNS | Unbound `ptr-local.conf` | Reverse records for documented infra hosts. |
+| Forward DNS for live hosts and services | AdGuard Home on Pi `192.168.1.55` / `fd12:3456:7801::55` | AdGuard handles client-facing A/AAAA records and service/convenience rewrites. Do not duplicate forward `.home.lan` names in Unbound unless intentionally changing the authority model. |
+| Recursion | Unbound on Pi `127.0.0.1:5335` | AdGuard upstream for recursive resolution. |
+| PTR / reverse DNS | Unbound `ptr-local.conf` | Reverse records for documented infra hosts using `local-data-ptr`; no forward `local-data` A/AAAA baseline. |
 | DHCP distribution | UniFi / UDR-7 | Client DNS should point to Pi DNS. |
 
 ## LIVE infra and service names
 
 | Name | A | AAAA | PTR | Source | Status | Notes |
 |---|---|---|---|---|---|---|
-| `pi.home.lan` | `192.168.1.55` | `fd12:3456:7801::55` | `pi.home.lan.` | Unbound / AdGuard forwarding | LIVE | Pi DNS node. |
+| `pi.home.lan` | `192.168.1.55` | `fd12:3456:7801::55` | `pi.home.lan.` | Forward: AdGuard; PTR: Unbound | LIVE | Pi DNS node. |
 | `adguard.home.lan` | `192.168.1.55` | `fd12:3456:7801::55` | n/a | AdGuard rewrite | LIVE | AdGuard UI/TLS/DNS service alias. |
 | `cockpit.home.lan` | `192.168.1.55` | UNKNOWN | n/a | AdGuard rewrite | LIVE | Pi Cockpit alias. |
-| `macmini.home.lan` | `192.168.1.86` | `fd12:3456:7801::86` | `macmini.home.lan.` | Unbound / AdGuard forwarding | LIVE | Mac mini Ethernet. |
-| `macmini-wifi.home.lan` | `192.168.1.84` | UNKNOWN | `macmini-wifi.home.lan.` | Unbound PTR + AdGuard forward | LIVE | Mac mini WiFi. |
-| `mbp.home.lan` | `192.168.1.78` | `fd12:3456:7801::78` | `mbp.home.lan.` | Unbound / AdGuard forwarding | LIVE | MacBook Pro 2015. |
-| `udr.home.lan` | `192.168.1.1` | none / UNKNOWN | `udr.home.lan.` | AdGuard forward + Unbound PTR | LIVE | UDR-7 gateway. AAAA did not answer in latest check. |
+| `macmini.home.lan` | `192.168.1.86` | `fd12:3456:7801::86` | `macmini.home.lan.` | Forward: AdGuard; PTR: Unbound | LIVE | Mac mini Ethernet. |
+| `macmini-wifi.home.lan` | `192.168.1.84` | UNKNOWN | `macmini-wifi.home.lan.` | Forward: AdGuard; PTR: Unbound | LIVE | Mac mini WiFi. |
+| `mbp.home.lan` | `192.168.1.78` | `fd12:3456:7801::78` | `mbp.home.lan.` | Forward: AdGuard; PTR: Unbound | LIVE | MacBook Pro 2015. |
+| `udr.home.lan` | `192.168.1.1` | none / UNKNOWN | `udr.home.lan.` | Forward: AdGuard; PTR: Unbound | LIVE | UDR-7 gateway. AAAA did not answer in latest check. |
 | `router.home.lan` | `192.168.1.1` | UNKNOWN | n/a | AdGuard rewrite | LIVE | UDR convenience alias. |
 | `unifi.home.lan` | `192.168.1.1` | UNKNOWN | n/a | AdGuard rewrite | LIVE | UniFi UI alias. |
-| `iphone.home.lan` | `192.168.40.207` | UNKNOWN | `iphone.home.lan.` | Unbound PTR + AdGuard forward | LIVE | iPhone on MLO-LAN/VLAN 40. |
+| `iphone.home.lan` | `192.168.40.207` | UNKNOWN | `iphone.home.lan.` | Forward: AdGuard; PTR: Unbound | LIVE | iPhone on MLO-LAN/VLAN 40. |
+
+If a host has both forward and reverse DNS, forward lives in AdGuard and reverse lives in Unbound. Phase 0 on 2026-04-29 verified that direct Unbound forward lookup for `pi.home.lan A` returns `NXDOMAIN`, while AdGuard resolves `pi.home.lan`, `macmini.home.lan`, `adguard.home.lan`, and `cockpit.home.lan` correctly.
 
 ## PLANNED Opti / VM / service names
 

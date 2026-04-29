@@ -1,7 +1,7 @@
 # DNS-arkitektur — home.lan
 
 > Single source-of-truth för DNS-auktoritetsmodellen.
-> Senast verifierad: 2026-04-26.
+> Senast verifierad: 2026-04-29.
 
 ## Network authority roles
 
@@ -10,17 +10,17 @@
 | DHCP / VLAN / firewall / WiFi | UDR-7 / UniFi | Distributes DNS, owns gateway and client network policy. |
 | DNS node | Pi `192.168.1.55` | Runs AdGuard Home and Unbound. |
 | Client DNS / forward rewrites | AdGuard Home | LAN-facing DNS, filtering, and service aliases. |
-| Recursion / PTR | Unbound | Recursive resolver and local reverse records. |
+| Recursion / PTR | Unbound | Recursive resolver and local reverse records only. |
 
 ## DNS-kedja
 
 ```
 klient
   └─► AdGuard Home  192.168.1.55 : 53 (UDP/TCP)
+                     fd12:3456:7801::55 : 53 (UDP/TCP)
                                   : 443 (DoH  /dns-query)
                                   : 853 (DoT)
         └─► Unbound  127.0.0.1 : 5335
-                     ::1       : 5335
               └─► upstream (rekursiv, internet)
 ```
 
@@ -40,17 +40,18 @@ klient
 
 | Record-typ | Auktoritet | Var konfigurerat |
 |---|---|---|
-| A/AAAA för tjänster (Caddy, HAOS, Dockge m.fl.) | **AdGuard Home** — DNS rewrites | AdGuard UI / `AdGuardHome.yaml` |
-| A/AAAA för infra-hosts (Pi, UDR, Mac mini, MacBook) | **Unbound** — `local-data` | `config/unbound/unbound.conf.d/ptr-local.conf` |
+| A/AAAA för live hosts och tjänster | **AdGuard Home** — client-facing DNS / rewrites | AdGuard UI / `AdGuardHome.yaml` |
 | PTR (reverse DNS) för alla hosts | **Unbound** — `local-data-ptr` | `config/unbound/unbound.conf.d/ptr-local.conf` |
 | Rekursiv resolution (internet-namn) | **Unbound** | upstream via root-hints |
 | Blocklists / filtering | **AdGuard Home** | filter-listor i AdGuard UI |
 
 ### `home.lan`-zonen
 
-Unbound är auktoritativ för `home.lan.` med `local-zone: "home.lan." static`.  
-AdGuard rewrites för tjänste-namn pekar vidare mot `192.168.30.x` (Docker VM / HAOS).  
-Det är ingen konflikt — AdGuard rewrites löses av AdGuard, Unbound löser PTR och infra-hosts.
+AdGuard äger forward lookups för live `home.lan` hosts och tjänster. Klienter ska fråga AdGuard på Pi (`192.168.1.55:53` / `fd12:3456:7801::55:53`), och AdGuard använder Unbound på `127.0.0.1:5335` för rekursiv resolution.
+
+Unbound har `local-zone: "home.lan." static` för reverse/PTR-modellen och `ptr-local.conf` innehåller `local-data-ptr`, inte forward `local-data` A/AAAA-records. En direkt forward-fråga till Unbound, t.ex. `dig @127.0.0.1 -p 5335 pi.home.lan A`, returnerar därför `NXDOMAIN` enligt aktuell baseline.
+
+Duplicera inte forward `.home.lan`-namn i Unbound om auktoritetsmodellen inte avsiktligt ändras. Om en host har både forward och reverse DNS ligger forward i AdGuard och reverse i Unbound.
 
 ## DoT / DoH / DDR
 
@@ -82,7 +83,7 @@ Detaljer: [`docs/unifi-firewall-state-2026-04-15.md`](unifi-firewall-state-2026-
 - [`docs/adguard-home-change-policy.md`](adguard-home-change-policy.md) — hur AdGuard ändras säkert
 - [`docs/dns-tls-baseline-2026-04-26.md`](dns-tls-baseline-2026-04-26.md) — TLS/DDR cleanup baseline
 - [`inventory/dns-names.md`](../inventory/dns-names.md) — fullständig DNS-namnlista
-- [`config/unbound/unbound.conf.d/ptr-local.conf`](../config/unbound/unbound.conf.d/ptr-local.conf) — PTR + infra A-records
+- [`config/unbound/unbound.conf.d/ptr-local.conf`](../config/unbound/unbound.conf.d/ptr-local.conf) — PTR/reverse records
 
 ## DNS bypass risk
 
