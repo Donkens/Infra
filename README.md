@@ -38,6 +38,7 @@ Planning docs for the Dell OptiPlex 7080 Micro live under `docs/opti/`.
 Start with [Opti baseline](docs/opti/00-baseline.md),
 [IP plan](inventory/ip-plan.md), and
 [Phase 0 checklist](runbooks/opti-phase-0.md).
+Use [Proxmox install preflight](runbooks/proxmox-install-preflight.md) on install day.
 
 ## Layout
 - `config/`     Service configs (AdGuardHome, Unbound, SSH)

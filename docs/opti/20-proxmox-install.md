@@ -1,5 +1,7 @@
 # Proxmox install notes
 
+Operational install-day checklist: [Proxmox install preflight](../../runbooks/proxmox-install-preflight.md).
+
 ## BIOS checklist
 
 - Update BIOS before production workloads if practical.

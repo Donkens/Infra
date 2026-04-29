@@ -1,5 +1,9 @@
 # Opti Phase 0 - pre-install checklist
 
+Install-day checklist: [Proxmox install preflight](proxmox-install-preflight.md).
+
+Use this file for current readiness summary. Use the preflight runbook for BIOS, USB installer, disk wipe, Proxmox installer fields, first login, and post-install validation.
+
 ## Network prep status (completed 2026-04-26)
 
 | Item | Status | Detail |
@@ -25,14 +29,13 @@
 
 ## Steps when Opti arrives
 
-1. Plug Opti into UDR-7 port 3.
-2. Apply `Opti Trunk` profile to port 3 in UniFi (or via MCP).
-3. Install Proxmox. Set static IP `192.168.1.60` on host interface.
-4. Verify: `ping proxmox.home.lan` → `192.168.1.60`, Proxmox UI on `:8006`.
-5. Create VMs with VLAN 30 interface → Docker VM (`.10`), HAOS VM (`.20`).
-6. Verify DHCP from VMs (range `.100`–`.199`).
-7. Verify DNS from VMs: `dig @192.168.1.55 docker.home.lan`, `ha.home.lan`.
-8. Issue `GO firewall` — create Server zone and firewall rules.
+1. Open [Proxmox install preflight](proxmox-install-preflight.md).
+2. Plug Opti into the approved UDR-7 port.
+3. Apply `Opti Trunk` profile only after separate `GO` if it is not already applied.
+4. Install Proxmox using the preflight checklist.
+5. Validate Proxmox host management on `192.168.1.60`.
+6. Validate VLAN 30 with [Validate Server VLAN 30](validate-server-vlan30.md).
+7. Issue `GO firewall` only after install and validation are clear.
 
 ## Low-RAM branch
 
