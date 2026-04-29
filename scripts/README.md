@@ -42,4 +42,5 @@ Läs `AGENTS.md § ENVIRONMENT` för iCloud-sökvägar och symlink-policy innan 
 | `infra-status.sh` | Pi/Mac — verify before running | Samlad statusöversikt |
 | `monitor-cpu.sh` | Pi | CPU-temperatur/belastning |
 | `prune-dns-backups.sh` | Pi | Rensa gamla DNS-backuper (default: dry-run, 45 d, min 10). Kräver `--apply` för faktisk borttagning. |
+| `sync-pi-dns-backups-offpi.sh` | Mac mini | Recurring off-Pi sync av Pi DNS backups till encrypted sparsebundle (`/Volumes/pi-dns-backups/pi/state-backups`) |
 | `unbound-mini-top.sh` | Pi | Realtidsvy Unbound-stats |

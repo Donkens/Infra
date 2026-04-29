@@ -10,6 +10,9 @@ An interim Mac mini off-Pi target is live for Pi DNS backups:
 - Source: Pi `/home/pi/repos/infra/state/backups/`
 - First verified backup copied: `dns-backup-20260429_030452`
 - First safe restore drill: PASS on 2026-04-29.
+- Recurring sync script: `/Users/yasse/repos/Infra/scripts/maintenance/sync-pi-dns-backups-offpi.sh`
+- LaunchAgent path: `/Users/yasse/Library/LaunchAgents/com.yasse.pi-dns-backups.offpi-sync.plist`
+- Schedule target: daily `04:30`.
 
 Current Pi DNS backups under `state/backups/` remain local-only safety net data on the Pi and are not enough by themselves for Opti/Proxmox expansion.
 

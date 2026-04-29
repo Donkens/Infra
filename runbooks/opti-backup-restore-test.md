@@ -41,6 +41,8 @@ Do not include media, downloads, or cache in the initial scope.
 | Result | PASS |
 | Follow-ups | USB-SSD/offsite migration; retention `--apply` decision; long-term encryption/key handling policy; optional scheduled off-Pi sync |
 
+Recurring off-Pi sync is handled by `/Users/yasse/repos/Infra/scripts/maintenance/sync-pi-dns-backups-offpi.sh` via LaunchAgent `com.yasse.pi-dns-backups.offpi-sync`. Restore drills remain manual and are not triggered by the recurring sync job.
+
 ## Restore test result template
 
 Copy this section into the issue/runbook entry for each completed drill.
