@@ -53,6 +53,8 @@ Unbound har `local-zone: "home.lan." static` för reverse/PTR-modellen och `ptr-
 
 Duplicera inte forward `.home.lan`-namn i Unbound om auktoritetsmodellen inte avsiktligt ändras. Om en host har både forward och reverse DNS ligger forward i AdGuard och reverse i Unbound.
 
+Lightweight verifiering finns i [`scripts/maintenance/check-dns-authority.sh`](../scripts/maintenance/check-dns-authority.sh). Kör den på Pi för att kontrollera att AdGuard svarar på forward records, att direkt Unbound-forward för `pi.home.lan A` inte svarar med A-record, och att Unbound PTR för `192.168.1.55` pekar tillbaka till `pi.home.lan.`.
+
 ## DoT / DoH / DDR
 
 | Protokoll | Status | Detalj |

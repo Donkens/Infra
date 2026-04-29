@@ -52,7 +52,7 @@ client
 ```
 
 - **AdGuard Home:** filtering, blocklists, DNS rewrites för tjänste-namn (`.home.lan`).
-- **Unbound:** rekursiv resolver, PTR-records och lokala A-records för infra-hosts, `local-zone: "home.lan." static`.
+- **Unbound:** rekursiv resolver och PTR-records. Senare baseline 2026-04-29 flyttade forward-authority-beskrivningen till AdGuard; se `docs/dns-architecture.md`.
 - **DNSSEC:** av (false). DDR: av (handle_ddr=false, sedan 2026-04-26).
 - **Parallella resolvers:** förbjudna — en kedja endast.
 

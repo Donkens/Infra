@@ -36,6 +36,7 @@ Läs `AGENTS.md § ENVIRONMENT` för iCloud-sökvägar och symlink-policy innan 
 | Script | Körs på | Syfte |
 |---|---|---|
 | `check-backups.sh` | Pi | Kontrollera backup-status |
+| `check-dns-authority.sh` | Pi | Verifiera DNS authority-modellen: AdGuard forward, Unbound recursion/PTR |
 | `dns-health-monitor.sh` | Pi | Kontinuerlig DNS-hälsokoll |
 | `dns-health-report.sh` | Pi | Engångsrapport DNS-hälsa |
 | `infra-status.sh` | Pi/Mac — verify before running | Samlad statusöversikt |
