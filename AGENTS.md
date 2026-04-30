@@ -12,6 +12,8 @@
 Trivial task = single-file local repo edit, docs/text only, no infra/network/cross-host impact.
 - Trivial local task: execute immediately, verify, report briefly.
 - Non-trivial local repo task: show brief plan, then execute.
+- Trivial Pi read task: SSH read-only command with no sudo, no config/log/secret dump, no service impact (e.g. `uptime`, `df -h`, `free -h`, `systemctl is-active`, `git status`): execute immediately, report in one line. Session-cached host verification sufficient.
+- Pi read-only audit: Phase 0 runs directly without pause — collect, interpret, report. Phase 1 / Phase 2 approval gates apply only if the audit yields a proposed change.
 - Infra / network / remote / system-service task: Phase 0 mandatory.
 - Approval gate overrides all modes.
 
@@ -44,6 +46,12 @@ Rules:
 6. Workspace/sandbox path is not the target host.
 7. If `~/.machine-identity` conflicts with `inventory/identity-map.md`, stop and report mismatch.
 8. No writes until Phase 2 approval.
+
+Session caching: A completed verification may be reused within the same session without re-running the commands. Re-verify if:
+- target host changes between tasks
+- 30+ minutes have passed since last verification
+- an identity mismatch was found in the prior check
+- the next action is a write, sudo, service change, or runtime change
 
 See `docs/agent-host-verification.md` for the full runbook.
 
@@ -144,6 +152,11 @@ die() { log "ERROR: $*"; exit 1; }
 - Prefer the existing `infra` session; do not create random sessions.
 - If the session is missing, create it intentionally: `tmux new -d -s infra -n repo`.
 - UDR-7 and HAOS should not be modified to use tmux.
+
+## SSH BATCHING
+- Batch independent read-only SSH commands into one call per logical group. Avoid multiple separate SSH sessions for the same runbook phase.
+- Never batch writes or sudo together with discovery commands — writes always run in their own explicitly approved SSH call.
+- Prefer: `ssh pi 'cmd1; cmd2; cmd3'` over three separate `ssh pi 'cmd'` calls.
 
 ## INFRA DEFAULTS
 - DNS chain: client -> AdGuard (192.168.1.55) -> Unbound -> upstream

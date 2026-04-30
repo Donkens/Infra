@@ -69,6 +69,20 @@ Conclusion:
 - `Runtime source` is clearer wording for the Pi-side file.
 - No follow-up action is required.
 
+## Auto-PASS criteria
+
+An agent reviewing a nightly commit may treat the following as **Auto-PASS** and proceed without operator action:
+
+- Only `generated_at` changed in `config/adguardhome/AdGuardHome.summary.sanitized.yml`.
+- Only comment lines (lines beginning with `#`) changed in any `config/unbound/` snapshot.
+
+Require **WARN / REVIEW** if any of the following changed:
+
+- DNS semantic values: PTR records, hostnames, IP addresses, or upstream resolvers.
+- Any AdGuard summary field other than `generated_at`.
+- Any file outside the auto-sync allowlist was staged or committed.
+- `state/dns-health.last` or `state/backup-health.last` indicates a health failure.
+
 ## Operator guidance
 
 When a nightly commit changes `config/unbound/`:
