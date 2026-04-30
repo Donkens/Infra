@@ -2,7 +2,8 @@
 # Example only. Pin image tags before production use.
 services:
   dockge:
-    image: louislam/dockge:1
+    # Check https://hub.docker.com/r/louislam/dockge/tags for latest stable before pinning
+    image: louislam/dockge:1.4.2
     container_name: dockge
     restart: unless-stopped
     env_file:

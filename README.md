@@ -26,6 +26,7 @@ Current source-of-truth entry points:
 - [AdGuard optimization audit](runbooks/adguard-optimization-audit.md)
 - [AdGuard client policy](docs/adguard-home-client-policy.md)
 - [AdGuard false-positive allowlist](docs/adguard-home-false-positive-allowlist.md)
+- [Repo hygiene checklist](docs/repo-hygiene-checklist.md)
 
 ## Hosts managed
 - **Raspberry Pi 3** — AdGuard Home + Unbound (DNS authority)

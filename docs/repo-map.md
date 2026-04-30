@@ -33,6 +33,7 @@
 | AdGuard optimization audit | [runbooks/adguard-optimization-audit.md](../runbooks/adguard-optimization-audit.md) | Read-only AdGuard Home performance and stability audit. |
 | AdGuard client policy | [docs/adguard-home-client-policy.md](adguard-home-client-policy.md) | Proposed client group strategy (PLANNED, not live). |
 | AdGuard false-positive allowlist | [docs/adguard-home-false-positive-allowlist.md](adguard-home-false-positive-allowlist.md) | Candidate safe domains by service category. |
+| Repo hygiene checklist | [docs/repo-hygiene-checklist.md](repo-hygiene-checklist.md) | Offline quality pass: inventory consistency, safe examples, scripts baseline, git hygiene. |
 | Local runtime state | `state/`, `logs/` | Ignored/local only except `.gitkeep`; never source-of-truth for Git. |
 
 ## Precedence principles

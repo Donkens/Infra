@@ -1,6 +1,6 @@
 # UniFi firewall state — 2026-04-14
 
-> **Superseded by:** [unifi-firewall-state-2026-04-15.md](unifi-firewall-state-2026-04-15.md)
+> **SUPERSEDED / STALE:** Superseded by [unifi-firewall-state-2026-04-15.md](unifi-firewall-state-2026-04-15.md). Current source-of-truth: [inventory/unifi-firewall.md](../inventory/unifi-firewall.md). This file is historical context only.
 
 ## Sammanfattning
 UniFi har nu två kvarvarande custom policies.
