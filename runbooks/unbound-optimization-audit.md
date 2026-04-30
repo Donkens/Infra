@@ -213,6 +213,7 @@ Record the verdict, date, and uptime at time of audit in the audit report or a d
 | `serve-expired` | yes | Stale-while-revalidate safety net |
 | `serve-expired-client-timeout` | 1800 | 1800 ms: "try fresh, fall back to stale". Set to 0 for instant stale (P3 option). |
 | `use-caps-for-id` | yes | 0x20 anti-spoofing — monitor SERVFAIL if changed |
+| `harden-referral-path` | no | Intentional compatibility setting; avoids extra referral-path validation lookups that can amplify timeout loops against weak or broken delegations. Revisit only if DNSSEC/security posture changes. |
 | `do-ip6` | no | Correct for Tele2 IPv4-only WAN |
 | `edns-buffer-size` | 1232 | RFC 8085 / RIPE recommendation — do not increase |
 | `interface` | 127.0.0.1@5335 | Loopback-only — correct |

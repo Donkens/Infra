@@ -60,7 +60,7 @@ Lightweight verifiering finns i [`scripts/maintenance/check-dns-authority.sh`](.
 | Protokoll | Status | Detalj |
 |---|---|---|
 | DoT (DNS-over-TLS) | ✅ live | Port `853`. Cert: `adguard.home.lan`, giltig t.o.m. 2028-07-29. |
-| DoH (DNS-over-HTTPS) | `verify` | Endpoint `/dns-query` på port `443` — ej explicit verifierad. |
+| DoH (DNS-over-HTTPS) | ✅ live | Endpoint `/dns-query` på port `443`. Verifierad 2026-04-30 med RFC8484 `POST application/dns-message`; JSON-style `GET ?name=...&type=...` är inte rätt smoke test för denna endpoint. |
 | DDR | ❌ av | `handle_ddr: false` sedan 2026-04-26. Apple DDR orsakade TLS-friction mot privat CA. |
 | DNSSEC | ❌ av | `dnssec: false`. Inte aktiverat — Unbound gör inte DNSSEC-validering nedströms. |
 

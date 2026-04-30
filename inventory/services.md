@@ -27,7 +27,7 @@ Related current inventories:
 | AdGuard Home — UI | 3000 | HTTP | live | Wildcard listener (`*`:3000). Konfigurerad i `AdGuardHome.yaml`; force-HTTPS/redirect path till :443. Verifierad i Pi service audit 2026-04-28. |
 | AdGuard Home — HTTPS/UI | 443 | HTTPS | live | Wildcard listener (`*`:443). TLS-cert: `adguard.home.lan`, serial `47BBFE...`, giltig t.o.m. 2028-07-29. Verifierad via `curl -Ik https://adguard.home.lan` 2026-04-26 och Pi service audit 2026-04-28. |
 | AdGuard Home — DoT/DoQ | 853 | TLS/TCP + QUIC/UDP | live | Wildcard listener (`*`:853) för DNS-over-TLS och DNS-over-QUIC. Konfigurerad i `AdGuardHome.yaml`. Verifierad via `openssl s_client -connect adguard.home.lan:853` 2026-04-26 och Pi service audit 2026-04-28. |
-| AdGuard Home — DoH | 443 `/dns-query` | HTTPS | verify | Endpoint finns om AdGuard HTTPS är aktivt på :443 — ej explicit verifierad i baseline. |
+| AdGuard Home — DoH | 443 `/dns-query` | HTTPS | live | RFC8484 `POST /dns-query` med `application/dns-message` verifierad från Pi 2026-04-30: `HTTP=200`, DNS `rcode=0`, `answers=2`. |
 | Unbound | 5335 | UDP+TCP | live | Local-only runtime listener på `127.0.0.1:5335`; AdGuard upstream. `::1@5335` finns i config men `do-ip6: no` gör IPv6-bind inert. Verifierad via `ss` i Pi service audit 2026-04-28. |
 | Cockpit | 9090 | HTTPS | live | Intentional admin UI service. Socket-activated: `cockpit.socket` är enabled och lyssnar på `*`:9090 / `[::]`:9090 även när `cockpit.service` är inactive. Keep enabled. |
 | SSH | 22 | TCP | live | LAN/IPv6-exposed listener på `0.0.0.0:22` och `[::]:22`. Verifierad i Pi service audit 2026-04-28. |

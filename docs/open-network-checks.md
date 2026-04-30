@@ -14,7 +14,6 @@
 ## P2
 
 - Identify hidden `element-b85dc41a14f3982d` SSID or document owner/purpose.
-- Verify AdGuard DoH endpoint `/dns-query`.
 - Repair or standardize UDR SSH aliases `udr`, `udr7`, `router` after host-key drift review.
 
 ## P3

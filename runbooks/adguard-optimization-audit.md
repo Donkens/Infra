@@ -117,13 +117,31 @@ Expected: all names resolve to expected IPs; all PTRs resolve to expected hostna
 ### 8. DoH endpoint smoke test
 
 ```bash
-ssh pi 'curl -sk --max-time 3 "https://adguard.home.lan/dns-query?name=cloudflare.com&type=A" \
-  -H "Accept: application/dns-json" 2>/dev/null \
-  | python3 -c "import sys,json; d=json.load(sys.stdin); print(\"Status:\",d.get(\"Status\"),\"Answers:\",len(d.get(\"Answer\",[])))" \
-  2>/dev/null || echo "DoH endpoint: UNKNOWN or not available"'
+ssh pi 'python3 - <<'"'"'PY'"'"'
+import http.client, ssl, struct
+
+qname = b"".join(bytes([len(p)]) + p.encode() for p in "cloudflare.com".split(".")) + b"\0"
+query = struct.pack("!HHHHHH", 0x1234, 0x0100, 1, 0, 0, 0) + qname + struct.pack("!HH", 1, 1)
+
+ctx = ssl._create_unverified_context()
+conn = http.client.HTTPSConnection("adguard.home.lan", 443, context=ctx, timeout=5)
+conn.request(
+    "POST",
+    "/dns-query",
+    body=query,
+    headers={"content-type": "application/dns-message", "accept": "application/dns-message"},
+)
+resp = conn.getresponse()
+body = resp.read(512)
+if len(body) < 12:
+    raise SystemExit(f"DoH endpoint: UNKNOWN body_len={len(body)} http={resp.status}")
+
+tid, flags, qd, an, ns, ar = struct.unpack("!HHHHHH", body[:12])
+print(f"HTTP: {resp.status} RCODE: {flags & 0x000f} Answers: {an}")
+PY'
 ```
 
-Expected: `Status: 0 Answers: <n>` (NOERROR). Mark DoH endpoint UNKNOWN if TLS or auth error.
+Expected: `HTTP: 200 RCODE: 0 Answers: <n>` (NOERROR). Mark DoH endpoint UNKNOWN if TLS, HTTP, or DNS-wire parsing fails. Do not use JSON-style `GET ?name=...&type=...` as the primary smoke test; this AdGuard endpoint serves RFC8484 DNS-wire requests.
 
 ### 9. Safe AdGuard API check
 
