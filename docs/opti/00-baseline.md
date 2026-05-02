@@ -2,8 +2,8 @@
 
 ## Verified baseline — 2026-05-02
 
-The Opti is installed and validated as a Proxmox VE host. No VMs or CTs have
-been created yet.
+The Opti is installed and validated as a Proxmox VE host. HAOS VM `101` is live
+on Server VLAN 30. The Debian Docker VM has not been created yet.
 
 | Area | Value |
 | --- | --- |
@@ -59,8 +59,18 @@ iface vmbr0 inet static
 | Gateway ping `192.168.1.1` | OK |
 | DNS node ping `192.168.1.55` | OK |
 | Internet ping `1.1.1.1` | OK |
-| `qm list` | empty |
+| `qm list` | HAOS VM `101` running |
 | `pct list` | empty |
+
+### Live workloads
+
+| VMID | Name | Role | Network | Status |
+| ---: | --- | --- | --- | --- |
+| `101` | `haos` | Home Assistant OS | `192.168.30.20/24`, VLAN 30 | live |
+
+HAOS VM `101` uses `q35`, `OVMF`, `cpu host`, `2` cores, `6144 MB` RAM,
+`64 GB` on `local-lvm`, and `net0` on `vmbr0` with VLAN tag `30`. The QEMU
+guest agent responds. `onboot` is currently `0`.
 
 ## Target architecture
 

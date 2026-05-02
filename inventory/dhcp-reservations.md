@@ -1,7 +1,7 @@
 # DHCP reservations
 
 > Important UniFi fixed-IP reservations and planned infrastructure addresses.
-> Last verified: 2026-04-28 19:45 CEST
+> Last verified: 2026-05-02 17:27 CEST
 
 MAC addresses are intentionally masked. Do not commit full hardware addresses.
 
@@ -14,10 +14,11 @@ MAC addresses are intentionally masked. Do not commit full hardware addresses.
 | iPhone 17 Pro | `iPhone17Pro` | `192.168.40.207` | MLO-LAN / VLAN 40 | `5c:13:cc:xx:xx:xx` | LIVE | UniFi fixed IP + DNS PTR | MLO/6 GHz client. |
 | Roborock S5 Max | n/a | `192.168.10.6` | IOT / VLAN 10 | `b0:4a:39:xx:xx:xx` | LIVE | UniFi fixed IP | IoT vacuum. |
 | Opti / Proxmox host | `opti`, `proxmox` | `192.168.1.60` | Default / untagged | UNKNOWN | PLANNED | Repo plan | MAC unknown until hardware arrives. |
-| HAOS VM | `ha`, `haos` | `192.168.30.20` | Server / VLAN 30 | UNKNOWN | PLANNED | Repo plan | VM MAC unknown until VM exists. |
+| HAOS VM 101 | `ha`, `haos` | `192.168.30.20` | Server / VLAN 30 | `bc:24:11:xx:xx:xx` | LIVE | UniFi fixed IP + HAOS runtime | Manual UniFi reservation for VMID `101`; runtime validated from HAOS guest agent. |
 | Docker VM | `docker`, `proxy` | `192.168.30.10` | Server / VLAN 30 | UNKNOWN | PLANNED | Repo plan | VM MAC unknown until VM exists. |
 
 ## Notes
 
 - Planned Opti/VM addresses are DNS/IP plan targets, not verified DHCP reservations.
+- HAOS VM `101` has a verified UniFi fixed IP reservation. Full MAC is intentionally not tracked.
 - Keep this file to critical infrastructure only; broad client lists belong in UniFi, not Git.

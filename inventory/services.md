@@ -47,7 +47,7 @@ Applied 2026-04-29. Ingen package removal, ingen maskning, och Cockpit lämnades
 
 | Service | Port | Protocol | Status | Note |
 |---|---|---|---|---|
-| Proxmox UI/API | 8006 | HTTPS | live | Direct IP access: `https://192.168.1.60:8006`; DNS alias: `https://proxmox.home.lan:8006`. No VMs/CTs exist yet. |
+| Proxmox UI/API | 8006 | HTTPS | live | Direct IP access: `https://192.168.1.60:8006`; DNS alias: `https://proxmox.home.lan:8006`. HAOS VM `101` exists; Docker VM not yet created. |
 
 ## Docker VM — 192.168.30.10
 
@@ -63,7 +63,7 @@ Applied 2026-04-29. Ingen package removal, ingen maskning, och Cockpit lämnades
 
 | Service | Port | Protocol | Status | Note |
 |---|---|---|---|---|
-| Home Assistant | 8123 | HTTP | planned | `ha.home.lan` → `192.168.30.20`. Ej via Caddy. DNS-namn live, tjänst ej live-verifierad i denna audit. |
+| Home Assistant | 8123 | HTTP | live | Direct access: `http://192.168.30.20:8123`; aliases `ha.home.lan` and `haos.home.lan` resolve to `192.168.30.20`. Ej via Caddy. Runtime validated 2026-05-02 after UniFi DHCP reservation. |
 
 ## UDR-7 — 192.168.1.1
 

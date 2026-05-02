@@ -10,6 +10,7 @@
 | AdGuard DNS rewrites | ✅ Live, verified | 2026-04-26 |
 | Opti path VLAN tagging | ✅ Linux/UDR switch state confirms VLAN 30 tagged on Opti path | 2026-05-02 |
 | VLAN 30 VM/tap traffic | ✅ Validated with temporary CT `900`, then destroyed | 2026-05-02 |
+| HAOS VM 101 on VLAN 30 | ✅ Live, DHCP reservation validated | 2026-05-02 |
 | Firewall rules (Server zone) | ❌ Not yet — separate GO required | — |
 
 ## Trunk model
@@ -95,7 +96,27 @@ Validation result:
 - `ping 1.1.1.1` passed.
 - `getent hosts pi.home.lan` returned Pi DNS records.
 
-No HAOS or Docker VM was created by this validation.
+No HAOS or Docker VM was created by this validation. HAOS VM `101` was created
+later and is now live on Server VLAN 30.
+
+## HAOS VM 101 runtime validation
+
+Validated on 2026-05-02 after a manual UniFi DHCP reservation:
+
+| Field | Value |
+| --- | --- |
+| VMID | `101` |
+| Name | `haos` |
+| Bridge | `vmbr0` |
+| VLAN tag | `30` |
+| IP | `192.168.30.20/24` |
+| Gateway | `192.168.30.1` |
+| DNS | `192.168.1.55` |
+| UI | `http://192.168.30.20:8123` |
+| QEMU guest agent | responds |
+
+The previous DHCP address `192.168.30.116` no longer responds after the
+reservation. HAOS is not behind Caddy at this stage.
 
 ## Server VLAN 30 details
 
@@ -131,12 +152,12 @@ No HAOS or Docker VM was created by this validation.
 
 | VM | VLAN tag | Access |
 | --- | ---: | --- |
-| `101` HAOS | `30` | `ha.home.lan:8123` direct |
+| `101` HAOS | `30` | `ha.home.lan:8123` direct; live |
 | `102` Debian Docker | `30` | SSH plus Caddy-managed services |
 
 ## Pre-workload validation
 
-Server VLAN 30 exists live in UniFi and uses Pi DNS (`192.168.1.55`). The Opti host is live on Default LAN/native, while HAOS and Docker VMs remain planned on Server VLAN 30.
+Server VLAN 30 exists live in UniFi and uses Pi DNS (`192.168.1.55`). The Opti host is live on Default LAN/native. HAOS VM `101` is live on Server VLAN 30; Docker VM `102` remains planned.
 
 Before placing heavy workloads on VLAN 30:
 

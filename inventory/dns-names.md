@@ -1,7 +1,7 @@
 # DNS names
 
 > Source-of-truth for important `home.lan` names.
-> Last verified: 2026-04-29 18:00 CEST
+> Last verified: 2026-05-02 17:27 CEST
 
 ## Authority model
 
@@ -29,20 +29,20 @@
 
 If a host has both forward and reverse DNS, forward lives in AdGuard and reverse lives in Unbound. Phase 0 on 2026-04-29 verified that direct Unbound forward lookup for `pi.home.lan A` returns `NXDOMAIN`, while AdGuard resolves `pi.home.lan`, `macmini.home.lan`, `adguard.home.lan`, and `cockpit.home.lan` correctly.
 
-## PLANNED Opti / VM / service names
+## Opti / VM / service names
 
 These names are reserved for the Opti/Proxmox plan. Some may already resolve in AdGuard for forward planning, but services are not considered live until the corresponding host/VM exists and is validated.
 
-As of 2026-05-02, `opti.home.lan` and `proxmox.home.lan` resolve to `192.168.1.60` via Pi AdGuard and system resolver. The Proxmox host is live; VM and service names remain planned until their workloads exist and are validated.
+As of 2026-05-02, `opti.home.lan` and `proxmox.home.lan` resolve to `192.168.1.60` via Pi AdGuard and system resolver. HAOS VM `101` is live on `192.168.30.20`; Docker VM and Docker-backed service names remain planned until their workloads exist and are validated.
 
 | Name | Planned IP | Role | Status |
 |---|---|---|---|
 | `opti.home.lan` | `192.168.1.60` | Proxmox host hardware | LIVE |
 | `proxmox.home.lan` | `192.168.1.60` | Proxmox UI/API | LIVE |
+| `ha.home.lan` | `192.168.30.20` | Home Assistant OS | LIVE |
+| `haos.home.lan` | `192.168.30.20` | HAOS alias | LIVE |
 | `docker.home.lan` | `192.168.30.10` | Debian Docker VM | PLANNED |
 | `proxy.home.lan` | `192.168.30.10` | Caddy reverse proxy | PLANNED |
-| `ha.home.lan` | `192.168.30.20` | Home Assistant OS | PLANNED |
-| `haos.home.lan` | `192.168.30.20` | HAOS alias | PLANNED |
 | `dockge.home.lan` | `192.168.30.10` | Dockge via Caddy | PLANNED |
 | `uptime.home.lan` | `192.168.30.10` | Uptime Kuma via Caddy | PLANNED |
 | `dozzle.home.lan` | `192.168.30.10` | Dozzle via Caddy | PLANNED |

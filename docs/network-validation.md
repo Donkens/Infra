@@ -100,6 +100,30 @@ pct destroy 900 --purge || pct destroy 900 || true
 pct status 900 || true
 ```
 
+## HAOS VM 101 VLAN 30 runtime
+
+Validated on 2026-05-02 after manual UniFi DHCP reservation for HAOS VM `101`.
+The full VM MAC is not tracked in Git; `inventory/dhcp-reservations.md` stores a
+masked value.
+
+Expected live state:
+
+- VM `101` named `haos` is running on `opti.home.lan`.
+- HAOS uses Server VLAN 30 via `net0: virtio,bridge=vmbr0,tag=30`.
+- HAOS receives `192.168.30.20/24`.
+- Gateway is `192.168.30.1`.
+- DNS is Pi `192.168.1.55`.
+- `ha.home.lan` and `haos.home.lan` resolve to `192.168.30.20`.
+
+Read-only validation:
+
+```bash
+ssh -i ~/.ssh/id_ed25519_mbp -o IdentitiesOnly=yes root@192.168.1.60 'qm status 101; qm agent 101 ping || true; qm guest cmd 101 network-get-interfaces || true'
+ssh -i ~/.ssh/id_ed25519_mbp -o IdentitiesOnly=yes root@192.168.1.60 'ping -c 3 192.168.30.20; curl -I --connect-timeout 8 http://192.168.30.20:8123 || true'
+dig +short @192.168.1.55 ha.home.lan A
+dig +short @192.168.1.55 haos.home.lan A
+```
+
 ## Git repo state
 
 ```bash
