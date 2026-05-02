@@ -54,14 +54,18 @@ if [ -n "${latest_path:-}" ] && [ -d "$latest_path" ]; then
     reason="${reason} mtime_unreadable"
   fi
   size_h="$(du -sh "$latest_path" 2>/dev/null | awk '{print $1}' || echo NA)"
-  [ -f "$latest_path/meta/manifest.txt" ] && manifest="ok" || {
+  if [ -f "$latest_path/meta/manifest.txt" ]; then
+    manifest="ok"
+  else
     ok=0
     reason="${reason} manifest_missing"
-  }
-  [ -f "$latest_path/meta/SHA256SUMS.txt" ] && sha256="ok" || {
+  fi
+  if [ -f "$latest_path/meta/SHA256SUMS.txt" ]; then
+    sha256="ok"
+  else
     ok=0
     reason="${reason} sha256_missing"
-  }
+  fi
 fi
 line="[$ts] host=$host status=$( [ "$ok" -eq 1 ] && echo OK || echo FAIL ) backups=$backup_count age_h=$age_hours max_age_h=$MAX_AGE_HOURS size=$size_h manifest=$manifest sha256=$sha256 latest=${latest_path:-NA} reason=${reason# }"
 if [ "$ok" -eq 1 ]; then

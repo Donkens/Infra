@@ -44,7 +44,7 @@ for svc in AdGuardHome unbound; do
 done
 section "Ports (53 / 80 / 3000 / 5335)"
 if have_cmd ss; then
-  ss -tulpn 2>/dev/null | egrep '(:53|:80|:3000|:5335)\b' || echo "No matching listeners found"
+  ss -tulpn 2>/dev/null | grep -E '(:53|:80|:3000|:5335)\b' || echo "No matching listeners found"
 else
   echo "ss not installed"
 fi
@@ -77,12 +77,12 @@ section "Timeout Scan (last ${LOG_WINDOW}m)"
 SINCE_STR="${LOG_WINDOW} min ago"
 echo "[AdGuardHome] timeouts / i/o timeout / 5335"
 journalctl -u AdGuardHome --since "$SINCE_STR" --no-pager 2>/dev/null \
-  | egrep -i 'i/o timeout|timeout|127\.0\.0\.1:5335' \
+  | grep -E -i 'i/o timeout|timeout|127\.0\.0\.1:5335' \
   | tail -n 20 || true
 echo
 echo "[unbound] timeout / error / SERVFAIL"
 journalctl -u unbound --since "$SINCE_STR" --no-pager 2>/dev/null \
-  | egrep -i 'timeout|error|servfail|fail' \
+  | grep -E -i 'timeout|error|servfail|fail' \
   | tail -n 20 || true
 section "Recent Logs (tail)"
 echo "[AdGuardHome]"

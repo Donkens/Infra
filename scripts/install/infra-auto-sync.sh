@@ -14,6 +14,7 @@ AUTO_SYNC_STAGE_PATHS=(
   "config/unbound/unbound.conf"
   "config/unbound/unbound.conf.d/*.conf"
 )
+# Explicitly set HOME for systemd service context — git and ssh read ~/.ssh and ~/.gitconfig from $HOME.
 export HOME="/home/pi"
 export GIT_SSH_COMMAND="ssh -o BatchMode=yes -o ConnectTimeout=10"
 

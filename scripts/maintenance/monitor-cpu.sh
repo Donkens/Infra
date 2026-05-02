@@ -2,7 +2,6 @@
 # Purpose: Show CPU frequency and governor for all cores
 # Author:  codex-agent | Date: 2026-04-29
 set -euo pipefail
-readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 log() { echo "[$(basename "$0")] $*" >&2; }
 die() { log "ERROR: $*"; exit 1; }
 
