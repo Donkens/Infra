@@ -63,7 +63,7 @@ Applied 2026-04-29. Ingen package removal, ingen maskning, och Cockpit lämnades
 
 | Service | Port | Protocol | Status | Note |
 |---|---|---|---|---|
-| Home Assistant | 8123 | HTTP | live | Direct access: `http://192.168.30.20:8123`; aliases `ha.home.lan` and `haos.home.lan` resolve to `192.168.30.20`. Ej via Caddy. Runtime validated 2026-05-02 after UniFi DHCP reservation. |
+| Home Assistant | 8123 | HTTP | live | Direct access: `http://192.168.30.20:8123`; aliases `ha.home.lan` and `haos.home.lan` resolve to `192.168.30.20`. Ej via Caddy. Runtime and first full backup baseline validated 2026-05-02. Backup: `haos-onboarding-baseline-2026-05-02-full`; resolution clean after `ha resolution check run backups`. |
 
 ## UDR-7 — 192.168.1.1
 

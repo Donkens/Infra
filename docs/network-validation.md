@@ -124,6 +124,44 @@ dig +short @192.168.1.55 ha.home.lan A
 dig +short @192.168.1.55 haos.home.lan A
 ```
 
+## HAOS VM 101 backup and resolution baseline
+
+Validated on 2026-05-02 through Proxmox QEMU guest agent only. Do not inspect
+backup contents during routine validation.
+
+Expected backup metadata:
+
+| Field | Value |
+| --- | --- |
+| Name | `haos-onboarding-baseline-2026-05-02-full` |
+| Date | `2026-05-02T21:50:45.400045+00:00` |
+| Type | `full` |
+| Protected | `false` |
+| Size | `0.12 MB` |
+
+Expected resolution state after `ha resolution check run backups`:
+
+- `issues: []`
+- `suggestions: []`
+- `unhealthy: []`
+- `unsupported: []`
+
+Read-only validation:
+
+```bash
+ssh -i ~/.ssh/id_ed25519_mbp -o IdentitiesOnly=yes root@192.168.1.60 'qm guest exec 101 -- ha backups || true'
+ssh -i ~/.ssh/id_ed25519_mbp -o IdentitiesOnly=yes root@192.168.1.60 'qm guest exec 101 -- ha resolution info || true'
+ssh -i ~/.ssh/id_ed25519_mbp -o IdentitiesOnly=yes root@192.168.1.60 'qm guest exec 101 -- ha supervisor info || true'
+```
+
+Notes:
+
+- Older partial backups may still exist.
+- Core was not restarted, Supervisor was not reloaded/restarted, and the host was
+  not rebooted while clearing the stale backup repair.
+- `Advanced SSH & Web Terminal` may require separate follow-up if it remains in
+  `state: error`; it is not required for backup verification.
+
 ## Git repo state
 
 ```bash

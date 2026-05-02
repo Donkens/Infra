@@ -72,6 +72,32 @@ HAOS VM `101` uses `q35`, `OVMF`, `cpu host`, `2` cores, `6144 MB` RAM,
 `64 GB` on `local-lvm`, and `net0` on `vmbr0` with VLAN tag `30`. The QEMU
 guest agent responds. `onboot` is currently `0`.
 
+### HAOS onboarding and backup baseline
+
+HAOS onboarding and the first backup baseline are complete. The UI responds on
+`http://192.168.30.20:8123`, `http://ha.home.lan:8123`, and
+`http://haos.home.lan:8123`.
+
+| Check | Result |
+| --- | --- |
+| Core | `2026.4.4` |
+| Supervisor | `2026.04.2`, `healthy: true`, `supported: true` |
+| HAOS | `17.2` |
+| Full backup | `haos-onboarding-baseline-2026-05-02-full` |
+| Backup date | `2026-05-02T21:50:45.400045+00:00` |
+| Backup type | `full` |
+| Backup protected | `false` |
+| Backup size | `0.12 MB` |
+| Resolution state | `issues: []`, `suggestions: []`, `unhealthy: []`, `unsupported: []` |
+
+The stale `no_current_backup` repair was cleared with
+`ha resolution check run backups`. Older partial backups still exist and were
+not modified. Core was not restarted, Supervisor was not reloaded/restarted, and
+the host was not rebooted during the resolution refresh.
+
+Follow-up: `Advanced SSH & Web Terminal` was observed with `state: error`; this
+is not a blocker for the backup baseline.
+
 ## Target architecture
 
 Dell OptiPlex 7080 Micro runs Proxmox VE bare metal. Proxmox is a hypervisor only; workloads live in VMs.
