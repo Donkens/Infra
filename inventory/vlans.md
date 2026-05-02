@@ -28,7 +28,7 @@
 | Forward mode | `customize` |
 | Native | Default LAN |
 | Tagged | Server VLAN 30 only |
-| Applied to port | No — apply when Opti arrives on port 3 |
+| Applied to port | Linux/UDR switch state confirmed VLAN 30 tagged on Opti path 2026-05-02; UniFi UI profile name not separately verified in that run |
 
 ## Opti switch port plan
 
@@ -48,7 +48,24 @@ Proxmox `vmbr0` is VLAN-aware. Future VM workloads use VLAN tag `30`:
 | `101` HAOS | `192.168.30.20` | `30` | planned |
 | `102` Debian Docker | `192.168.30.10` | `30` | planned |
 
-VLAN 30 VM traffic has not yet been validated with VM/tap interfaces.
+VLAN 30 VM/tap traffic was validated with a temporary CT on 2026-05-02.
+
+### VLAN 30 VM/tap validation
+
+Validated 2026-05-02 with temporary LXC CT `900` named
+`tmp-vlan30-test`.
+
+| Field | Value |
+| --- | --- |
+| Bridge | `vmbr0` |
+| VLAN tag | `30` |
+| Temporary IP | `192.168.30.250/24` |
+| Gateway tested | `192.168.30.1` |
+| Pi DNS tested | `192.168.1.55` |
+| Internet ping | `1.1.1.1` passed |
+| Cleanup | CT `900` destroyed after validation |
+
+HAOS VM `101` and Debian Docker VM `102` remain uncreated.
 
 ## MLO-LAN VLAN 40
 

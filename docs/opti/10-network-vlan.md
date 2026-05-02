@@ -6,10 +6,10 @@
 | --- | --- | --- |
 | Server VLAN 30 | ✅ Live | 2026-04-26 |
 | Proxmox host baseline | ✅ Live | 2026-05-02 |
-| Opti Trunk port profile | ✅ Created, not applied | 2026-04-26 |
+| Opti Trunk port profile | ✅ Created; UI profile name not re-verified in VLAN test | 2026-04-26 |
 | AdGuard DNS rewrites | ✅ Live, verified | 2026-04-26 |
-| Opti Trunk applied to physical port | ❌ Not yet — wait for Opti | — |
-| VLAN 30 VM traffic | ❌ Planned — no VM/tap validation yet | — |
+| Opti path VLAN tagging | ✅ Linux/UDR switch state confirms VLAN 30 tagged on Opti path | 2026-05-02 |
+| VLAN 30 VM/tap traffic | ✅ Validated with temporary CT `900`, then destroyed | 2026-05-02 |
 | Firewall rules (Server zone) | ❌ Not yet — separate GO required | — |
 
 ## Trunk model
@@ -34,7 +34,9 @@ The UniFi switch port to the Opti should use:
 - Native: Default LAN (`67505ffb6c2b447c24945afc`)
 - Tagged: Server VLAN 30 only
 - Excluded (not tagged): IOT/VLAN 10, MLO-LAN/VLAN 40, Guest/VLAN 20
-- Applied to physical port: **no**
+- Applied to physical path: Linux/UDR switch state confirmed VLAN 30 tagged on
+  the Opti path on 2026-05-02; UniFi UI profile name was not separately
+  verified in that run.
 
 ### UDR-7 port map
 
@@ -67,6 +69,33 @@ iface vmbr0 inet static
 `bridge vlan show dev vmbr0` currently shows only VLAN `1 PVID Egress Untagged`.
 That is expected until VM/tap interfaces exist and attach to `vmbr0` with VLAN
 tag `30`.
+
+## VLAN 30 guest validation
+
+Validated on 2026-05-02 with a temporary LXC CT:
+
+| Field | Value |
+| --- | --- |
+| CTID | `900` |
+| Hostname | `tmp-vlan30-test` |
+| Bridge | `vmbr0` |
+| VLAN tag | `30` |
+| Temporary IP | `192.168.30.250/24` |
+| Gateway tested | `192.168.30.1` |
+| Pi DNS tested | `192.168.1.55` |
+| Template | `debian-13-standard_13.1-2_amd64.tar.zst` |
+| Cleanup | CT `900` destroyed after validation |
+
+Validation result:
+
+- CT received `192.168.30.250/24` on `eth0`.
+- Default route was `192.168.30.1`.
+- `ping 192.168.30.1` passed.
+- `ping 192.168.1.55` passed.
+- `ping 1.1.1.1` passed.
+- `getent hosts pi.home.lan` returned Pi DNS records.
+
+No HAOS or Docker VM was created by this validation.
 
 ## Server VLAN 30 details
 
@@ -107,11 +136,10 @@ tag `30`.
 
 ## Pre-workload validation
 
-Server VLAN 30 exists live in UniFi and uses Pi DNS (`192.168.1.55`). The Opti host remains planned on Default LAN/native, while HAOS and Docker VMs remain planned on Server VLAN 30.
+Server VLAN 30 exists live in UniFi and uses Pi DNS (`192.168.1.55`). The Opti host is live on Default LAN/native, while HAOS and Docker VMs remain planned on Server VLAN 30.
 
 Before placing heavy workloads on VLAN 30:
 
-- validate VLAN 30 with real VM/tap traffic
 - verify DNS bypass and gateway DNS block coverage from a Server VLAN client
 - verify firewall isolation policy for Server VLAN 30
 - keep WAN port forwards disabled

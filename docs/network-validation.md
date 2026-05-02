@@ -68,6 +68,38 @@ ssh udr 'ss -tulpn 2>/dev/null | grep -E "(:53)\b" || true'
 
 UDR listening on gateway DNS is not by itself a failure. Client firewall behavior determines whether it is reachable as a bypass path.
 
+## Proxmox VLAN 30 guest path
+
+Use a temporary guest, not a persistent workload. The 2026-05-02 validation used
+LXC CT `900` named `tmp-vlan30-test`, attached to `vmbr0` with VLAN tag `30` and
+temporary IP `192.168.30.250/24`. The CT was destroyed after validation.
+
+Read-only checks before creating a temporary test guest:
+
+```bash
+ssh -i ~/.ssh/id_ed25519_mbp -o IdentitiesOnly=yes root@192.168.1.60 'qm status 900 || true; pct status 900 || true'
+ssh -i ~/.ssh/id_ed25519_mbp -o IdentitiesOnly=yes root@192.168.1.60 'grep -E "iface vmbr0|bridge-vlan-aware yes|bridge-vids 2-4094" /etc/network/interfaces; bridge vlan show dev nic0 | sed -n "1,90p"; pvesm status'
+```
+
+Expected temporary guest validation:
+
+```bash
+pct exec 900 -- ip -br addr
+pct exec 900 -- ip route
+pct exec 900 -- ping -c 3 192.168.30.1
+pct exec 900 -- ping -c 3 192.168.1.55
+pct exec 900 -- ping -c 3 1.1.1.1 || true
+pct exec 900 -- getent hosts pi.home.lan || true
+```
+
+Cleanup requirement:
+
+```bash
+pct stop 900 || true
+pct destroy 900 --purge || pct destroy 900 || true
+pct status 900 || true
+```
+
 ## Git repo state
 
 ```bash
