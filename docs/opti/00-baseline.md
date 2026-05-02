@@ -95,8 +95,11 @@ The stale `no_current_backup` repair was cleared with
 not modified. Core was not restarted, Supervisor was not reloaded/restarted, and
 the host was not rebooted during the resolution refresh.
 
-Follow-up: `Advanced SSH & Web Terminal` was observed with `state: error`; this
-is not a blocker for the backup baseline.
+`Advanced SSH & Web Terminal` was later configured for key-only access and
+started successfully. Port `22` on `192.168.30.20` is open, and key-based SSH
+login from the MacBook works. HA CLI commands inside the add-on shell returned
+`unauthorized: missing or invalid API token`, so HA CLI audits should continue to
+use the Proxmox QEMU guest agent path.
 
 ## Target architecture
 

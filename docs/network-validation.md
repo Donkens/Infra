@@ -159,8 +159,31 @@ Notes:
 - Older partial backups may still exist.
 - Core was not restarted, Supervisor was not reloaded/restarted, and the host was
   not rebooted while clearing the stale backup repair.
-- `Advanced SSH & Web Terminal` may require separate follow-up if it remains in
-  `state: error`; it is not required for backup verification.
+- `Advanced SSH & Web Terminal` is not required for backup verification. HA CLI
+  audits should use the Proxmox QEMU guest agent path.
+
+## HAOS VM 101 SSH add-on access
+
+Validated on 2026-05-03:
+
+- `Advanced SSH & Web Terminal` add-on slug `a0d7b954_ssh` is `started`.
+- Port `22` on `192.168.30.20` is open.
+- Key-only SSH login from the MacBook works.
+- Password auth is not used.
+- HA CLI inside the SSH add-on shell returned
+  `unauthorized: missing or invalid API token`.
+
+Use Proxmox QEMU guest agent for HA CLI audits:
+
+```bash
+ssh -i /Users/hd/.ssh/id_ed25519_mbp -o IdentitiesOnly=yes root@192.168.1.60 'qm guest exec 101 -- ha core info || true'
+```
+
+Read-only SSH port validation:
+
+```bash
+nc -vz -G 5 192.168.30.20 22 || true
+```
 
 ## Git repo state
 
