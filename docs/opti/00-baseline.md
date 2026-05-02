@@ -1,5 +1,67 @@
 # Opti baseline
 
+## Verified baseline — 2026-05-02
+
+The Opti is installed and validated as a Proxmox VE host. No VMs or CTs have
+been created yet.
+
+| Area | Value |
+| --- | --- |
+| Hardware | Dell OptiPlex 7080 Micro |
+| CPU | Intel i7-10700T |
+| RAM | `32 GB` |
+| Disk | `512 GB NVMe` |
+| OS | Proxmox VE `9.1.0` |
+| Manager | `pve-manager 9.1.9` |
+| Running kernel | `7.0.0-3-pve` |
+| Hostname | `opti` |
+| FQDN | `opti.home.lan` |
+| Management bridge | `vmbr0` |
+| Management IP | `192.168.1.60/24` |
+| Gateway | `192.168.1.1` |
+| DNS | `192.168.1.55` |
+
+### Network config
+
+`vmbr0` is the management bridge on Default LAN/native untagged and is
+configured VLAN-aware for future VM traffic.
+
+```text
+auto vmbr0
+iface vmbr0 inet static
+	address 192.168.1.60/24
+	gateway 192.168.1.1
+	bridge-ports nic0
+	bridge-stp off
+	bridge-fd 2
+	bridge-vlan-aware yes
+	bridge-vids 2-4094
+```
+
+### APT baseline
+
+| Repository | Status |
+| --- | --- |
+| Debian `trixie` | enabled |
+| Debian `trixie-updates` | enabled |
+| Debian `trixie-security` | enabled |
+| Proxmox `pve-no-subscription` for `trixie` | enabled |
+| Proxmox enterprise | disabled |
+| Ceph enterprise | disabled |
+
+### Validation result
+
+| Check | Result |
+| --- | --- |
+| `systemctl --failed` | `0 loaded units listed` |
+| `local` storage | active |
+| `local-lvm` storage | active |
+| Gateway ping `192.168.1.1` | OK |
+| DNS node ping `192.168.1.55` | OK |
+| Internet ping `1.1.1.1` | OK |
+| `qm list` | empty |
+| `pct list` | empty |
+
 ## Target architecture
 
 Dell OptiPlex 7080 Micro runs Proxmox VE bare metal. Proxmox is a hypervisor only; workloads live in VMs.

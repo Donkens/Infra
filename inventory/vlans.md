@@ -36,7 +36,19 @@
 - Tagged: VLAN `30` only (IOT, MLO, Guest excluded)
 - Recommended port: UDR-7 port 3
 
-Proxmox `vmbr0` should be VLAN-aware. VM `101` and VM `102` use tag `30`.
+## Opti Proxmox host
+
+As of 2026-05-02, Proxmox management is live on native/untagged Default LAN:
+`192.168.1.60/24` on `vmbr0`.
+
+Proxmox `vmbr0` is VLAN-aware. Future VM workloads use VLAN tag `30`:
+
+| VM | Planned IP | VLAN tag | Status |
+| --- | --- | ---: | --- |
+| `101` HAOS | `192.168.30.20` | `30` | planned |
+| `102` Debian Docker | `192.168.30.10` | `30` | planned |
+
+VLAN 30 VM traffic has not yet been validated with VM/tap interfaces.
 
 ## MLO-LAN VLAN 40
 

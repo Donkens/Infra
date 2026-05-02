@@ -47,7 +47,7 @@ Applied 2026-04-29. Ingen package removal, ingen maskning, och Cockpit lämnades
 
 | Service | Port | Protocol | Status | Note |
 |---|---|---|---|---|
-| Proxmox UI | 8006 | HTTPS | planned | DNS-namn live (`proxmox.home.lan` → `192.168.1.60`), men tjänsten ej live-verifierad i denna audit. |
+| Proxmox UI/API | 8006 | HTTPS | live | Direct IP access: `https://192.168.1.60:8006`. Do not treat `proxmox.home.lan` as verified by this docs-only update. No VMs/CTs exist yet. |
 
 ## Docker VM — 192.168.30.10
 

@@ -5,9 +5,11 @@
 | Component | Status | Date |
 | --- | --- | --- |
 | Server VLAN 30 | ✅ Live | 2026-04-26 |
+| Proxmox host baseline | ✅ Live | 2026-05-02 |
 | Opti Trunk port profile | ✅ Created, not applied | 2026-04-26 |
 | AdGuard DNS rewrites | ✅ Live, verified | 2026-04-26 |
 | Opti Trunk applied to physical port | ❌ Not yet — wait for Opti | — |
+| VLAN 30 VM traffic | ❌ Planned — no VM/tap validation yet | — |
 | Firewall rules (Server zone) | ❌ Not yet — separate GO required | — |
 
 ## Trunk model
@@ -47,6 +49,24 @@ The UniFi switch port to the Opti should use:
 ## Proxmox bridge
 
 `vmbr0` should be VLAN-aware. The Proxmox host uses untagged Default LAN for management. VMs attach to `vmbr0` with VLAN tag `30`.
+
+Verified host config on 2026-05-02:
+
+```text
+auto vmbr0
+iface vmbr0 inet static
+	address 192.168.1.60/24
+	gateway 192.168.1.1
+	bridge-ports nic0
+	bridge-stp off
+	bridge-fd 2
+	bridge-vlan-aware yes
+	bridge-vids 2-4094
+```
+
+`bridge vlan show dev vmbr0` currently shows only VLAN `1 PVID Egress Untagged`.
+That is expected until VM/tap interfaces exist and attach to `vmbr0` with VLAN
+tag `30`.
 
 ## Server VLAN 30 details
 
@@ -91,6 +111,7 @@ Server VLAN 30 exists live in UniFi and uses Pi DNS (`192.168.1.55`). The Opti h
 
 Before placing heavy workloads on VLAN 30:
 
+- validate VLAN 30 with real VM/tap traffic
 - verify DNS bypass and gateway DNS block coverage from a Server VLAN client
 - verify firewall isolation policy for Server VLAN 30
 - keep WAN port forwards disabled
