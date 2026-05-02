@@ -33,15 +33,12 @@ If a host has both forward and reverse DNS, forward lives in AdGuard and reverse
 
 These names are reserved for the Opti/Proxmox plan. Some may already resolve in AdGuard for forward planning, but services are not considered live until the corresponding host/VM exists and is validated.
 
-As of 2026-05-02, the Proxmox host is live at direct IP `192.168.1.60`, but this
-docs-only update did not touch or re-verify Pi/AdGuard DNS rewrites. Treat
-`opti.home.lan` and `proxmox.home.lan` as DNS records to apply or verify on Pi
-AdGuard before marking them live here.
+As of 2026-05-02, `opti.home.lan` and `proxmox.home.lan` resolve to `192.168.1.60` via Pi AdGuard and system resolver. The Proxmox host is live; VM and service names remain planned until their workloads exist and are validated.
 
 | Name | Planned IP | Role | Status |
 |---|---|---|---|
-| `opti.home.lan` | `192.168.1.60` | Proxmox host hardware | VERIFY |
-| `proxmox.home.lan` | `192.168.1.60` | Proxmox UI/API | VERIFY |
+| `opti.home.lan` | `192.168.1.60` | Proxmox host hardware | LIVE |
+| `proxmox.home.lan` | `192.168.1.60` | Proxmox UI/API | LIVE |
 | `docker.home.lan` | `192.168.30.10` | Debian Docker VM | PLANNED |
 | `proxy.home.lan` | `192.168.30.10` | Caddy reverse proxy | PLANNED |
 | `ha.home.lan` | `192.168.30.20` | Home Assistant OS | PLANNED |
