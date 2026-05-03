@@ -68,9 +68,11 @@ Out of scope:
 3. ~~No confirmed off-host Proxmox/VM restore-test exists yet.~~ **Resolved Phase 2B
    2026-05-03:** VMID 199 restored from dump, booted successfully (52 s uptime),
    stopped and destroyed. See `runbooks/opti-backup-restore-test.md`.
-4. SSH hardening is pending:
-   `PermitRootLogin yes`, `PasswordAuthentication yes`, `X11Forwarding yes`,
-   `AllowTcpForwarding yes`.
+4. ~~SSH hardening is pending.~~ **Resolved Phase 2A 2026-05-03:**
+   `/etc/ssh/sshd_config.d/99-hardening.conf` applied via `systemctl reload ssh`.
+   Effective: `PermitRootLogin prohibit-password`, `PasswordAuthentication no`,
+   `X11Forwarding no`, `AllowTcpForwarding no`. Both admin clients re-validated
+   with new sessions. See `docs/opti/proxmox-ssh-hardening-plan-2026-05-03.md`.
 5. No PVE firewall policy files were found under `/etc/pve`.
 6. `rpcbind` listens on `0.0.0.0:111` and `[::]:111`; review whether it is
    needed.

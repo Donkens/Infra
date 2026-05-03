@@ -94,7 +94,7 @@ Status: WARN. No live changes were made.
 | HAOS health | `issues: []`, `suggestions: []`, `unhealthy: []`, `unsupported: []` |
 | QGA | `agent: enabled=1`; `qm agent 101 ping` returns `QEMU guest agent is not running` |
 | Proxmox backups | interim vzdump of VM 101 completed 2026-05-03; off-host copy on Mac mini; restore-test PASS 2026-05-03 |
-| Security posture | SSH hardening pending; no PVE firewall files under `/etc/pve`; `rpcbind` exposure pending review |
+| Security posture | SSH hardened Phase 2A 2026-05-03: password auth disabled, root key-only (`prohibit-password`), X11/TCP forwarding off; PVE firewall and `rpcbind` review pending |
 
 Phase 0 WARN items:
 
@@ -105,8 +105,11 @@ Phase 0 WARN items:
   `docs/opti/60-backup-restore.md` for full status.
 - No scheduled Proxmox backup job yet; `/var/lib/vz/dump` has one manual dump.
 - Restore-test PASS 2026-05-03: VMID 199 imported from dump, booted 52 s, destroyed; see `runbooks/opti-backup-restore-test.md`.
-- Proxmox SSH posture remains broad: `PermitRootLogin yes`,
-  `PasswordAuthentication yes`, `X11Forwarding yes`, `AllowTcpForwarding yes`.
+- ~~Proxmox SSH posture remains broad.~~ **Resolved Phase 2A 2026-05-03:**
+  `/etc/ssh/sshd_config.d/99-hardening.conf` applied: `PasswordAuthentication no`,
+  `X11Forwarding no`, `AllowTcpForwarding no`, `PermitRootLogin prohibit-password`.
+  Both MBP and Mac mini validated with new key-only sessions after reload.
+  PVE firewall and `rpcbind` review remain separate pending tasks.
 - No PVE firewall policy files were found under `/etc/pve`.
 - `rpcbind` listens on `0.0.0.0:111` and `[::]:111`; review before relying on
   host-local filtering assumptions.
