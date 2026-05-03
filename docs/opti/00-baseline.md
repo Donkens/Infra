@@ -93,7 +93,7 @@ Status: WARN. No live changes were made.
 | VM inventory | VM `101 haos` running; CT count `0`; Docker VM `102` absent/planned |
 | HAOS health | `issues: []`, `suggestions: []`, `unhealthy: []`, `unsupported: []` |
 | QGA | `agent: enabled=1`; `qm agent 101 ping` returns `QEMU guest agent is not running` |
-| Proxmox backups | interim vzdump of VM 101 completed 2026-05-03; off-host copy on Mac mini; restore-test pending |
+| Proxmox backups | interim vzdump of VM 101 completed 2026-05-03; off-host copy on Mac mini; restore-test PASS 2026-05-03 |
 | Security posture | SSH hardening pending; no PVE firewall files under `/etc/pve`; `rpcbind` exposure pending review |
 
 Phase 0 WARN items:
@@ -104,7 +104,7 @@ Phase 0 WARN items:
   SHA256 verified; this is interim only — see
   `docs/opti/60-backup-restore.md` for full status.
 - No scheduled Proxmox backup job yet; `/var/lib/vz/dump` has one manual dump.
-- No confirmed off-host Proxmox/VM restore-test exists yet.
+- Restore-test PASS 2026-05-03: VMID 199 imported from dump, booted 52 s, destroyed; see `runbooks/opti-backup-restore-test.md`.
 - Proxmox SSH posture remains broad: `PermitRootLogin yes`,
   `PasswordAuthentication yes`, `X11Forwarding yes`, `AllowTcpForwarding yes`.
 - No PVE firewall policy files were found under `/etc/pve`.

@@ -65,7 +65,9 @@ Out of scope:
    Scheduled job and restore-test still pending.
 2. ~~`/var/lib/vz/dump` is empty.~~ **Resolved Phase 2A 2026-05-03:** dump file
    `vzdump-qemu-101-2026_05_03-22_48_45.vma.zst` (2.12 GB) present.
-3. No confirmed off-host Proxmox/VM restore-test exists yet.
+3. ~~No confirmed off-host Proxmox/VM restore-test exists yet.~~ **Resolved Phase 2B
+   2026-05-03:** VMID 199 restored from dump, booted successfully (52 s uptime),
+   stopped and destroyed. See `runbooks/opti-backup-restore-test.md`.
 4. SSH hardening is pending:
    `PermitRootLogin yes`, `PasswordAuthentication yes`, `X11Forwarding yes`,
    `AllowTcpForwarding yes`.

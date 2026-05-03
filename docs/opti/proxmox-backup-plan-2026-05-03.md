@@ -48,14 +48,11 @@ does not affect backup validity.
 
 ### Restore-test gate
 
-This backup has not been restore-tested. Before deploying Vaultwarden or Docker
-VM 102:
+**Restore-test PASS — 2026-05-03 (Phase 2B).**
 
-1. Import `vzdump-qemu-101-2026_05_03-22_48_45.vma.zst` using a test VMID
-   (e.g. `199`) with `qmrestore`.
-2. Verify the restored VM boots and HAOS UI responds.
-3. Destroy the test VM.
-4. Document the restore result in `runbooks/opti-backup-restore-test.md`.
+`vzdump-qemu-101-2026_05_03-22_48_45.vma.zst` was imported as VMID 199, booted
+successfully (52 s uptime, 544 MB disk read, `status: running`), then stopped
+and destroyed. Full result in `runbooks/opti-backup-restore-test.md`.
 
 ## Current backup gaps (after Phase 2A)
 
@@ -64,7 +61,7 @@ VM 102:
 | Scheduled Proxmox backup job | not configured |
 | Permanent off-host storage target (USB SSD / NFS / PBS) | not configured |
 | Retention policy | not configured |
-| Restore-test | not completed |
+| Restore-test | ✅ PASS 2026-05-03 |
 
 ## Backup architecture — short-term (interim)
 
@@ -104,5 +101,5 @@ Do not deploy Vaultwarden until:
 
 1. ✅ Backup destination exists (interim Mac mini copy — partial).
 2. ✅ Backup process documented (this file).
-3. ❌ Restore-test documented and completed — **still required**.
+3. ✅ Restore-test documented and completed — PASS 2026-05-03.
 4. ❌ Scheduled backup job to permanent off-host target — **still required**.
