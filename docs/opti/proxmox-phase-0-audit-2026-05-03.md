@@ -60,8 +60,11 @@ Out of scope:
 
 ## WARN
 
-1. No Proxmox-level backup job exists yet.
-2. `/var/lib/vz/dump` is empty.
+1. ~~No Proxmox-level backup job exists yet.~~ **Resolved Phase 2A 2026-05-03:**
+   interim manual vzdump completed; local dump and off-host Mac mini copy verified.
+   Scheduled job and restore-test still pending.
+2. ~~`/var/lib/vz/dump` is empty.~~ **Resolved Phase 2A 2026-05-03:** dump file
+   `vzdump-qemu-101-2026_05_03-22_48_45.vma.zst` (2.12 GB) present.
 3. No confirmed off-host Proxmox/VM restore-test exists yet.
 4. SSH hardening is pending:
    `PermitRootLogin yes`, `PasswordAuthentication yes`, `X11Forwarding yes`,

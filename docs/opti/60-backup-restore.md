@@ -29,6 +29,46 @@ Latest Proxmox Phase 0 audit on 2026-05-03 found:
   Proxmox/off-host restore strategy.
 - No confirmed off-host Proxmox/VM restore-test exists yet.
 
+## Proxmox interim vzdump — Phase 2A (2026-05-03)
+
+First Proxmox-level backup of VM 101 (haos) completed on 2026-05-03 as an
+interim snapshot. This is **not** a scheduled job and **not** the final backup
+architecture. Proper external USB SSD, NFS/NAS, or Proxmox Backup Server (PBS)
+target and a documented restore-test are still required before Vaultwarden or
+other critical services are deployed.
+
+| Field | Value |
+| --- | --- |
+| Backup file | `vzdump-qemu-101-2026_05_03-22_48_45.vma.zst` |
+| Backup date | 2026-05-03 22:48:45 CEST |
+| Mode | `snapshot` (crash-consistent; QGA fs-freeze skipped — agent not running) |
+| Compression | `zstd` |
+| Compressed size | `2.12 GB` |
+| Sparse ratio | 92% zero data (thin VM) |
+| Duration | 37 seconds |
+| Local path | `/var/lib/vz/dump/vzdump-qemu-101-2026_05_03-22_48_45.vma.zst` |
+| Off-host path | `/Users/yasse/InfraBackups/proxmox-dumps/vzdump-qemu-101-2026_05_03-22_48_45.vma.zst` |
+| SHA256 | `cd54ef0cd9fddc78beb7421f9a3441db409823a2e9a980fce01695204a9db53d` |
+| SHA256 match | ✅ identical on opti and Mac mini |
+| Companion files | `.log` and `.vma.zst.notes` copied off-host |
+| VM status after | `running` |
+| HAOS health after | `issues: []`, `suggestions: []`, `unhealthy: []`, `unsupported: []` |
+| Restore-test | not yet completed — required before critical workloads |
+
+> **QGA note:** `INFO: skipping guest-agent 'fs-freeze', agent configured but not
+> running` — backup is crash-consistent, not guest-fs-frozen. This is the known
+> QGA WARN state and does not affect backup validity for a stateless OS like HAOS.
+
+### What remains (proper backup architecture)
+
+1. External USB SSD attached to opti **or** NFS mount from Mac mini as a
+   Proxmox storage target — add as `dir` or `nfs` storage in Proxmox UI.
+2. Scheduled `vzdump` job targeting off-host storage (Datacenter → Backup → Add).
+3. Retention policy: minimum 3 daily, 1 weekly.
+4. Documented restore-test using a test VMID (e.g. `199`) before deploying
+   Vaultwarden or Docker VM `102`.
+5. Quarterly restore-test thereafter.
+
 The recurring Mac mini pull uses the Pi wrapper above instead of broad `sudo tar`. The older broad sudo rule in `/etc/sudoers.d/010_pi-nopasswd` is intentionally not removed in this step; observe a scheduled wrapper-based run first, then remove broad sudo in a separate audited change.
 
 ## Initial destination
