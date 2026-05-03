@@ -20,6 +20,15 @@ Current Pi DNS backups under `state/backups/` remain local-only safety net data 
 
 Do not rely on Pi-local `state/backups/` as the only recovery path for Opti services, HAOS, Vaultwarden, or other heavy workloads.
 
+Latest Proxmox Phase 0 audit on 2026-05-03 found:
+
+- No Proxmox-level backup job exists yet.
+- `/var/lib/vz/dump` is empty.
+- HAOS has local backups, including `haos-onboarding-baseline-2026-05-02-full`
+  and `haos-wiz-baseline-2026-05-03-full`, but local HAOS backups are not a
+  Proxmox/off-host restore strategy.
+- No confirmed off-host Proxmox/VM restore-test exists yet.
+
 The recurring Mac mini pull uses the Pi wrapper above instead of broad `sudo tar`. The older broad sudo rule in `/etc/sudoers.d/010_pi-nopasswd` is intentionally not removed in this step; observe a scheduled wrapper-based run first, then remove broad sudo in a separate audited change.
 
 ## Initial destination

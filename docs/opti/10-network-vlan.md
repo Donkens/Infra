@@ -67,9 +67,9 @@ iface vmbr0 inet static
 	bridge-vids 2-4094
 ```
 
-`bridge vlan show dev vmbr0` currently shows only VLAN `1 PVID Egress Untagged`.
-That is expected until VM/tap interfaces exist and attach to `vmbr0` with VLAN
-tag `30`.
+Latest Proxmox Phase 0 audit on 2026-05-03 confirmed `vmbr0` is VLAN-aware.
+`nic0` carries VLAN `30`, and HAOS `tap101i0` is attached with VLAN
+`30 PVID Egress Untagged`.
 
 ## VLAN 30 guest validation
 
@@ -113,10 +113,13 @@ Validated on 2026-05-02 after a manual UniFi DHCP reservation:
 | Gateway | `192.168.30.1` |
 | DNS | `192.168.1.55` |
 | UI | `http://192.168.30.20:8123` |
-| QEMU guest agent | responds |
+| QEMU guest agent | VM option enabled, HAOS guest agent not running/responding; known WARN |
 
 The previous DHCP address `192.168.30.116` no longer responds after the
 reservation. HAOS is not behind Caddy at this stage.
+
+HAOS VM `101` currently has `onboot: 0`; decide explicitly in a separate
+approved step whether HAOS should autostart after a Proxmox host reboot.
 
 ## Server VLAN 30 details
 
@@ -139,21 +142,21 @@ reservation. HAOS is not behind Caddy at this stage.
 | --- | --- | --- | --- | --- |
 | `opti.home.lan` | `192.168.1.60` | Default LAN | Proxmox host | ✅ live |
 | `proxmox.home.lan` | `192.168.1.60` | Default LAN | Proxmox UI/API | ✅ live |
-| `docker.home.lan` | `192.168.30.10` | Server VLAN 30 | Docker VM | ✅ live |
-| `proxy.home.lan` | `192.168.30.10` | Server VLAN 30 | Caddy reverse proxy | ✅ live |
+| `docker.home.lan` | `192.168.30.10` | Server VLAN 30 | Docker VM | DNS planned/live; VM absent |
+| `proxy.home.lan` | `192.168.30.10` | Server VLAN 30 | Caddy reverse proxy | DNS planned/live; workload absent |
 | `ha.home.lan` | `192.168.30.20` | Server VLAN 30 | HAOS | ✅ live |
 | `haos.home.lan` | `192.168.30.20` | Server VLAN 30 | HAOS alias | ✅ live |
-| `dockge.home.lan` | `192.168.30.10` | Server VLAN 30 | Dockge | ✅ live |
-| `uptime.home.lan` | `192.168.30.10` | Server VLAN 30 | Uptime Kuma | ✅ live |
-| `dozzle.home.lan` | `192.168.30.10` | Server VLAN 30 | Dozzle | ✅ live |
-| `stremio.home.lan` | `192.168.30.10` | Server VLAN 30 | Stremio | ✅ live |
+| `dockge.home.lan` | `192.168.30.10` | Server VLAN 30 | Dockge | DNS planned/live; workload absent |
+| `uptime.home.lan` | `192.168.30.10` | Server VLAN 30 | Uptime Kuma | DNS planned/live; workload absent |
+| `dozzle.home.lan` | `192.168.30.10` | Server VLAN 30 | Dozzle | DNS planned/live; workload absent |
+| `stremio.home.lan` | `192.168.30.10` | Server VLAN 30 | Stremio | DNS planned/live; workload absent |
 
 ## VM tags
 
 | VM | VLAN tag | Access |
 | --- | ---: | --- |
 | `101` HAOS | `30` | `ha.home.lan:8123` direct; live |
-| `102` Debian Docker | `30` | SSH plus Caddy-managed services |
+| `102` Debian Docker | `30` | absent/planned; SSH plus Caddy-managed services later |
 
 ## Pre-workload validation
 
@@ -166,3 +169,4 @@ Before placing heavy workloads on VLAN 30:
 - keep WAN port forwards disabled
 - keep Pi as the DNS node
 - do not move Server VLAN into a dedicated firewall zone without a separate `GO` plan
+- keep Docker VM `102` absent/planned until an approved implementation step

@@ -2,6 +2,8 @@
 
 ## Verified baseline — 2026-05-02
 
+Latest read-only Proxmox audit: [Proxmox Phase 0 audit — 2026-05-03](proxmox-phase-0-audit-2026-05-03.md).
+
 The Opti is installed and validated as a Proxmox VE host. HAOS VM `101` is live
 on Server VLAN 30. The Debian Docker VM has not been created yet.
 
@@ -70,7 +72,46 @@ iface vmbr0 inet static
 
 HAOS VM `101` uses `q35`, `OVMF`, `cpu host`, `2` cores, `6144 MB` RAM,
 `64 GB` on `local-lvm`, and `net0` on `vmbr0` with VLAN tag `30`. The QEMU
-guest agent responds. `onboot` is currently `0`.
+Guest Agent option is enabled with `agent: enabled=1`, but the HAOS guest agent
+is not running/responding; this is a known WARN. `onboot` is currently `0`, so
+HAOS will not autostart after a Proxmox host reboot unless that policy is
+changed in a separate approved step.
+
+### Proxmox Phase 0 audit — 2026-05-03
+
+Status: WARN. No live changes were made.
+
+| Area | Live state |
+| --- | --- |
+| Proxmox VE | `9.1.0` |
+| Manager | `pve-manager 9.1.9` |
+| Kernel | `7.0.0-3-pve` |
+| Failed units | none |
+| APT | Debian `trixie`, `trixie-updates`, `trixie-security`, Proxmox `pve-no-subscription`; no upgradable packages listed |
+| Storage | `local` and `local-lvm` active and healthy |
+| NVMe SMART | PASS, `Percentage Used: 1%`, `Media and Data Integrity Errors: 0`, `Temperature: 26 Celsius` |
+| VM inventory | VM `101 haos` running; CT count `0`; Docker VM `102` absent/planned |
+| HAOS health | `issues: []`, `suggestions: []`, `unhealthy: []`, `unsupported: []` |
+| QGA | `agent: enabled=1`; `qm agent 101 ping` returns `QEMU guest agent is not running` |
+| Proxmox backups | no Proxmox-level backup job; `/var/lib/vz/dump` empty |
+| Security posture | SSH hardening pending; no PVE firewall files under `/etc/pve`; `rpcbind` exposure pending review |
+
+Phase 0 WARN items:
+
+- No Proxmox-level backup job exists yet.
+- `/var/lib/vz/dump` is empty.
+- No confirmed off-host Proxmox/VM restore-test exists yet.
+- Proxmox SSH posture remains broad: `PermitRootLogin yes`,
+  `PasswordAuthentication yes`, `X11Forwarding yes`, `AllowTcpForwarding yes`.
+- No PVE firewall policy files were found under `/etc/pve`.
+- `rpcbind` listens on `0.0.0.0:111` and `[::]:111`; review before relying on
+  host-local filtering assumptions.
+- Server VLAN 30 isolation/firewall-zone work remains a separate `GO firewall`
+  task.
+- HAOS QGA is a known WARN; do not install packages inside HAOS for this.
+- HAOS VM `101` has `onboot: 0`; decide explicitly whether to set `onboot=1`.
+- NVMe has `Unsafe Shutdowns: 117`, while current SMART health is OK.
+- CPU governor is `performance`; acceptable, but less idle-efficient.
 
 ### HAOS onboarding and backup baseline
 
