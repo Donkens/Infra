@@ -1,18 +1,18 @@
 # Server VLAN 30 Isolation Plan — UniFi
 
 Datum: 2026-05-03
-Status: **WARN** — Förarbeten klara; zon-flytt och isoleringsregler saknas.
+Status: **WARN** — Phase 2A genomförd 2026-05-04; Phase 2B isolerings-/blockregler saknas.
 
 ---
 
 ## Sammanfattning
 
-Server VLAN 30 (`192.168.30.0/24`) och Default LAN (`192.168.1.0/24`) delar
-idag samma UniFi firewall-zon (`Internal`, `677d9959ed22014620a6a981`). Det
-innebär att zon-baserade inter-VLAN-regler mellan dessa nät inte kan tillämpas
-förrän Server VLAN 30 får en dedikerad zon.
+Server VLAN 30 (`192.168.30.0/24`) flyttades 2026-05-04 från UniFi
+firewall-zonen `Internal` (`677d9959ed22014620a6a981`) till den nya custom-zonen
+`Server` (`69f7de611bc6e72d2776b75b`). Phase 2A är därmed klar och
+zon-baserade isoleringsregler kan läggas i Phase 2B.
 
-Tre kritiska gap bekräftade via live-analys 2026-05-03:
+Tre ursprungliga kritiska gap bekräftades via live-analys 2026-05-03:
 
 1. **Ingen Server-zon** — VLAN 30 är i Internal-zonen med Default LAN och MLO.
 2. **DNS bypass-gap** — `@192.168.30.1:53` svarar från HAOS; gateway-DNS är
@@ -23,9 +23,8 @@ Tre kritiska gap bekräftade via live-analys 2026-05-03:
    till en ny zon slutar regeln matcha HAOS och WiZ-styrning slutar fungera
    **omedelbart** om inte regeln uppdateras i samma steg.
 
-Isoleringsarbetet är redo för GO Phase 2A (zon-skapande) och Phase 2B
-(isoleringsregler) i separata godkänn-block. Docker VM 102 är frånvarande;
-inga regler för `.10` skapas förrän VM 102 existerar.
+Phase 2B (isolerings-/DNS-blockregler) är fortfarande ej applicerad. Docker VM
+102 är frånvarande; inga regler för `.10` skapas förrän VM 102 existerar.
 
 ---
 
@@ -35,8 +34,8 @@ inga regler för `.10` skapas förrän VM 102 existerar.
 
 | Nätverk | VLAN | Subnet | Gateway | Zon | Zon-ID | Syfte | Åtkomstpostur |
 |---|---:|---|---|---|---|---|---|
-| Default LAN | untagged | `192.168.30.0/24` | `192.168.1.1` | Internal | `677d9959ed22014620a6a981` | Betrodd admin-LAN, Proxmox-host | Fri intern trafik; DNS-bypass blockad |
-| Server VLAN 30 | 30 | `192.168.30.0/24` | `192.168.30.1` | **Internal** ⚠️ | `677d9959ed22014620a6a981` | HAOS VM 101, framtida Docker VM 102 | Delad zon — inga inter-VLAN-regler möjliga |
+| Default LAN | untagged | `192.168.1.0/24` | `192.168.1.1` | Internal | `677d9959ed22014620a6a981` | Betrodd admin-LAN, Proxmox-host | Fri intern trafik; DNS-bypass blockad |
+| Server VLAN 30 | 30 | `192.168.30.0/24` | `192.168.30.1` | **Server** | `69f7de611bc6e72d2776b75b` | HAOS VM 101, framtida Docker VM 102 | Dedikerad zon; Phase 2B-block saknas |
 | IOT | 10 | `192.168.10.0/24` | `192.168.10.1` | IOT | `6980de97e060a06b8ef9b613` | IoT-enheter inkl. WiZ-lampor | DNS till Pi tillåten; WAN DNS blockad |
 | MLO-LAN | 40 | `192.168.40.0/24` | `192.168.40.1` | Internal | `677d9959ed22014620a6a981` | 6 GHz WiFi-klienter | DNS-bypass blockad |
 | Guest | 20 | `192.168.20.0/24` | `192.168.20.1` | Hotspot | `677d9959ed22014620a6a985` | Gästnät | **Inaktiverat** |
@@ -61,7 +60,7 @@ inga regler för `.10` skapas förrän VM 102 existerar.
 | `block-internal-gateway-dns-tcp` | ja | BLOCK | Internal zone networks `Default LAN`, `MLO-LAN` | Gateway IPs `192.168.1.1`, `192.168.40.1` | TCP 53 | **Nej** ⚠️ |
 | `block-internal-wan-dns-udp` | ja | BLOCK | Internal zone networks `Default LAN`, `MLO-LAN` | External zone | UDP 53 | **Nej** ⚠️ |
 | `block-internal-wan-dns-tcp` | ja | BLOCK | Internal zone networks `Default LAN`, `MLO-LAN` | External zone | TCP 53 | **Nej** ⚠️ |
-| `allow-haos-wiz-control` | **ja** | ALLOW | Internal zone IP `192.168.30.20` | IOT zone `wiz-bulbs-ipv4` | UDP 38899-38900 | Ja — men **bryts vid zon-flytt** |
+| `allow-haos-wiz-control` | **ja** | ALLOW | Server zone IP `192.168.30.20` | IOT zone `wiz-bulbs-ipv4` | UDP 38899-38900 | Ja — uppdaterad i Phase 2A |
 | `allow-haos-wiz-icmp-temp` | **nej** | ALLOW | Internal zone IP `192.168.30.20` | IOT zone `wiz-bulbs-ipv4` | ICMP | Inaktiverad 2026-05-03 |
 
 ### WAN port forwards — relevans för VLAN 30
@@ -105,14 +104,11 @@ HAOS (`192.168.30.20`). Inga ändringar gjordes.
 
 ## Gap-analys
 
-### G1 — Ingen dedikerad Server-zon (KRITISK)
+### G1 — Dedikerad Server-zon (ÅTGÄRDAD Phase 2A)
 
-Server VLAN 30 (`69ee65711bc6e72d27744844`) är i `Internal`-zonen
-(`677d9959ed22014620a6a981`) tillsammans med Default LAN och MLO-LAN. UniFi:s
-zon-baserade firewall kan inte tillämpa inter-VLAN-regler mellan nätverk inom
-samma zon. Isolation är omöjlig utan att flytta VLAN 30 till en egen zon.
-
-**Åtgärd:** Skapa `Server`-zon (custom zone), flytta VLAN 30 dit — Phase 2A.
+Server VLAN 30 (`69ee65711bc6e72d27744844`) är nu i `Server`-zonen
+(`69f7de611bc6e72d2776b75b`). Före Phase 2A låg VLAN 30 i `Internal`
+(`677d9959ed22014620a6a981`) tillsammans med Default LAN och MLO-LAN.
 
 ### G2 — DNS bypass via gateway öppen (HÖG)
 
@@ -124,16 +120,13 @@ klienter kan använda UDR dnsmasq som DNS-resolver, kringgå Pi DNS.
 
 **Åtgärd:** Lägg till DNS bypass-block för Server-zonen — Phase 2B regel F och G.
 
-### G3 — `allow-haos-wiz-control` source zone bryts vid zon-flytt (KRITISK)
+### G3 — `allow-haos-wiz-control` source zone (ÅTGÄRDAD Phase 2A)
 
-Regeln har `source.zone_id = 677d9959ed22014620a6a981` (Internal). När VLAN 30
-flyttas till Server-zonen hamnar HAOS (`192.168.30.20`) utanför Internal-zonen
-och regeln matchar inte längre. WiZ-styrning slutar fungera **omedelbart**
-vid zon-flytten om inte regelns `source.zone_id` uppdateras till den nya
-Server-zonens ID i samma operation.
-
-**Åtgärd:** Uppdatera `allow-haos-wiz-control.source.zone_id` till ny Server-zon
-ID i samma steg som zon-flytten — Phase 2A.
+Regeln uppdaterades i samma Phase 2A-session som VLAN-flytten:
+`source.zone_id` ändrades från `677d9959ed22014620a6a981` (Internal) till
+`69f7de611bc6e72d2776b75b` (Server). Källa `192.168.30.20`, destination
+`wiz-bulbs-ipv4`, UDP `38899-38900`, enabled-state och `index=10000`
+bevarades.
 
 ### G4 — Inga isoleringsregler Server → Default LAN (MEDIUM tills zone-flytt)
 
@@ -201,7 +194,7 @@ Internal-zon (677d9959ed22014620a6a981)
 ├── Default LAN (192.168.1.0/24)   ← admin, trusted
 └── MLO-LAN (192.168.40.0/24)      ← 6 GHz WiFi (oförändrad)
 
-Server-zon (ny zon — ID okänd tills skapad)
+Server-zon (69f7de611bc6e72d2776b75b)
 └── Server VLAN 30 (192.168.30.0/24)  ← HAOS VM 101, framtida Docker VM 102
 
 IOT-zon (6980de97e060a06b8ef9b613)
@@ -215,9 +208,11 @@ brister är `allow-haos-wiz-control` — denna **måste** uppdateras i samma ste
 som zon-flytten. Befintliga DNS-blockningsregler för Internal-zonen matchar
 already via `network_ids` (ej ANY), så de påverkas inte.
 
-En ny custom zone har sannolikt default-DROP för inter-zon-trafik (som IOT-zonen
-vars trafik styrs av explicita regler). Verify default-policyn efter skapande,
-innan zon-flytt genomförs.
+UniFi satte `block_all` för flera relationer när den nya custom-zonen skapades,
+inklusive `Server → Internal`, `Server → IOT` och `Internal → Server`. Därför
+skapades minsta kontinuitets-ALLOW innan eller under Phase 2A. `Server →
+External` hade ingen explicit default-drop i zone-matrix och ingen
+Phase 2B WAN-ALLOW skapades.
 
 ---
 
@@ -225,20 +220,29 @@ innan zon-flytt genomförs.
 
 ### Phase 2A — Atomär operation: skapa zon + flytta VLAN + uppdatera WiZ-regel
 
-Dessa tre steg måste utföras i ett sammanhängande godkänt fönster. Om steg 2 eller
-3 missas bryts HAOS-anslutning eller WiZ-styrning direkt.
+**Genomförd 2026-05-04.** Dessa steg utfördes i ett sammanhängande godkänt
+fönster.
 
 | Steg | Åtgärd | Motivering |
 |---|---|---|
-| 2A-1 | Skapa Server-zon (custom zone, `zone_key: ""`) | Förutsättning för VLAN-flytt |
-| 2A-2 | Tilldela Server VLAN 30 (`69ee65711bc6e72d27744844`) till ny Server-zon | Aktiverar zon-baserad isolering |
-| 2A-3 | Uppdatera `allow-haos-wiz-control` (`69f687011bc6e72d277674c3`) `source.zone_id` → ny Server-zon ID | Förhindrar att WiZ-styrning bryts |
-| 2A-4 | Validera: HAOS UI nåbar, WiZ-lampor svarar på HA-dashboard | Bekräfta att ingen regression uppstod |
+| 2A-1 | Skapade `Server` custom zone | Ny zone_id `69f7de611bc6e72d2776b75b` |
+| 2A-2 | Skapade minsta kontinuitets-ALLOW | Pi DNS, HAOS UI och HAOS SSH bevarades |
+| 2A-3 | Tilldelade Server VLAN 30 (`69ee65711bc6e72d27744844`) till `Server` | Aktiverar zon-baserad isolering |
+| 2A-4 | Uppdaterade `allow-haos-wiz-control` (`69f687011bc6e72d277674c3`) `source.zone_id` | Förhindrar att WiZ-styrning bryts |
+| 2A-5 | Validerade HAOS, Pi DNS, internet, UI, UniFi-state och Opti | PASS |
 
-**Obs:** Beroende på UDR:s default-policy för ny custom zone kan HAOS förlora
-anslutning till Pi DNS och Internet direkt vid zon-flytten. Rekommendation: skapa
-ALLOW-regler (regel A–C nedan) **innan** VLAN 30 tilldelas ny zon, för att säkra
-kontinuitet.
+Kontinuitets-ALLOW skapade i Phase 2A:
+
+| Regel | ID | Flöde | Status |
+|---|---|---|---|
+| `allow-server-to-pi-dns-udp` | `69f7dec11bc6e72d2776b789` | Server → Pi DNS `192.168.1.55` UDP 53 | Enabled |
+| `allow-server-to-pi-dns-tcp` | `69f7dec11bc6e72d2776b78c` | Server → Pi DNS `192.168.1.55` TCP 53 | Enabled |
+| `allow-lan-admin-to-haos` | `69f7dec11bc6e72d2776b78f` | Internal → HAOS `192.168.30.20` TCP 8123 | Enabled |
+| `allow-lan-admin-to-haos-ssh` | `69f7df531bc6e72d2776b7c0` | Internal → HAOS `192.168.30.20` TCP 22 | Enabled |
+
+Ingen `allow-server-to-wan` skapades i Phase 2A eftersom zone-matrix inte visade
+explicit default-drop för `Server → External` och HAOS internet validerades OK.
+Inga Phase 2B blockregler skapades.
 
 ### Phase 2B — Isoleringsregler (efter 2A)
 
@@ -281,8 +285,8 @@ Internal → Server:
 
 | Regel | Nuläge | Åtgärd | Motivering |
 |---|---|---|---|
-| `allow-haos-wiz-control` (`69f687011bc6e72d277674c3`) | `source.zone_id = Internal` | Uppdatera `source.zone_id` → ny Server-zon ID | HAOS flyttas ut ur Internal-zonen |
-| `allow-haos-wiz-icmp-temp` (`69f687011bc6e72d277674c6`) | Inaktiverad | Radera via UniFi UI | Temporär valideringsregel; inte längre behövd |
+| `allow-haos-wiz-control` (`69f687011bc6e72d277674c3`) | `source.zone_id = Server` `69f7de611bc6e72d2776b75b` | Uppdaterad i Phase 2A | HAOS flyttades ut ur Internal-zonen |
+| `allow-haos-wiz-icmp-temp` (`69f687011bc6e72d277674c6`) | Inaktiverad; source zone kvar `Internal` | Lämnad oförändrad i Phase 2A | Temporär valideringsregel; raderas tidigast i senare godkänt steg |
 
 ### Framtida regler — ej aktivera förrän VM 102 existerar
 
@@ -297,7 +301,7 @@ Internal → Server:
 ### Nuläge
 
 `allow-haos-wiz-control` (`69f687011bc6e72d277674c3`) är aktiv och tillåter:
-- Källa: HAOS `192.168.30.20` (Internal-zon)
+- Källa: HAOS `192.168.30.20` (Server-zon `69f7de611bc6e72d2776b75b`)
 - Destination: `wiz-bulbs-ipv4` (`192.168.10.129`, `.131`, `.133`, `.134`, `.174`) i IOT-zonen
 - Protokoll: UDP 38899-38900
 - `rule_index`: 10000
@@ -308,10 +312,12 @@ inaktiverad. WiZ UDP-styrning (38899-38900) testades inte direkt men HAOS
 dashboard visar 5 WiZ-enheter, 20 entities, 0 missing areas — WiZ-integration
 fungerar.
 
-### Risk vid zon-flytt
+### Phase 2A-validering
 
-Efter Phase 2A måste `allow-haos-wiz-control.source.zone_id` uppdateras till
-den nya Server-zonens ID. Om detta missas tappar HAOS WiZ-styrning direkt.
+Efter Phase 2A är regeln enabled, `protocol=udp`, destination är fortfarande
+`wiz-bulbs-ipv4` i IOT-zonen och destination port är `38899-38900`. HAOS
+read-only entity/log-sökning gav ingen textoutput, men UniFi-regeln matchar den
+nya Server-zonen och HAOS health/DNS/internet/UI validerade OK.
 
 ### Ytterligare WiZ-flöden att verifiera
 
@@ -341,9 +347,24 @@ Utförs read-only efter Phase 2A och 2B. Inga ändringar.
 | HAOS UI nåbar från Default LAN | ✅ HTTP 200 `http://192.168.30.20:8123` | `nc -vz 192.168.30.20 8123` från Mac mini |
 | HAOS → Pi DNS | ✅ Svarar | `ssh ha 'dig @192.168.1.55 pi.home.lan A +short'` |
 | HAOS → Internet | ✅ ICMP pass | `ssh ha 'ping -c2 1.1.1.1'` |
-| WiZ-enheter synliga i HAOS | ✅ 5 devices, 20 entities | HAOS dashboard kontroll |
+| WiZ-regel i UniFi | ✅ Enabled, source zone Server | `allow-haos-wiz-control` live-read |
 | Proxmox host `192.168.1.60` nåbar | ✅ SSH pass | `ssh opti 'uptime'` |
 | Pi DNS `192.168.1.55` healthy | ✅ AdGuard OK | `ssh pi 'systemctl is-active AdGuardHome'` |
+
+Phase 2A-resultat 2026-05-04:
+
+| Test | Resultat |
+|---|---|
+| HAOS core | ✅ `HA_CORE_OK_AFTER_ZONE_MOVE` |
+| HAOS resolution | ✅ `issues: []`, `unhealthy: []`, `unsupported: []` |
+| HAOS → Pi DNS | ✅ `pi.home.lan A` → `192.168.1.55` |
+| HAOS → Internet | ✅ `ping -c2 1.1.1.1`, 0% packet loss |
+| Default LAN → HAOS UI | ✅ `192.168.30.20:8123` reachable |
+| Default LAN → HAOS SSH | ✅ `192.168.30.20:22` reachable via Phase 2A continuity ALLOW |
+| `allow-haos-wiz-control` | ✅ source zone `69f7de611bc6e72d2776b75b`; UDP `38899-38900`; enabled |
+| `allow-haos-wiz-icmp-temp` | ✅ disabled; left unchanged |
+| Opti / Proxmox | ✅ `qm status 101` → `running`; SSH reachable |
+| Phase 2B blockregler | ✅ Ej skapade |
 
 ### Efter Phase 2B (isoleringsregler)
 
@@ -376,6 +397,10 @@ Utförs read-only efter Phase 2A och 2B. Inga ändringar.
 # 3. Validera:
 nc -vz 192.168.30.20 8123
 ssh ha 'dig @192.168.1.55 pi.home.lan A +short'
+
+# 4. Ta bort eller inaktivera Phase 2A-kontinuitetsregler om de inte längre behövs:
+#    allow-server-to-pi-dns-udp, allow-server-to-pi-dns-tcp,
+#    allow-lan-admin-to-haos, allow-lan-admin-to-haos-ssh
 ```
 
 ### Om Phase 2B orsakar DNS-avbrott för HAOS
@@ -405,7 +430,7 @@ ssh ha 'dig @192.168.1.55 pi.home.lan A +short'
 
 ---
 
-### [APPROVAL REQUIRED] GO unifi-server-zone-create Phase 2A
+### ~~[APPROVAL REQUIRED] GO unifi-server-zone-create Phase 2A~~ COMPLETED 2026-05-04
 
 ```
 Action:   1. Skapa Server-zon (custom zone) i UniFi Network

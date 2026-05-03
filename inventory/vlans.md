@@ -7,7 +7,7 @@
 | untagged | Default LAN | `192.168.1.0/24` | Trusted LAN, Proxmox host management | ✅ live |
 | `10` | IOT | `192.168.10.0/24` | IoT devices, limited access | ✅ live |
 | `20` | Guest | `192.168.20.0/24` | Guest network | ⛔ disabled |
-| `30` | Server | `192.168.30.0/24` | HAOS and Docker VM workloads | ✅ live; firewall isolation plan written — awaiting GO Phase 2A/2B |
+| `30` | Server | `192.168.30.0/24` | HAOS and Docker VM workloads | ✅ live; dedicated Server zone created — Phase 2B isolation pending |
 | `40` | MLO-LAN | `192.168.40.0/24` | 6 GHz WiFi clients | ✅ live; WLAN MLO flag currently DRIFT/UNKNOWN |
 
 ## Server VLAN 30
@@ -18,7 +18,7 @@
 | DHCP range | `192.168.30.100` – `192.168.30.199` |
 | Static / reserved | `.10` Docker VM, `.20` HAOS VM |
 | DNS | `192.168.1.55` |
-| Firewall zone | `Internal` `677d9959ed22014620a6a981` (shared) — dedicated Server zone required. Isolation plan: [`docs/opti/server-vlan30-isolation-plan-2026-05-03.md`](../docs/opti/server-vlan30-isolation-plan-2026-05-03.md) |
+| Firewall zone | `Server` `69f7de611bc6e72d2776b75b` — moved from `Internal` `677d9959ed22014620a6a981` in Phase 2A. Isolation plan: [`docs/opti/server-vlan30-isolation-plan-2026-05-03.md`](../docs/opti/server-vlan30-isolation-plan-2026-05-03.md) |
 
 ## Opti Trunk port profile
 

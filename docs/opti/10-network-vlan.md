@@ -11,7 +11,8 @@
 | Opti path VLAN tagging | ✅ Linux/UDR switch state confirms VLAN 30 tagged on Opti path | 2026-05-02 |
 | VLAN 30 VM/tap traffic | ✅ Validated with temporary CT `900`, then destroyed | 2026-05-02 |
 | HAOS VM 101 on VLAN 30 | ✅ Live, DHCP reservation validated | 2026-05-02 |
-| Firewall rules (Server zone) | ❌ Not yet — separate GO required | — |
+| Firewall zone (Server VLAN 30) | ✅ Dedicated `Server` zone created; Phase 2A complete | 2026-05-04 |
+| Firewall isolation/block rules (Phase 2B) | ❌ Not yet — separate GO required | — |
 
 ## Trunk model
 
@@ -132,9 +133,12 @@ host reboot. No reboot or restart was performed during the `onboot` change.
 | DNS server | `192.168.1.55` |
 | Domain | `home.lan` |
 | IPv6 | Disabled (ipv4-only) |
-| Firewall zone | Internal `677d9959ed22014620a6a981` (shared with Default LAN) — dedicated zone required; see isolation plan |
+| Firewall zone | Server `69f7de611bc6e72d2776b75b` — dedicated zone created in Phase 2A; see isolation plan |
 
-> **Firewall zone note:** Server VLAN 30 is in the same firewall zone as Default LAN (`677d9959ed22014620a6a981`). Zone-based inter-VLAN rules cannot be enforced until Server is moved to a dedicated zone. Isolation plan with approval blocks: [`server-vlan30-isolation-plan-2026-05-03.md`](server-vlan30-isolation-plan-2026-05-03.md).
+> **Firewall zone note:** Server VLAN 30 moved from `Internal`
+> (`677d9959ed22014620a6a981`) to the dedicated `Server` zone
+> (`69f7de611bc6e72d2776b75b`) on 2026-05-04. Phase 2B isolation/block rules are
+> still pending. Isolation plan: [`server-vlan30-isolation-plan-2026-05-03.md`](server-vlan30-isolation-plan-2026-05-03.md).
 
 ## DNS names — verified in AdGuard
 
@@ -168,23 +172,31 @@ Before placing heavy workloads on VLAN 30:
 - verify firewall isolation policy for Server VLAN 30
 - keep WAN port forwards disabled
 - keep Pi as the DNS node
-- do not move Server VLAN into a dedicated firewall zone without a separate `GO` plan
+- do not change Server VLAN firewall zone or apply Phase 2B isolation without a separate `GO` plan
 - keep Docker VM `102` absent/planned until an approved implementation step
 
-## Server VLAN 30 firewall isolation — status 2026-05-03
+## Server VLAN 30 firewall isolation — status 2026-05-04
 
-Phase 0/1 audit completed. Isolation plan with approval blocks written.
+Phase 0/1 audit completed. Phase 2A zone migration completed. Phase 2B
+isolation/block rules remain pending.
 
 | Task | Status |
 | --- | --- |
 | Phase 0 live discovery | ✅ 2026-05-03 |
 | Phase 1 isolation plan | ✅ [`server-vlan30-isolation-plan-2026-05-03.md`](server-vlan30-isolation-plan-2026-05-03.md) |
-| Phase 2A: create Server zone + zone migration | ❌ Awaiting GO |
+| Phase 2A: create Server zone + zone migration | ✅ Completed 2026-05-04 |
 | Phase 2B: isolation rules | ❌ Awaiting GO (requires 2A) |
 
-Confirmed gaps (live-tested 2026-05-03):
+Phase 2A live state:
 
-- Server VLAN 30 is in `Internal` zone — no zone-based isolation possible.
+- Server VLAN 30 is in `Server` zone `69f7de611bc6e72d2776b75b`.
+- `allow-haos-wiz-control` source zone is `Server`, destination remains
+  `wiz-bulbs-ipv4`, UDP `38899-38900`, enabled.
+- Minimum continuity ALLOW rules exist for Server → Pi DNS, Internal → HAOS UI,
+  and Internal → HAOS SSH.
+- No Phase 2B block rules were applied.
+
+Remaining confirmed gaps:
+
 - `@192.168.30.1:53` answers from HAOS — gateway DNS bypass open.
 - DNS block rules (`block-internal-gateway-dns-*`, `block-internal-wan-dns-*`) exclude Server VLAN 30 `network_id`.
-- `allow-haos-wiz-control` source zone is `Internal` — will break on zone migration unless updated atomically.
