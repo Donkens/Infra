@@ -118,8 +118,8 @@ Validated on 2026-05-02 after a manual UniFi DHCP reservation:
 The previous DHCP address `192.168.30.116` no longer responds after the
 reservation. HAOS is not behind Caddy at this stage.
 
-HAOS VM `101` currently has `onboot: 0`; decide explicitly in a separate
-approved step whether HAOS should autostart after a Proxmox host reboot.
+HAOS VM `101` now has `onboot: 1`. This enables HAOS autostart after a Proxmox
+host reboot. No reboot or restart was performed during the `onboot` change.
 
 ## Server VLAN 30 details
 

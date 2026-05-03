@@ -73,9 +73,9 @@ iface vmbr0 inet static
 HAOS VM `101` uses `q35`, `OVMF`, `cpu host`, `2` cores, `6144 MB` RAM,
 `64 GB` on `local-lvm`, and `net0` on `vmbr0` with VLAN tag `30`. The QEMU
 Guest Agent option is enabled with `agent: enabled=1`, but the HAOS guest agent
-is not running/responding; this is a known WARN. `onboot` is currently `0`, so
-HAOS will not autostart after a Proxmox host reboot unless that policy is
-changed in a separate approved step.
+is not running/responding; this is a known WARN. HAOS VM `101` now has
+`onboot: 1`, enabling HAOS autostart after a Proxmox host reboot. No reboot or
+restart was performed during the `onboot` change.
 
 ### Proxmox Phase 0 audit — 2026-05-03
 
@@ -109,7 +109,6 @@ Phase 0 WARN items:
 - Server VLAN 30 isolation/firewall-zone work remains a separate `GO firewall`
   task.
 - HAOS QGA is a known WARN; do not install packages inside HAOS for this.
-- HAOS VM `101` has `onboot: 0`; decide explicitly whether to set `onboot=1`.
 - NVMe has `Unsafe Shutdowns: 117`, while current SMART health is OK.
 - CPU governor is `performance`; acceptable, but less idle-efficient.
 

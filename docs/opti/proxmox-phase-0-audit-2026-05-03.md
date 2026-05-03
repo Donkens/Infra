@@ -43,7 +43,7 @@ Out of scope:
 | CTs | `0` |
 | HAOS health | `issues: []`, `suggestions: []`, `unhealthy: []`, `unsupported: []` |
 | QGA | `agent: enabled=1`; `qm agent 101 ping` fails with `QEMU guest agent is not running` |
-| HAOS onboot | `0` |
+| HAOS onboot | `1` |
 | Proxmox backups | no job; `/var/lib/vz/dump` empty |
 
 ## PASS
@@ -73,10 +73,8 @@ Out of scope:
    task.
 8. HAOS QEMU Guest Agent is a known WARN: the VM option is enabled, but HAOS is
    not running/responding to QGA.
-9. HAOS VM `101` has `onboot: 0`, so it will not autostart after a Proxmox host
-   reboot unless changed.
-10. NVMe reports `Unsafe Shutdowns: 117`; current SMART health is OK.
-11. CPU governor is `performance`, which is acceptable but less idle-efficient.
+9. NVMe reports `Unsafe Shutdowns: 117`; current SMART health is OK.
+10. CPU governor is `performance`, which is acceptable but less idle-efficient.
 
 ## Recommendations
 
@@ -85,7 +83,6 @@ Out of scope:
 | P1 | Backups | Create Proxmox backup job, off-host destination, and restore-test before critical workloads | yes |
 | P1 | SSH | Plan key-only SSH hardening and root login reduction | yes |
 | P1 | Firewall | Review PVE firewall posture and Server VLAN 30 isolation | yes |
-| P1 | Availability | Decide whether HAOS VM `101` should use `onboot=1` | yes |
 | P2 | Docs | Keep QGA state documented as known WARN, not as responding | no |
 | P2 | rpcbind | Review whether `rpcbind` is required on the host | yes |
 | P3 | Power | Consider a measured power tuning pass later | yes |
@@ -106,7 +103,8 @@ Out of scope:
   `QEMU guest agent is not running`.
 - `docs/opti/10-network-vlan.md` had the same QGA drift.
 - Docker VM `102` remains absent/planned.
-- HAOS VM `101` still has `onboot: 0`.
+- HAOS VM `101` now has `onboot: 1`, enabling HAOS autostart after a Proxmox
+  host reboot. No reboot or restart was performed during the `onboot` change.
 - Proxmox backups are not configured; HAOS local backups exist but do not
   provide a Proxmox/off-host restore strategy.
 - Proxmox host security hardening remains pending.
