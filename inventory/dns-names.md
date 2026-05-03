@@ -1,7 +1,7 @@
 # DNS names
 
 > Source-of-truth for important `home.lan` names.
-> Last verified: 2026-05-02 17:27 CEST
+> Last verified: 2026-05-04 00:12 CEST
 
 ## Authority model
 
@@ -33,22 +33,22 @@ If a host has both forward and reverse DNS, forward lives in AdGuard and reverse
 
 These names are reserved for the Opti/Proxmox plan. Some may already resolve in AdGuard for forward planning, but services are not considered live until the corresponding host/VM exists and is validated.
 
-As of 2026-05-02, `opti.home.lan` and `proxmox.home.lan` resolve to `192.168.1.60` via Pi AdGuard and system resolver. HAOS VM `101` is live on `192.168.30.20`; Docker VM and Docker-backed service names remain planned until their workloads exist and are validated.
+As of 2026-05-02, `opti.home.lan` and `proxmox.home.lan` resolve to `192.168.1.60` via Pi AdGuard and system resolver. HAOS VM `101` is live on `192.168.30.20`; Docker VM and Docker-backed service names remain planned until their workloads exist and are validated. As of 2026-05-04, `ha.home.lan` PTR (`192.168.30.20 → ha.home.lan.`) is live in Unbound `ptr-local.conf`.
 
-| Name | Planned IP | Role | Status |
-|---|---|---|---|
-| `opti.home.lan` | `192.168.1.60` | Proxmox host hardware | LIVE |
-| `proxmox.home.lan` | `192.168.1.60` | Proxmox UI/API | LIVE |
-| `ha.home.lan` | `192.168.30.20` | Home Assistant OS | LIVE |
-| `haos.home.lan` | `192.168.30.20` | HAOS alias | LIVE |
-| `docker.home.lan` | `192.168.30.10` | Debian Docker VM | PLANNED |
-| `proxy.home.lan` | `192.168.30.10` | Caddy reverse proxy | PLANNED |
-| `dockge.home.lan` | `192.168.30.10` | Dockge via Caddy | PLANNED |
-| `uptime.home.lan` | `192.168.30.10` | Uptime Kuma via Caddy | PLANNED |
-| `dozzle.home.lan` | `192.168.30.10` | Dozzle via Caddy | PLANNED |
-| `stremio.home.lan` | `192.168.30.10` | Optional Stremio Server | PLANNED |
-| `transmission.home.lan` | `192.168.30.10` | Optional, via Caddy only if used | PLANNED |
-| `mcp.home.lan` | `192.168.30.10` | Later MCP/dev services | PLANNED |
+| Name | Planned IP | Role | PTR | Source | Status |
+|---|---|---|---|---|---|
+| `opti.home.lan` | `192.168.1.60` | Proxmox host hardware | n/a | AdGuard rewrite | LIVE |
+| `proxmox.home.lan` | `192.168.1.60` | Proxmox UI/API | n/a | AdGuard rewrite | LIVE |
+| `ha.home.lan` | `192.168.30.20` | Home Assistant OS | `ha.home.lan.` | Forward: AdGuard; PTR: Unbound | LIVE |
+| `haos.home.lan` | `192.168.30.20` | HAOS alias (forward only) | n/a | AdGuard rewrite | LIVE |
+| `docker.home.lan` | `192.168.30.10` | Debian Docker VM | — | AdGuard planned | PLANNED |
+| `proxy.home.lan` | `192.168.30.10` | Caddy reverse proxy | — | AdGuard planned | PLANNED |
+| `dockge.home.lan` | `192.168.30.10` | Dockge via Caddy | — | AdGuard planned | PLANNED |
+| `uptime.home.lan` | `192.168.30.10` | Uptime Kuma via Caddy | — | AdGuard planned | PLANNED |
+| `dozzle.home.lan` | `192.168.30.10` | Dozzle via Caddy | — | AdGuard planned | PLANNED |
+| `stremio.home.lan` | `192.168.30.10` | Optional Stremio Server | — | AdGuard planned | PLANNED |
+| `transmission.home.lan` | `192.168.30.10` | Optional, via Caddy only if used | — | AdGuard planned | PLANNED |
+| `mcp.home.lan` | `192.168.30.10` | Later MCP/dev services | — | AdGuard planned | PLANNED |
 
 ## Related inventory
 
