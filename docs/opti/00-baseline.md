@@ -101,6 +101,16 @@ login from the MacBook works. Non-interactive SSH `ha` CLI access is fixed by
 `/home/hassio/.zshenv`, which sources `/etc/profile.d/homeassistant.sh` so
 `SUPERVISOR_TOKEN` is available to `zsh` SSH commands.
 
+SSH admin aliases were validated on 2026-05-03:
+
+| Client | Key | Validated aliases |
+| --- | --- | --- |
+| MacBook `mbp` | `~/.ssh/id_ed25519_mbp` | `ssh opti`, `ssh proxmox`, `ssh ha`, `ssh haos` |
+| Mac mini `mini` | `~/.ssh/id_ed25519_macmini` | `ssh opti`, `ssh proxmox`, `ssh ha`, `ssh haos` |
+
+Proxmox `sshd` hardening was not changed during this validation; password auth
+remains a separate future hardening review.
+
 ### WiZ integration baseline — 2026-05-03
 
 WiZ integration added to HAOS. Five WiZ bulbs on IoT VLAN 10 are controlled by HAOS

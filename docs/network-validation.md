@@ -229,17 +229,23 @@ Validated on 2026-05-03:
 
 - `Advanced SSH & Web Terminal` add-on slug `a0d7b954_ssh` is `started`.
 - Port `22` on `192.168.30.20` is open.
-- Key-only SSH login from the MacBook works.
+- Key-only SSH login from the MacBook and Mac mini works.
 - Password auth is not used.
-- Non-interactive SSH `ha` CLI works after adding `/home/hassio/.zshenv`.
+- MacBook uses `~/.ssh/id_ed25519_mbp`; Mac mini uses
+  `~/.ssh/id_ed25519_macmini`.
+- Admin aliases are validated from both Macs: `ssh opti`, `ssh proxmox`,
+  `ssh ha`, and `ssh haos`.
+- `/home/hassio/.zshenv` remains required for non-interactive HA CLI.
 - `/home/hassio/.zshenv` sources `/etc/profile.d/homeassistant.sh` so `zsh`
   commands receive the Supervisor environment.
+- During alias validation, HAOS SSH auth passed from both Macs, but `ha core info`
+  returned `unauthorized: missing or invalid API token`; treat that as an HA CLI
+  environment warning, not an SSH auth failure.
 
 Read-only HA CLI validation:
 
 ```bash
-ssh -i /Users/hd/.ssh/id_ed25519_mbp -o IdentitiesOnly=yes \
-  hassio@192.168.30.20 'ha core info; ha backups; ha resolution info'
+ssh ha 'ha core info; ha backups; ha resolution info'
 ```
 
 Read-only SSH port validation:
