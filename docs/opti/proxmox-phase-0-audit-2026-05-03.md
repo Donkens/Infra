@@ -73,9 +73,13 @@ Out of scope:
    Effective: `PermitRootLogin prohibit-password`, `PasswordAuthentication no`,
    `X11Forwarding no`, `AllowTcpForwarding no`. Both admin clients re-validated
    with new sessions. See `docs/opti/proxmox-ssh-hardening-plan-2026-05-03.md`.
-5. No PVE firewall policy files were found under `/etc/pve`.
-6. `rpcbind` listens on `0.0.0.0:111` and `[::]:111`; review whether it is
-   needed.
+5. ~~No PVE firewall policy files under `/etc/pve`.~~ **Reviewed Phase 2A 2026-05-03:**
+   `pve-firewall` active+enabled, zero `.fw` files, passthrough. `host.fw` allowlist
+   designed (not applied). Enable in Phase 2B. See
+   `docs/opti/proxmox-firewall-review-2026-05-03.md`.
+6. `rpcbind` on `0.0.0.0:111`: **cannot safely disable** — `nfs-blkmap.service`
+   active, `nfs-client.target` enabled, `nfs-common` installed. Mitigate via PVE
+   host firewall block in Phase 2B; restrict to localhost as separate GO.
 7. Server VLAN 30 isolation/firewall-zone work remains a separate `GO firewall`
    task.
 8. HAOS QEMU Guest Agent is a known WARN: the VM option is enabled, but HAOS is
