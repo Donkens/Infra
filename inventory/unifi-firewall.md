@@ -34,9 +34,41 @@ This file tracks custom UniFi firewall policies and IP groups on UDR-7. It does 
 - Pi upstream DNS is allowed: Pi can query external DNS as expected for recursion/upstream use.
 - UDR dnsmasq listens on gateway IPs, so firewall blocks are required to keep ordinary clients on Pi DNS.
 
+## Verified behavior
+
+- Default + MLO client DNS bypass is verified blocked from Mac mini: `@192.168.1.1` and `@1.1.1.1` timed out.
+- Pi upstream DNS is allowed: Pi can query external DNS as expected for recursion/upstream use.
+- UDR dnsmasq listens on gateway IPs, so firewall blocks are required to keep ordinary clients on Pi DNS.
+
+## Server VLAN 30 gaps — confirmed 2026-05-03
+
+Live-tested from HAOS `192.168.30.20` via SSH.
+
+| Gap | Detail |
+|---|---|
+| No dedicated Server zone | VLAN 30 (`69ee65711bc6e72d27744844`) in `Internal` zone (`677d9959ed22014620a6a981`) — zone-based isolation impossible |
+| Gateway DNS bypass open | `@192.168.30.1:53` answers from HAOS — `block-internal-gateway-dns-*` rules use `network_ids` that exclude Server VLAN 30 |
+| WAN DNS bypass uncovered | `block-internal-wan-dns-*` rules use `network_ids` that exclude Server VLAN 30 |
+| `allow-haos-wiz-control` zone dependency | `source.zone_id = 677d9959ed22014620a6a981` (Internal) — breaks on zone migration if not updated atomically |
+
+Isolation plan and approval blocks: [`docs/opti/server-vlan30-isolation-plan-2026-05-03.md`](../docs/opti/server-vlan30-isolation-plan-2026-05-03.md)
+
+## Planned policies for Server zone (pending GO Phase 2A + 2B)
+
+| Policy | Direction | Source | Destination | Port | Action | Status |
+|---|---|---|---|---|---|---|
+| `allow-server-to-pi-dns-udp` | Server → Internal | Server zone ANY | IP `192.168.1.55` | UDP 53 | ALLOW | Planned |
+| `allow-server-to-pi-dns-tcp` | Server → Internal | Server zone ANY | IP `192.168.1.55` | TCP 53 | ALLOW | Planned |
+| `allow-server-to-wan` | Server → External | Server zone ANY | ANY | all (non-53) | ALLOW | Planned |
+| `allow-lan-admin-to-haos` | Internal → Server | Internal zone ANY | IP `192.168.30.20` | TCP 8123 | ALLOW | Planned |
+| `block-server-wan-dns-udp` | Server → External | Server zone ANY | ANY | UDP 53 | BLOCK | Planned |
+| `block-server-wan-dns-tcp` | Server → External | Server zone ANY | ANY | TCP 53 | BLOCK | Planned |
+| `block-server-gateway-dns-udp` | Server → Gateway | Server zone ANY | IP `192.168.30.1` | UDP 53 | BLOCK | Planned |
+| `block-server-gateway-dns-tcp` | Server → Gateway | Server zone ANY | IP `192.168.30.1` | TCP 53 | BLOCK | Planned |
+| `block-server-to-internal` | Server → Internal | Server zone ANY | ANY | all | BLOCK | Planned |
+
 ## Follow-up validation needed
 
-- Server VLAN 30 DNS bypass and gateway DNS behavior must be verified before workloads are placed there.
 - IoT-to-gateway DNS needs explicit client-side test documentation; current policy inventory confirms IoT-to-WAN DNS block and IoT-to-Pi DNS allow.
 - `docs/unifi-firewall-state-2026-04-15.md` is superseded/stale for current policy count. Keep it as historical context only.
-- `allow-haos-wiz-icmp-temp` is disabled, not deleted. Delete via UniFi UI once stable (Settings → Security → Traffic & Firewall Rules → find rule → Delete).
+- `allow-haos-wiz-icmp-temp` is disabled, not deleted. Delete via UniFi UI during Phase 2B (Settings → Security → Traffic & Firewall Rules → find rule → Delete).

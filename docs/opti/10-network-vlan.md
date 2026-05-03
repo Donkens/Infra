@@ -132,9 +132,9 @@ host reboot. No reboot or restart was performed during the `onboot` change.
 | DNS server | `192.168.1.55` |
 | Domain | `home.lan` |
 | IPv6 | Disabled (ipv4-only) |
-| Firewall zone | LAN zone (shared with Default LAN) — see note below |
+| Firewall zone | Internal `677d9959ed22014620a6a981` (shared with Default LAN) — dedicated zone required; see isolation plan |
 
-> **Firewall zone note:** Server VLAN 30 was automatically placed in the same firewall zone as Default LAN (`677d9959ed22014620a6a981`). Zone-based inter-VLAN rules between Default LAN and Server VLAN 30 will not be enforced until Server is moved to a dedicated zone. This is a prerequisite for the `GO firewall` step.
+> **Firewall zone note:** Server VLAN 30 is in the same firewall zone as Default LAN (`677d9959ed22014620a6a981`). Zone-based inter-VLAN rules cannot be enforced until Server is moved to a dedicated zone. Isolation plan with approval blocks: [`server-vlan30-isolation-plan-2026-05-03.md`](server-vlan30-isolation-plan-2026-05-03.md).
 
 ## DNS names — verified in AdGuard
 
@@ -170,3 +170,21 @@ Before placing heavy workloads on VLAN 30:
 - keep Pi as the DNS node
 - do not move Server VLAN into a dedicated firewall zone without a separate `GO` plan
 - keep Docker VM `102` absent/planned until an approved implementation step
+
+## Server VLAN 30 firewall isolation — status 2026-05-03
+
+Phase 0/1 audit completed. Isolation plan with approval blocks written.
+
+| Task | Status |
+| --- | --- |
+| Phase 0 live discovery | ✅ 2026-05-03 |
+| Phase 1 isolation plan | ✅ [`server-vlan30-isolation-plan-2026-05-03.md`](server-vlan30-isolation-plan-2026-05-03.md) |
+| Phase 2A: create Server zone + zone migration | ❌ Awaiting GO |
+| Phase 2B: isolation rules | ❌ Awaiting GO (requires 2A) |
+
+Confirmed gaps (live-tested 2026-05-03):
+
+- Server VLAN 30 is in `Internal` zone — no zone-based isolation possible.
+- `@192.168.30.1:53` answers from HAOS — gateway DNS bypass open.
+- DNS block rules (`block-internal-gateway-dns-*`, `block-internal-wan-dns-*`) exclude Server VLAN 30 `network_id`.
+- `allow-haos-wiz-control` source zone is `Internal` — will break on zone migration unless updated atomically.
