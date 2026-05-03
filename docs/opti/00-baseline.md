@@ -94,7 +94,7 @@ Status: WARN. No live changes were made.
 | HAOS health | `issues: []`, `suggestions: []`, `unhealthy: []`, `unsupported: []` |
 | QGA | `agent: enabled=1`; `qm agent 101 ping` returns `QEMU guest agent is not running` |
 | Proxmox backups | interim vzdump of VM 101 completed 2026-05-03; off-host copy on Mac mini; restore-test PASS 2026-05-03 |
-| Security posture | SSH hardened Phase 2A 2026-05-03; PVE firewall reviewed Phase 2A 2026-05-03: passthrough, no rules — host.fw design drafted, not applied; rpcbind cannot be disabled (nfs-blkmap active), restrict via firewall in Phase 2B |
+| Security posture | SSH hardened Phase 2A; PVE host firewall active Phase 2B 2026-05-03: `host.fw`+`cluster.fw` applied, allowlist `192.168.1.0/24` ports 22/8006/3128/ICMP, inbound DROP; rpcbind blocked at host firewall, service running (nfs-blkmap dependency) |
 
 Phase 0 WARN items:
 
@@ -110,14 +110,14 @@ Phase 0 WARN items:
   `X11Forwarding no`, `AllowTcpForwarding no`, `PermitRootLogin prohibit-password`.
   Both MBP and Mac mini validated with new key-only sessions after reload.
   PVE firewall and `rpcbind` review remain separate pending tasks.
-- ~~No PVE firewall policy files under `/etc/pve`.~~ **Reviewed Phase 2A 2026-05-03:**
-  firewall service active+enabled but no rules — passthrough. `host.fw` allowlist
-  drafted (192.168.1.0/24 for SSH/8006/3128/ICMP, drop all other inbound);
-  not applied. Enable in Phase 2B. See `docs/opti/proxmox-firewall-review-2026-05-03.md`.
-- `rpcbind` on `0.0.0.0:111`: **cannot disable** — `nfs-blkmap.service` actively
-  running, `nfs-client.target` enabled, `nfs-common` installed. Mitigate via
-  PVE host firewall (drop port 111 inbound) in Phase 2B. Restrict to localhost
-  as defence-in-depth via separate GO.
+- ~~No PVE firewall policy files under `/etc/pve`.~~ **Applied Phase 2B 2026-05-03:**
+  `cluster.fw` (`enable: 1`) and `host.fw` (allowlist `192.168.1.0/24` → ports
+  22/8006/3128/ICMP; DROP all other inbound) written and loaded. `pve-firewall`
+  status `enabled/running`. New SSH sessions and Web UI validated after reload.
+  See `docs/opti/proxmox-firewall-review-2026-05-03.md`.
+- `rpcbind` on `0.0.0.0:111`: service still running (nfs-blkmap dependency);
+  inbound port 111 now **blocked by host firewall** (no ACCEPT rule, hits DROP).
+  Restrict rpcbind to localhost as separate defence-in-depth GO if desired.
 - Server VLAN 30 isolation/firewall-zone work remains a separate `GO firewall`
   task.
 - HAOS QGA is a known WARN; do not install packages inside HAOS for this.

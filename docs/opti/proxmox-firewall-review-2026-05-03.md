@@ -4,8 +4,10 @@ Date: 2026-05-03
 
 ## Status
 
-Phase 2A completed — review and design only. **No live firewall or rpcbind
-changes were made.** All data below is read-only discovery from `opti`.
+Phase 2A completed 2026-05-03 — review and design. No live changes were made in
+Phase 2A. **Phase 2B applied 2026-05-03:** `host.fw` and `cluster.fw` written,
+`pve-firewall` reloaded. Host firewall is now active with the approved allowlist.
+See Phase 2B section below for full details.
 
 ## PVE firewall current state
 
@@ -13,11 +15,12 @@ changes were made.** All data below is read-only discovery from `opti`.
 | --- | --- |
 | `pve-firewall` service | `active (running)` since 2026-05-02 16:38:10 CEST |
 | `pve-firewall` enabled | `enabled` (preset: enabled) |
-| `.fw` files under `/etc/pve` | **none** — no rules loaded |
-| `cluster.fw` | does not exist |
-| `host.fw` | does not exist |
+| `.fw` files under `/etc/pve` | **none** — no rules loaded (Phase 2A baseline) |
+| `cluster.fw` | did not exist — **created Phase 2B** |
+| `host.fw` | did not exist — **created Phase 2B** |
 | `datacenter.cfg` firewall setting | none — only `keyboard: sv` |
-| Effective firewall | **passthrough** — service runs but enforces nothing |
+| Effective firewall (Phase 2A) | **passthrough** — service ran but enforced nothing |
+| Effective firewall (Phase 2B) | **active** — allowlist rules enforced |
 
 The PVE firewall daemon is running and managing iptables/ebtables chains, but
 because no `.fw` files exist, its default policy is accept-all. All traffic
@@ -202,16 +205,92 @@ ssh opti 'rm /etc/pve/nodes/opti/host.fw && systemctl reload pve-firewall'
 The PVE firewall reverts to passthrough (accept-all) as soon as `host.fw` is
 removed and the daemon is reloaded.
 
-## Confirmed no live changes
+## Confirmed no live changes (Phase 2A)
 
 No firewall rules were written, no rpcbind changes were made, no network
-configuration was altered. This document records a design-only phase.
+configuration was altered in Phase 2A. Phase 2B live changes are recorded below.
+
+---
+
+## Phase 2B — Host firewall applied (2026-05-03)
+
+### Files written
+
+`/etc/pve/firewall/cluster.fw`:
+
+```
+[OPTIONS]
+enable: 1
+```
+
+`/etc/pve/nodes/opti/host.fw`:
+
+```
+[OPTIONS]
+enable: 1
+
+[RULES]
+IN ACCEPT -source 192.168.1.0/24 -p tcp -dport 22 -log nolog
+IN ACCEPT -source 192.168.1.0/24 -p tcp -dport 8006 -log nolog
+IN ACCEPT -source 192.168.1.0/24 -p tcp -dport 3128 -log nolog
+IN ACCEPT -source 192.168.1.0/24 -p icmp -log nolog
+IN DROP -log nolog
+```
+
+Note: `cluster.fw enable: 1` is required to activate the PVE firewall framework.
+Without it, `pve-firewall compile` reports `firewall disabled` and `host.fw` is
+not applied even with `enable: 1`. Both files are needed.
+
+### compile result
+
+`pve-firewall compile` returned `detected changes` and `PVE_FIREWALL_COMPILE_OK`.
+Key compiled rules in `PVEFW-HOST-IN`:
+
+- loopback: ACCEPT
+- `INVALID`: DROP (connection tracking)
+- `RELATED,ESTABLISHED`: ACCEPT (connection tracking)
+- `192.168.1.0/24` → port 22 tcp: ACCEPT
+- `192.168.1.0/24` → port 8006 tcp: ACCEPT
+- `192.168.1.0/24` → port 3128 tcp: ACCEPT
+- `192.168.1.0/24` → ICMP: ACCEPT
+- All other inbound: DROP (via `PVEFW-Drop` then `DROP`)
+
+PVE also auto-creates `PVEFW-0-management-v4` ipset with `192.168.1.0/24`,
+adding redundant management-port rules for 22, 8006, 3128, 5900–5999 (noVNC),
+60000–60050. This is PVE built-in behaviour and does not conflict.
+
+Port 111 (rpcbind) has no ACCEPT rule and hits the final DROP. rpcbind service
+continues to run locally and serves NFS client stack; inbound connections from
+the network are now dropped at the host firewall.
+
+### Post-reload validation
+
+| Check | Result |
+| --- | --- |
+| `pve-firewall` status | `enabled/running` |
+| New SSH session MBP | ✅ `NEW_SESSION_CURRENT_CLIENT_OK_AFTER_FW` |
+| New SSH session Mac mini | ✅ `NEW_SESSION_MINI_OK_AFTER_FW` |
+| Proxmox Web UI `https://opti.home.lan:8006` | ✅ HTTP 200 |
+| `nc -vz opti.home.lan 22` | ✅ succeeded |
+| `nc -vz opti.home.lan 8006` | ✅ succeeded |
+| `nc -vz opti.home.lan 3128` | ✅ succeeded |
+| rpcbind service | `active` (unchanged — no service changes) |
+| VM 101 status | `running` |
+| HAOS health | `issues: []`, `suggestions: []`, `unhealthy: []`, `unsupported: []` |
+
+### Rollback
+
+```bash
+ssh opti 'rm -f /etc/pve/nodes/opti/host.fw /etc/pve/firewall/cluster.fw && systemctl reload pve-firewall'
+```
+
+Removes both files and reverts to passthrough.
 
 ---
 
 ## Future approval blocks
 
-### [APPROVAL REQUIRED] GO pve-host-firewall-enable Phase 2B
+### ~~[APPROVAL REQUIRED] GO pve-host-firewall-enable Phase 2B~~ COMPLETED 2026-05-03
 
 ```
 Action:   Write /etc/pve/nodes/opti/host.fw and reload pve-firewall
