@@ -159,8 +159,69 @@ Notes:
 - Older partial backups may still exist.
 - Core was not restarted, Supervisor was not reloaded/restarted, and the host was
   not rebooted while clearing the stale backup repair.
-- `Advanced SSH & Web Terminal` is not required for backup verification. HA CLI
-  audits should use the Proxmox QEMU guest agent path.
+- Non-interactive SSH `ha` CLI access from `Advanced SSH & Web Terminal` is fixed
+  via `/home/hassio/.zshenv`, which sources `/etc/profile.d/homeassistant.sh`.
+
+## HAOS → WiZ firewall baseline
+
+Added 2026-05-03. Five WiZ bulbs on IoT VLAN 10. HAOS controls them via a
+permanent UDP firewall rule. A temporary ICMP validation rule was disabled after
+the integration was confirmed.
+
+| Object | ID | State |
+| --- | --- | --- |
+| IP group `wiz-bulbs-ipv4` | `69f683421bc6e72d27767433` | active |
+| Rule `allow-haos-wiz-control` | `69f687011bc6e72d277674c3` | **enabled** |
+| Rule `allow-haos-wiz-icmp-temp` | `69f687011bc6e72d277674c6` | **disabled** |
+
+Read-only validation — run from Mac mini Terminal (Keychain GUI session required):
+
+```bash
+# Export credentials first from Keychain in the same shell:
+# UNIFI_NETWORK_USERNAME=$(/usr/bin/security find-generic-password -a "$USER" -s unifi-mcp-username -w)
+# UNIFI_NETWORK_PASSWORD=$(/usr/bin/security find-generic-password -a "$USER" -s unifi-mcp-password -w)
+# export UNIFI_NETWORK_USERNAME UNIFI_NETWORK_PASSWORD
+
+$HOME/.local/bin/uv run --no-project --python 3.13 \
+  --with "unifi-network-mcp==0.14.13" python3 -c "
+import asyncio, os
+from unifi_core.network.managers.connection_manager import ConnectionManager
+from unifi_core.network.managers.firewall_manager import FirewallManager
+async def check():
+    cm = ConnectionManager(host='192.168.1.1',
+                           username=os.environ['UNIFI_NETWORK_USERNAME'],
+                           password=os.environ['UNIFI_NETWORK_PASSWORD'],
+                           port=443, site='default', verify_ssl=False)
+    mgr = FirewallManager(cm)
+    policies = await mgr.get_firewall_policies(include_predefined=False)
+    for p in policies:
+        raw = p.raw if hasattr(p, 'raw') else p
+        if 'wiz' in (raw.get('name') or '').lower():
+            print(raw.get('_id'), raw.get('name'), 'enabled=', raw.get('enabled'))
+asyncio.run(check())
+"
+```
+
+Expected: `allow-haos-wiz-control enabled= True`, `allow-haos-wiz-icmp-temp enabled= False`.
+
+HAOS WiZ validation after manual area assignment:
+
+| Check | Result |
+| --- | --- |
+| WiZ devices | `5` |
+| WiZ entities | `20` |
+| Missing effective entity areas | `0` |
+| `4F823E` | Kitchen |
+| `4F8388` | Bathroom |
+| `4F8602` | Living Room |
+| `4F8818` | Living Room |
+| `4F8888` | Hallway |
+| Full backup | `haos-wiz-baseline-2026-05-03-full` |
+| Backup slug | `3e602056` |
+| Backup date | `2026-05-03T18:47:34.215668+00:00` |
+| Backup type | `full` |
+| Backup size | `0.22 MB` |
+| Resolution state | `issues: []`, `suggestions: []`, `unhealthy: []`, `unsupported: []` |
 
 ## HAOS VM 101 SSH add-on access
 
@@ -170,13 +231,15 @@ Validated on 2026-05-03:
 - Port `22` on `192.168.30.20` is open.
 - Key-only SSH login from the MacBook works.
 - Password auth is not used.
-- HA CLI inside the SSH add-on shell returned
-  `unauthorized: missing or invalid API token`.
+- Non-interactive SSH `ha` CLI works after adding `/home/hassio/.zshenv`.
+- `/home/hassio/.zshenv` sources `/etc/profile.d/homeassistant.sh` so `zsh`
+  commands receive the Supervisor environment.
 
-Use Proxmox QEMU guest agent for HA CLI audits:
+Read-only HA CLI validation:
 
 ```bash
-ssh -i /Users/hd/.ssh/id_ed25519_mbp -o IdentitiesOnly=yes root@192.168.1.60 'qm guest exec 101 -- ha core info || true'
+ssh -i /Users/hd/.ssh/id_ed25519_mbp -o IdentitiesOnly=yes \
+  hassio@192.168.30.20 'ha core info; ha backups; ha resolution info'
 ```
 
 Read-only SSH port validation:

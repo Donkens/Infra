@@ -1,11 +1,17 @@
 # UniFi firewall policies
 
 > Current custom UniFi firewall policy inventory.
-> Last verified: 2026-04-28 19:45 CEST
+> Last verified: 2026-05-03 CEST
 
 ## Scope
 
-This file tracks custom DNS-related UniFi firewall policies on UDR-7. It does not replace the live controller; it is a sanitized source-of-truth for future audits.
+This file tracks custom UniFi firewall policies and IP groups on UDR-7. It does not replace the live controller; it is a sanitized source-of-truth for future audits.
+
+## IP groups
+
+| Group | IPs | Resource ID | Notes |
+|---|---|---|---|
+| `wiz-bulbs-ipv4` | `192.168.10.129`, `.131`, `.133`, `.134`, `.174` | `69f683421bc6e72d27767433` | All WiZ bulbs on IoT VLAN 10. Used as destination in `allow-haos-wiz-control`. |
 
 ## Custom policies
 
@@ -19,6 +25,8 @@ This file tracks custom DNS-related UniFi firewall policies on UDR-7. It does no
 | `block-internal-gateway-dns-tcp` | yes | BLOCK | zone policy | Default + MLO networks in Internal zone | Gateway DNS IPs `192.168.1.1`, `192.168.40.1` | TCP `53` | `69ee4d011bc6e72d27743fab` | TCP companion to gateway DNS block. |
 | `block-internal-wan-dns-udp` | yes | BLOCK | zone policy | Default + MLO networks in Internal zone | WAN / External zone | UDP `53` | `69ee4d011bc6e72d27743fae` | Blocks direct WAN DNS from Default/MLO. |
 | `block-internal-wan-dns-tcp` | yes | BLOCK | zone policy | Default + MLO networks in Internal zone | WAN / External zone | TCP `53` | `69ee4d021bc6e72d27743fb1` | TCP companion to WAN DNS block. |
+| `allow-haos-wiz-control` | **yes** | ALLOW | zone policy | HAOS `192.168.30.20` in Server zone `677d9959ed22014620a6a981` | `wiz-bulbs-ipv4` in IoT zone `6980de97e060a06b8ef9b613` | UDP `38899-38900` | `69f687011bc6e72d277674c3` | Permanent. Allows HAOS to control WiZ bulbs. index=10000. |
+| `allow-haos-wiz-icmp-temp` | **no** | ALLOW | zone policy | HAOS `192.168.30.20` in Server zone | `wiz-bulbs-ipv4` in IoT zone | ICMP | `69f687011bc6e72d277674c6` | Temporary validation rule. **Disabled 2026-05-03** after WiZ integration confirmed. index=10001. |
 
 ## Verified behavior
 
@@ -31,3 +39,4 @@ This file tracks custom DNS-related UniFi firewall policies on UDR-7. It does no
 - Server VLAN 30 DNS bypass and gateway DNS behavior must be verified before workloads are placed there.
 - IoT-to-gateway DNS needs explicit client-side test documentation; current policy inventory confirms IoT-to-WAN DNS block and IoT-to-Pi DNS allow.
 - `docs/unifi-firewall-state-2026-04-15.md` is superseded/stale for current policy count. Keep it as historical context only.
+- `allow-haos-wiz-icmp-temp` is disabled, not deleted. Delete via UniFi UI once stable (Settings → Security → Traffic & Firewall Rules → find rule → Delete).

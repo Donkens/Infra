@@ -16,7 +16,7 @@
 | --- | --- |
 | UniFi network ID | `69ee65711bc6e72d27744844` |
 | DHCP range | `192.168.30.100` – `192.168.30.199` |
-| Static / reserved | `.10` Docker VM, `.20` HAOS VM (no DHCP reservation until MAC known) |
+| Static / reserved | `.10` Docker VM, `.20` HAOS VM |
 | DNS | `192.168.1.55` |
 | Firewall zone | Shared LAN zone — dedicated zone required at `GO firewall` step. Current firewall state: [`docs/unifi-firewall-state-2026-04-15.md`](../docs/unifi-firewall-state-2026-04-15.md) |
 
@@ -45,7 +45,7 @@ Proxmox `vmbr0` is VLAN-aware. Future VM workloads use VLAN tag `30`:
 
 | VM | Planned IP | VLAN tag | Status |
 | --- | --- | ---: | --- |
-| `101` HAOS | `192.168.30.20` | `30` | planned |
+| `101` HAOS | `192.168.30.20` | `30` | live |
 | `102` Debian Docker | `192.168.30.10` | `30` | planned |
 
 VLAN 30 VM/tap traffic was validated with a temporary CT on 2026-05-02.
@@ -65,7 +65,7 @@ Validated 2026-05-02 with temporary LXC CT `900` named
 | Internet ping | `1.1.1.1` passed |
 | Cleanup | CT `900` destroyed after validation |
 
-HAOS VM `101` and Debian Docker VM `102` remain uncreated.
+HAOS VM `101` is live on VLAN 30. Debian Docker VM `102` remains planned.
 
 ## MLO-LAN VLAN 40
 

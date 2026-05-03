@@ -64,7 +64,8 @@ Applied 2026-04-29. Ingen package removal, ingen maskning, och Cockpit lämnades
 | Service | Port | Protocol | Status | Note |
 |---|---|---|---|---|
 | Home Assistant | 8123 | HTTP | live | Direct access: `http://192.168.30.20:8123`; aliases `ha.home.lan` and `haos.home.lan` resolve to `192.168.30.20`. Ej via Caddy. Runtime and first full backup baseline validated 2026-05-02. Backup: `haos-onboarding-baseline-2026-05-02-full`; resolution clean after `ha resolution check run backups`. |
-| Advanced SSH & Web Terminal | 22 | SSH | live | Add-on slug `a0d7b954_ssh`. Key-only SSH from MacBook verified; password auth not used. HA CLI inside the SSH add-on shell returned `unauthorized: missing or invalid API token`, so use Proxmox QEMU guest agent for HA CLI audits. |
+| Advanced SSH & Web Terminal | 22 | SSH | live | Add-on slug `a0d7b954_ssh`. Key-only SSH from MacBook verified; password auth not used. Non-interactive SSH `ha` CLI fixed via `/home/hassio/.zshenv`, which loads the Supervisor environment for `zsh` commands. |
+| WiZ integration | — | — | live | WiZ integration added 2026-05-03. Five WiZ bulbs / 20 entities on IoT VLAN 10 (`192.168.10.129`, `.131`, `.133`, `.134`, `.174`). Areas: `4F823E` Kitchen, `4F8388` Bathroom, `4F8602` Living Room, `4F8818` Living Room, `4F8888` Hallway. HAOS controls them via firewall rule `allow-haos-wiz-control` (UDP 38899-38900, Server→IoT zone). IP group: `wiz-bulbs-ipv4`. Full backup: `haos-wiz-baseline-2026-05-03-full`, slug `3e602056`, `full`, `2026-05-03T18:47:34.215668+00:00`, `0.22 MB`; resolution clean. |
 
 ## UDR-7 — 192.168.1.1
 

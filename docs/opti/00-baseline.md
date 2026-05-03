@@ -97,9 +97,36 @@ the host was not rebooted during the resolution refresh.
 
 `Advanced SSH & Web Terminal` was later configured for key-only access and
 started successfully. Port `22` on `192.168.30.20` is open, and key-based SSH
-login from the MacBook works. HA CLI commands inside the add-on shell returned
-`unauthorized: missing or invalid API token`, so HA CLI audits should continue to
-use the Proxmox QEMU guest agent path.
+login from the MacBook works. Non-interactive SSH `ha` CLI access is fixed by
+`/home/hassio/.zshenv`, which sources `/etc/profile.d/homeassistant.sh` so
+`SUPERVISOR_TOKEN` is available to `zsh` SSH commands.
+
+### WiZ integration baseline — 2026-05-03
+
+WiZ integration added to HAOS. Five WiZ bulbs on IoT VLAN 10 are controlled by HAOS
+on Server VLAN 30 via a dedicated firewall rule. No integration-specific HAOS
+add-ons are required; WiZ uses UDP 38899-38900 for device control.
+
+| Object | Value |
+| --- | --- |
+| IP group | `wiz-bulbs-ipv4` (`69f683421bc6e72d27767433`) |
+| Permanent firewall rule | `allow-haos-wiz-control` (`69f687011bc6e72d277674c3`), **enabled** |
+| Temporary ICMP rule | `allow-haos-wiz-icmp-temp` (`69f687011bc6e72d277674c6`), **disabled** 2026-05-03 |
+| WiZ bulb IPs | `192.168.10.129`, `.131`, `.133`, `.134`, `.174` |
+| WiZ inventory | `5` devices, `20` entities, `0` missing effective areas |
+| Protocol | UDP 38899-38900, src `192.168.30.20` → dst `wiz-bulbs-ipv4` |
+| Full backup | `haos-wiz-baseline-2026-05-03-full`, slug `3e602056`, `full`, `2026-05-03T18:47:34.215668+00:00`, `0.22 MB` |
+| Resolution state | `issues: []`, `suggestions: []`, `unhealthy: []`, `unsupported: []` |
+
+Area mapping verified in HAOS:
+
+| WiZ suffix | Area |
+| --- | --- |
+| `4F823E` | Kitchen |
+| `4F8388` | Bathroom |
+| `4F8602` | Living Room |
+| `4F8818` | Living Room |
+| `4F8888` | Hallway |
 
 ## Target architecture
 
