@@ -4,8 +4,8 @@
 
 **Phase 1C-C1.5 — 2026-05-04** — Caddy + Uptime Kuma nåbara från LAN. DNS-rewrites
 för `kuma`, `dockge`, `dozzle` lagda i AdGuard. UniFi firewall-regel
-`allow-lan-admin-to-docker-http` (TCP 80, Internal → Docker VM) live. Dockge och
-Dozzle compose-filer finns men containrarna är inte startade.
+`allow-lan-admin-to-docker-http` (TCP 80, Internal → Docker VM) live. Dockge
+compose-fil finns men containern är inte startad. Dozzle körs via Caddy.
 
 **Uptime Kuma baseline — 2026-05-04** — Admin-lösenord satt. Sex aktiva gröna
 monitors konfigurerade (se nedan). Proxmox-monitor pausad p.g.a. firewall-scope.
@@ -23,10 +23,12 @@ LAN client (*.home.lan)
  Caddy :80 (HTTP)           ← only bind: 192.168.30.10:80/443
         │
   [Docker network: proxy]
-   ┌────┴──────────────────┐
-   │                       │
- uptime-kuma            (dockge, dozzle — planned)
- :3001 (internal only)
+   ┌────┴───────────────────────────┐
+   │                                │
+ uptime-kuma                     dozzle
+ :3001 (internal only)           :8080 (internal only, simple auth)
+
+ dockge route exists in Caddy; backend container not started yet
 ```
 
 - `proxy` is a Docker bridge network owned by the Caddy stack.
@@ -49,7 +51,7 @@ LAN client (*.home.lan)
     compose.yaml      ← live
     .env.example
   dozzle/
-    compose.yaml      ← file exists, container not started
+    compose.yaml      ← live
     .env.example
 
 /srv/appdata/
@@ -57,6 +59,7 @@ LAN client (*.home.lan)
   caddy/config/       ← Caddy autosave
   dockge/             ← created, empty
   uptime-kuma/        ← SQLite DB (created on first run)
+  dozzle/users.yml    ← bcrypt users file, not tracked in Git
 ```
 
 ## Running services — Phase 1C-C2a
@@ -91,6 +94,9 @@ http://dozzle.home.lan { reverse_proxy dozzle:8080 }
 
 > `admin off` means `caddy reload` via API does not work — use `docker compose restart`
 > for Caddyfile changes until admin socket is re-enabled.
+>
+> `dockge.home.lan` DNS and Caddy route exist, but Dockge is intentionally not
+> started yet. Expect backend failure there until Phase 1C-C2b.
 
 ## DNS rewrites — AdGuard (Pi)
 
@@ -98,8 +104,8 @@ http://dozzle.home.lan { reverse_proxy dozzle:8080 }
 | --- | --- | --- |
 | `proxy.home.lan` | `192.168.30.10` | ✅ live |
 | `kuma.home.lan` | `192.168.30.10` | ✅ live — added 2026-05-04 (1C-C1.5) |
-| `dockge.home.lan` | `192.168.30.10` | ✅ live — added 2026-05-04 (1C-C1.5) |
-| `dozzle.home.lan` | `192.168.30.10` | ✅ live — added 2026-05-04 (1C-C1.5) |
+| `dockge.home.lan` | `192.168.30.10` | DNS live — backend not started until C2b |
+| `dozzle.home.lan` | `192.168.30.10` | ✅ live — added 2026-05-04, service verified C2a |
 
 ## Guardrails
 
@@ -120,29 +126,27 @@ http://dozzle.home.lan { reverse_proxy dozzle:8080 }
 
 No TCP 443 yet (TLS not enabled). No WAN forwards.
 
-## Validation — Phase 1C-C1.5 (2026-05-04)
+## Validation — Phase 1C-C2a (2026-05-04)
 
 | Check | Result |
 | --- | --- |
 | `docker ps` caddy | `Up`, `192.168.30.10:80→80`, `192.168.30.10:443→443` ✅ |
 | `docker ps` uptime-kuma | `Up (healthy)` ✅ |
+| `docker ps` dozzle | `Up`, internal only ✅ |
 | `curl -I http://proxy.home.lan` from Mac mini | `200 OK` ✅ |
 | `curl -I http://kuma.home.lan` from Mac mini | `302 /dashboard` ✅ |
 | `curl -I http://proxy.home.lan` from MBP | `200 OK` ✅ |
 | `curl -I http://kuma.home.lan` from MBP | `302 /dashboard` ✅ |
 | DNS `kuma/dockge/dozzle.home.lan` from Pi | `192.168.30.10` ✅ |
 | DNS `kuma/dockge/dozzle.home.lan` from Mac mini | `192.168.30.10` ✅ |
-| `systemctl --failed` on Docker VM | `0 units` ✅ |
-| Caddy logs | clean — startup `auto_https off`, no errors ✅ |
-| Uptime Kuma logs | `Listening on 3001`, `No user, need setup` ✅ |
-| `docker ps` dozzle | `Up`, internal only ✅ |
 | `curl http://dozzle.home.lan` (GET) | `200 OK` (login form) — auth active, verified 2026-05-04 ✅ |
 | `curl -I http://dozzle.home.lan` (HEAD) | `405 Method Not Allowed` (expected) |
 | Dozzle logs | `Connected to Docker`, `Accepting connections :8080`, `Token created` (user logged in) ✅ |
 | Dozzle auth | `DOZZLE_AUTH_PROVIDER=simple`, `/data/users.yml` bcrypt, logins work ✅ |
 | Docker socket dozzle | `:ro` verified via `docker inspect` ✅ |
-| Caddy logs | clean — streaming errors are client disconnect (expected) ✅ |
-| `systemctl --failed` | 0 units ✅ |
+| Caddy logs | clean — startup `auto_https off`; streaming errors are client disconnects (expected) ✅ |
+| Uptime Kuma logs | `Listening on 3001` ✅ |
+| `systemctl --failed` on Docker VM | `0 units` ✅ |
 | Disk | `2.2G / 118G` (2%) ✅ |
 
 ## Uptime Kuma monitors — baseline 2026-05-04
