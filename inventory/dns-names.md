@@ -1,7 +1,7 @@
 # DNS names
 
 > Source-of-truth for important `home.lan` names.
-> Last verified: 2026-05-04 15:30 CEST
+> Last verified: 2026-05-04 CEST — Docker Foundation C2a
 
 ## Authority model
 
@@ -33,7 +33,7 @@ If a host has both forward and reverse DNS, forward lives in AdGuard and reverse
 
 These names are reserved for the Opti/Proxmox plan. Some may already resolve in AdGuard for forward planning, but services are not considered live until the corresponding host/VM exists and is validated.
 
-As of 2026-05-02, `opti.home.lan` and `proxmox.home.lan` resolve to `192.168.1.60` via Pi AdGuard and system resolver. HAOS VM `101` is live on `192.168.30.20`; Docker VM and Docker-backed service names remain planned until their workloads exist and are validated. As of 2026-05-04, `ha.home.lan` PTR (`192.168.30.20 → ha.home.lan.`) is live in Unbound `ptr-local.conf`.
+As of 2026-05-02, `opti.home.lan` and `proxmox.home.lan` resolve to `192.168.1.60` via Pi AdGuard and system resolver. HAOS VM `101` is live on `192.168.30.20`. As of 2026-05-04, `ha.home.lan` PTR (`192.168.30.20 → ha.home.lan.`) is live in Unbound `ptr-local.conf`. Docker VM `102` is live on `192.168.30.10` with Docker-backed Caddy, Uptime Kuma, and Dozzle services.
 
 | Name | Planned IP | Role | PTR | Source | Status |
 |---|---|---|---|---|---|
@@ -41,11 +41,11 @@ As of 2026-05-02, `opti.home.lan` and `proxmox.home.lan` resolve to `192.168.1.6
 | `proxmox.home.lan` | `192.168.1.60` | Proxmox UI/API | n/a | AdGuard rewrite | LIVE |
 | `ha.home.lan` | `192.168.30.20` | Home Assistant OS | `ha.home.lan.` | Forward: AdGuard; PTR: Unbound | LIVE |
 | `haos.home.lan` | `192.168.30.20` | HAOS alias (forward only) | n/a | AdGuard rewrite | LIVE |
-| `docker.home.lan` | `192.168.30.10` | Debian Docker VM | — | AdGuard rewrite | PENDING — VM live 2026-05-04, DNS resolves, no service yet |
+| `docker.home.lan` | `192.168.30.10` | Debian Docker VM 102 | — | AdGuard rewrite | LIVE — VM and Docker-backed services validated 2026-05-04 |
 | `proxy.home.lan` | `192.168.30.10` | Caddy reverse proxy | — | AdGuard rewrite | LIVE — Caddy live 2026-05-04, `200 OK` verified |
 | `kuma.home.lan` | `192.168.30.10` | Uptime Kuma via Caddy | — | AdGuard rewrite | LIVE — DNS rewrite added 2026-05-04, `302 /dashboard` verified from Mac mini + MBP |
-| `dockge.home.lan` | `192.168.30.10` | Dockge via Caddy | — | AdGuard rewrite | DNS LIVE 2026-05-04 — compose file created, container not started |
-| `dozzle.home.lan` | `192.168.30.10` | Dozzle via Caddy | — | AdGuard rewrite | DNS LIVE 2026-05-04 — compose file created, container not started |
+| `dockge.home.lan` | `192.168.30.10` | Dockge via Caddy | — | AdGuard rewrite | DNS LIVE — Caddy route exists, backend intentionally not started until C2b |
+| `dozzle.home.lan` | `192.168.30.10` | Dozzle via Caddy | — | AdGuard rewrite | LIVE — Dozzle simple auth via Caddy verified 2026-05-04 (C2a) |
 | `stremio.home.lan` | `192.168.30.10` | Optional Stremio Server | — | AdGuard planned | PLANNED |
 | `transmission.home.lan` | `192.168.30.10` | Optional, via Caddy only if used | — | AdGuard planned | PLANNED |
 | `mcp.home.lan` | `192.168.30.10` | Later MCP/dev services | — | AdGuard planned | PLANNED |
