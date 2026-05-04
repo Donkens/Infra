@@ -10,6 +10,10 @@ Dozzle compose-filer finns men containrarna är inte startade.
 **Uptime Kuma baseline — 2026-05-04** — Admin-lösenord satt. Sex aktiva gröna
 monitors konfigurerade (se nedan). Proxmox-monitor pausad p.g.a. firewall-scope.
 
+**Phase 1C-C2a — 2026-05-04** — Dozzle live med simple auth (`users.yml` bcrypt,
+`DOZZLE_AUTH_PROVIDER=simple`). Docker socket read-only. Ingen host port. Dockge
+ej startad.
+
 ## Architecture
 
 ```
@@ -55,19 +59,19 @@ LAN client (*.home.lan)
   uptime-kuma/        ← SQLite DB (created on first run)
 ```
 
-## Running services — Phase 1C-C1
+## Running services — Phase 1C-C2a
 
 | Container | Image | Status | Port binding |
 | --- | --- | --- | --- |
 | `caddy` | `caddy:2.8.4-alpine` | live ✅ | `192.168.30.10:80→80`, `192.168.30.10:443→443` |
 | `uptime-kuma` | `louislam/uptime-kuma:1.23.15` | live ✅ (healthy) | internal only |
+| `dozzle` | `amir20/dozzle:v8.11.3` | live ✅ | internal only — auth via `/data/users.yml` |
 
 ## Planned services (compose files exist, not started)
 
 | Container | Image | Planned DNS |
 | --- | --- | --- |
 | `dockge` | `louislam/dockge:1.4.2` | `dockge.home.lan` |
-| `dozzle` | `amir20/dozzle:v8.11.3` | `dozzle.home.lan` |
 
 ## Caddyfile — current (HTTP-only)
 
@@ -131,6 +135,11 @@ No TCP 443 yet (TLS not enabled). No WAN forwards.
 | `systemctl --failed` on Docker VM | `0 units` ✅ |
 | Caddy logs | clean — startup `auto_https off`, no errors ✅ |
 | Uptime Kuma logs | `Listening on 3001`, `No user, need setup` ✅ |
+| `docker ps` dozzle | `Up`, internal only ✅ |
+| `curl http://dozzle.home.lan` (GET) | `307 → /login?redirectUrl=/` — auth active ✅ |
+| Dozzle logs | `Connected to Docker`, `Accepting connections on :8080` ✅ |
+| Dozzle auth | `DOZZLE_AUTH_PROVIDER=simple`, `/data/users.yml` bcrypt ✅ |
+| Docker socket dozzle | `:ro` verified via `docker inspect` ✅ |
 
 ## Uptime Kuma monitors — baseline 2026-05-04
 
@@ -154,7 +163,8 @@ No TCP 443 yet (TLS not enabled). No WAN forwards.
 2. ~~UniFi firewall TCP 80~~ ✅ done 2026-05-04
 3. ~~curl-validering från Mac mini + MBP~~ ✅ done 2026-05-04
 4. ~~Admin-lösenord + Uptime Kuma baseline monitors~~ ✅ done 2026-05-04
-5. Start Dockge and Dozzle stacks (separate phase).
+5. ~~Dozzle (C2a) — simple auth, socket RO~~ ✅ done 2026-05-04
+6. Start Dockge (C2b — separate phase).
 6. Add `tls internal` to Caddyfile + import Caddy root CA into macOS Keychain.
 7. Schedule Proxmox backup job (external target).
 8. Lös firewall-scope Docker VM → Proxmox och aktivera Proxmox-monitor.
