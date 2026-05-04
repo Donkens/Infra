@@ -14,6 +14,11 @@ monitors konfigurerade (se nedan). Proxmox-monitor pausad p.g.a. firewall-scope.
 `DOZZLE_AUTH_PROVIDER=simple`). Docker socket read-only. Ingen host port. Via Caddy.
 Dockge ej startad. Validerad (C2a docs) 2026-05-04.
 
+**Phase 1C-C2b — 2026-05-04** — Dockge live. `louislam/dockge:1.4.2` startad via
+`docker compose up -d` i `/srv/compose/dockge/`. Lösenord satt vid first-run.
+`dockge.home.lan` svarar `200 OK` via Caddy. Docker socket RW (nödvändigt).
+Alla befintliga stackar synliga i Dockge UI. Post-C2b backup verifierad.
+
 **Docker backup baseline — 2026-05-04** — Backup-script `scripts/maintenance/docker-vm-backup.sh`
 skapat och installerat på Docker VM (`/usr/local/sbin/docker-vm-backup`). Första backup
 (`docker-vm-102-backup-20260504-201659.tar.gz`, 296K, 45 entries) körd och verifierad.
@@ -63,24 +68,19 @@ LAN client (*.home.lan)
 /srv/appdata/
   caddy/data/         ← Caddy runtime state (TLS cache etc)
   caddy/config/       ← Caddy autosave
-  dockge/             ← created, empty
+  dockge/             ← live, state present after first-run
   uptime-kuma/        ← SQLite DB (created on first run)
   dozzle/users.yml    ← bcrypt users file, not tracked in Git
 ```
 
-## Running services — Phase 1C-C2a
+## Running services — Phase 1C-C2b
 
 | Container | Image | Status | Port binding |
 | --- | --- | --- | --- |
 | `caddy` | `caddy:2.8.4-alpine` | live ✅ | `192.168.30.10:80→80`, `192.168.30.10:443→443` |
 | `uptime-kuma` | `louislam/uptime-kuma:1.23.15` | live ✅ (healthy) | internal only |
 | `dozzle` | `amir20/dozzle:v8.11.3` | live ✅ | internal only — auth via `/data/users.yml` |
-
-## Planned services (compose files exist, not started)
-
-| Container | Image | Planned DNS |
-| --- | --- | --- |
-| `dockge` | `louislam/dockge:1.4.2` | `dockge.home.lan` |
+| `dockge` | `louislam/dockge:1.4.2` | live ✅ | internal only — Docker socket RW |
 
 ## Caddyfile — current (HTTP-only)
 
@@ -110,7 +110,7 @@ http://dozzle.home.lan { reverse_proxy dozzle:8080 }
 | --- | --- | --- |
 | `proxy.home.lan` | `192.168.30.10` | ✅ live |
 | `kuma.home.lan` | `192.168.30.10` | ✅ live — added 2026-05-04 (1C-C1.5) |
-| `dockge.home.lan` | `192.168.30.10` | DNS live — backend not started until C2b |
+| `dockge.home.lan` | `192.168.30.10` | ✅ live — started 2026-05-04 (C2b), `200 OK` verified |
 | `dozzle.home.lan` | `192.168.30.10` | ✅ live — added 2026-05-04, service verified C2a |
 
 ## Guardrails
@@ -180,7 +180,7 @@ No TCP 443 yet (TLS not enabled). No WAN forwards.
 5. ~~Dozzle (C2a) — simple auth, socket RO~~ ✅ done 2026-05-04
 6. ~~Dozzle C2a validation docs~~ ✅ done 2026-05-04
 7. ~~Docker backup baseline~~ ✅ done 2026-05-04 — script + restore-test PASS
-8. Start Dockge (C2b — separate phase).
+8. ~~Start Dockge (C2b)~~ ✅ done 2026-05-04 — `200 OK`, password set, all stacks visible.
 9. Add `tls internal` to Caddyfile + import Caddy root CA into macOS Keychain.
 10. Schedule Proxmox backup job (external target).
 11. Lös firewall-scope Docker VM → Proxmox och aktivera Proxmox-monitor.
