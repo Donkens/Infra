@@ -1,0 +1,5 @@
+# Pi backup export wrapper NOPASSWD rule
+# Managed in: /etc/sudoers.d/infra-backup
+Defaults:pi !requiretty
+Defaults:pi !use_pty
+pi ALL=(root) NOPASSWD: /usr/local/sbin/infra-backup-dns-export

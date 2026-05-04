@@ -25,6 +25,14 @@ Operational rule:
 
 `backup-dns-configs.sh --export-repo` exports DNS state into the repo.
 
+Runtime automation path (hardened model):
+
+- `infra-auto-sync.service` runs as `pi` and calls `sudo -n /usr/local/sbin/infra-backup-dns-export`.
+- `/usr/local/sbin/infra-backup-dns-export` is a root-owned wrapper.
+- The wrapper executes `/usr/local/lib/infra/backup-dns-configs.sh --export-repo`.
+- Sudo allowlist should permit only this wrapper command for `pi`.
+- The repo-path script (`/home/pi/repos/infra/scripts/backup/backup-dns-configs.sh`) must not be directly allowlisted in sudoers.
+
 AdGuard Home:
 
 - Raw `AdGuardHome.yaml` stays local-only and must not be committed.
@@ -94,3 +102,9 @@ When a nightly commit changes `config/unbound/`:
 5. Leave harmless mirrored runtime comments as-is.
 
 When a nightly commit changes only `generated_at` in the AdGuard summary, treat it as normal snapshot churn unless other summary fields changed.
+
+Manual service start boundary:
+
+- `systemctl start infra-auto-sync.service` is a root/admin operation.
+- Running that start command interactively as `pi` is expected to fail with `Interactive authentication required` under the hardened model.
+- For manual validation from `pi`, validate the export path directly with `sudo -n /usr/local/sbin/infra-backup-dns-export` instead of starting the systemd service.

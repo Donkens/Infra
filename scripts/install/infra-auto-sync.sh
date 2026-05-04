@@ -6,8 +6,7 @@ set -euo pipefail
 # Logs to: journald (tag: infra-auto-sync)
 
 REPO_DIR="/home/pi/repos/infra"
-BACKUP_SCRIPT="/home/pi/repos/infra/scripts/backup/backup-dns-configs.sh"
-BACKUP_ARGS="--export-repo"
+BACKUP_WRAPPER="/usr/local/sbin/infra-backup-dns-export"
 AUTO_SYNC_STAGE_PATHS=(
   "config/adguardhome/AdGuardHome.summary.sanitized.yml"
   "config/adguardhome/README.md"
@@ -126,7 +125,7 @@ sync_with_origin_main() {
 
 # Sanity checks
 [[ -d "$REPO_DIR/.git" ]]  || fail "Repo not found or not a git repo: $REPO_DIR"
-[[ -f "$BACKUP_SCRIPT" ]]  || fail "Backup script not found: $BACKUP_SCRIPT"
+[[ -x "$BACKUP_WRAPPER" ]] || fail "Backup wrapper not found or not executable: $BACKUP_WRAPPER"
 git -C "$REPO_DIR" remote get-url origin >/dev/null 2>&1 \
   || fail "No git remote 'origin' configured in $REPO_DIR"
 
@@ -135,8 +134,8 @@ ensure_clean_worktree
 sync_with_origin_main
 
 # Export live configs into repo
-log "Running: $BACKUP_SCRIPT $BACKUP_ARGS"
-sudo -n "$BACKUP_SCRIPT" $BACKUP_ARGS 2>&1 | systemd-cat -t infra-auto-sync -p info
+log "Running: $BACKUP_WRAPPER"
+sudo -n "$BACKUP_WRAPPER" 2>&1 | systemd-cat -t infra-auto-sync -p info
 
 # Check for changes (staged + unstaged)
 if git -C "$REPO_DIR" diff --quiet && git -C "$REPO_DIR" diff --cached --quiet; then
