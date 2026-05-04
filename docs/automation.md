@@ -23,6 +23,24 @@ The latest Pi timer cleanup keeps these active infra timers in scope:
 - Raw backups, logs, and state are local-only.
 - Do not print, paste, document, or commit secrets, raw `AdGuardHome.yaml`, raw query logs, raw backup contents, sessions, tokens, credentials, private keys, or certificate private keys.
 
+## Runtime sudo drift (P0 hardening required)
+
+Runtime verification confirmed Pi currently has broader sudo grants than the tracked minimal sudoers files under `config/sudoers/`.
+
+- Runtime currently includes broad grants:
+  - `(ALL : ALL) ALL`
+  - `(ALL) NOPASSWD: ALL`
+- Tracked sudoers files document narrower allowlisted command patterns and therefore do **not** currently match runtime state.
+- This repository note is documentation-only and does **not** modify live sudoers.
+- Status: **not fixed** in this patch; **P0 hardening required** as a separate follow-up.
+
+Required target state for that follow-up:
+
+- no `NOPASSWD: ALL`
+- no repo-path script directly allowed in sudoers
+- root-owned wrapper in `/usr/local/sbin/`
+- sudoers allowlist only for fixed wrapper command
+
 ## Timers
 
 | Timer | Schedule | Service | Purpose | Writes | Risk |

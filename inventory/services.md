@@ -47,7 +47,7 @@ Applied 2026-04-29. Ingen package removal, ingen maskning, och Cockpit lämnades
 
 | Service | Port | Protocol | Status | Note |
 |---|---|---|---|---|
-| Proxmox UI/API | 8006 | HTTPS | live | Direct IP access: `https://192.168.1.60:8006`; DNS alias: `https://proxmox.home.lan:8006`. HAOS VM `101` exists; Docker VM not yet created. |
+| Proxmox UI/API | 8006 | HTTPS | live | Direct IP access: `https://192.168.1.60:8006`; DNS alias: `https://proxmox.home.lan:8006`. VM `101` (`haos`, 6 GB RAM / 64 GB disk) and VM `102` (`docker`, 12 GB RAM / 120 GB disk) are running. |
 
 ## Docker VM — 192.168.30.10
 

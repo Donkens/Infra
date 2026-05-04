@@ -1,5 +1,16 @@
 # Docker VM 102 — baseline
 
+## Document status
+
+This document contains both historical phase notes and current runtime reconciliation.
+
+- **Historical sections:** Phase 1A/1B/1C-* describe what was true at the time of those steps.
+- **Current runtime reconciliation (latest):** Opti runs Proxmox `9.1.9` on Debian 13, VM `102` (`docker`) is running with `12 GB` RAM and `120 GB` disk, and runtime services are:
+  - Caddy: running
+  - Uptime Kuma: running
+  - Dozzle: running
+  - Dockge: compose present, container not started
+
 ## Phase 1A — 2026-05-04
 
 VM `102` created as Debian 13 trixie base. No services, no Caddy, no Dockge,
@@ -155,7 +166,8 @@ See `docs/opti/60-backup-restore.md` for full backup policy and architecture not
 ## Phase 1C-C1 — Caddy + Uptime Kuma — 2026-05-04
 
 First long-running services deployed. All four compose files created on VM.
-Only Caddy and Uptime Kuma started. No Dockge/Dozzle containers running yet.
+At this phase timestamp, only Caddy and Uptime Kuma were started.
+This point-in-time state is **historical** and has been superseded by later runtime verification where Dozzle is running.
 
 See `docs/opti/docker-foundation.md` for full architecture, compose layout,
 Caddyfile, and validation results.
@@ -178,7 +190,7 @@ Caddyfile, and validation results.
 - ~~Caddy.~~ **Resolved Phase 1C-C1 2026-05-04: `caddy:2.8.4-alpine` live.**
 - ~~Uptime Kuma.~~ **Resolved Phase 1C-C1 2026-05-04: `louislam/uptime-kuma:1.23.15` live.**
 - No Dockge (compose file exists, container not started).
-- No Dozzle (compose file exists, container not started).
+- ~~No Dozzle (compose file exists, container not started).~~ **Superseded by runtime verification:** Dozzle is running.
 - No node_exporter.
 - DNS rewrites for `kuma.home.lan`, `dockge.home.lan`, `dozzle.home.lan` not yet in AdGuard.
 - No HTTP firewall rule (LAN→Docker VM :80).
