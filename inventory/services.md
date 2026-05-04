@@ -54,7 +54,7 @@ Applied 2026-04-29. Ingen package removal, ingen maskning, och Cockpit lämnades
 | Service | Port | Protocol | Status | Note |
 |---|---|---|---|---|
 | Caddy | 80 | HTTP | live | `caddy:2.8.4-alpine`. Binds `192.168.30.10:80` only. `auto_https off`. Proxy-nätet `proxy` ägs av denna stack. Verifierad 2026-05-04: `200 OK` på `:80` och `proxy.home.lan`. DNS `proxy.home.lan` live. |
-| Uptime Kuma | 3001 | HTTP | live | `louislam/uptime-kuma:1.23.15`. Intern nät only, ingen host-port. Via Caddy → `kuma.home.lan`. Verifierad 2026-05-04 (1C-C1.5): `302 /dashboard` via Caddy från Mac mini och MBP. DNS `kuma.home.lan` live. Setup-sida på `http://kuma.home.lan/setup`. |
+| Uptime Kuma | 3001 | HTTP | live | `louislam/uptime-kuma:1.23.15`. Intern nät only, ingen host-port. Via Caddy → `kuma.home.lan`. Verifierad 2026-05-04 (1C-C1.5). Admin-lösenord satt. Baseline: 6 aktiva monitors (AdGuard UI, AdGuard DNS, Docker VM, HAOS, Uptime Kuma, Caddy proxy). Proxmox-monitor pausad. |
 | Dockge | 5001 | HTTP | planned | `louislam/dockge:1.4.2`. Compose-fil skapad men ej startad. Via Caddy → `dockge.home.lan`. |
 | Dozzle | 8080 | HTTP | planned | `amir20/dozzle:v8.11.3`. Compose-fil skapad men ej startad. Via Caddy → `dozzle.home.lan`. |
 

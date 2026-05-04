@@ -7,6 +7,9 @@ för `kuma`, `dockge`, `dozzle` lagda i AdGuard. UniFi firewall-regel
 `allow-lan-admin-to-docker-http` (TCP 80, Internal → Docker VM) live. Dockge och
 Dozzle compose-filer finns men containrarna är inte startade.
 
+**Uptime Kuma baseline — 2026-05-04** — Admin-lösenord satt. Sex aktiva gröna
+monitors konfigurerade (se nedan). Proxmox-monitor pausad p.g.a. firewall-scope.
+
 ## Architecture
 
 ```
@@ -129,12 +132,29 @@ No TCP 443 yet (TLS not enabled). No WAN forwards.
 | Caddy logs | clean — startup `auto_https off`, no errors ✅ |
 | Uptime Kuma logs | `Listening on 3001`, `No user, need setup` ✅ |
 
+## Uptime Kuma monitors — baseline 2026-05-04
+
+| Monitor | Type | Target | Expected | Status |
+| --- | --- | --- | --- | --- |
+| AdGuard UI | HTTP(S) | `https://adguard.home.lan` | `200 OK` | 🟢 UP |
+| AdGuard DNS | DNS | A `adguard.home.lan` → `192.168.30.10` resolve check | resolves | 🟢 UP |
+| Docker VM | Ping/reachability | `192.168.30.10` | reachable | 🟢 UP |
+| HAOS | HTTP(S) | `http://192.168.30.20:8123` | `200 OK` | 🟢 UP |
+| Uptime Kuma | HTTP(S) | `http://kuma.home.lan` | `200 OK` | 🟢 UP |
+| Caddy proxy | HTTP(S) | `http://proxy.home.lan` | `200 OK` | 🟢 UP |
+| Proxmox | HTTP(S) | `https://proxmox.home.lan:8006` | `200 OK` | ⏸ PAUSED — Docker VM ligger i Server VLAN 30, ej Default LAN; firewall blockerar Docker VM → Proxmox. Aktivera när scope är löst. |
+
+> AdGuard DNS-monitor verifierar A-record för `adguard.home.lan` mot `192.168.30.10`
+> (Docker VM IP). Detta är ett DNS-funktionstest, inte ett reachability-test mot Pi.
+> Duplikat/felkonfigurerad HAOS-monitor städad bort 2026-05-04.
+
 ## Next steps
 
 1. ~~DNS rewrites kuma/dockge/dozzle~~ ✅ done 2026-05-04
 2. ~~UniFi firewall TCP 80~~ ✅ done 2026-05-04
 3. ~~curl-validering från Mac mini + MBP~~ ✅ done 2026-05-04
-4. Set admin password in Uptime Kuma UI (`http://kuma.home.lan/setup`).
+4. ~~Admin-lösenord + Uptime Kuma baseline monitors~~ ✅ done 2026-05-04
 5. Start Dockge and Dozzle stacks (separate phase).
 6. Add `tls internal` to Caddyfile + import Caddy root CA into macOS Keychain.
 7. Schedule Proxmox backup job (external target).
+8. Lös firewall-scope Docker VM → Proxmox och aktivera Proxmox-monitor.
