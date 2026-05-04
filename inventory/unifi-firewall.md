@@ -26,7 +26,7 @@ This file tracks custom UniFi firewall policies and IP groups on UDR-7. It does 
 | `block-internal-wan-dns-udp` | yes | BLOCK | zone policy | Default + MLO networks in Internal zone | WAN / External zone | UDP `53` | `69ee4d011bc6e72d27743fae` | Blocks direct WAN DNS from Default/MLO. |
 | `block-internal-wan-dns-tcp` | yes | BLOCK | zone policy | Default + MLO networks in Internal zone | WAN / External zone | TCP `53` | `69ee4d021bc6e72d27743fb1` | TCP companion to WAN DNS block. |
 | `allow-haos-wiz-control` | **yes** | ALLOW | zone policy | HAOS `192.168.30.20` in Server zone `69f7de611bc6e72d2776b75b` | `wiz-bulbs-ipv4` in IoT zone `6980de97e060a06b8ef9b613` | UDP `38899-38900` | `69f687011bc6e72d277674c3` | Permanent. Updated from Internal to Server source zone in Phase 2A. index=10000. |
-| `allow-haos-yeelight-control` | **yes** | ALLOW | zone policy | HAOS `192.168.30.20` in Server zone `69f7de611bc6e72d2776b75b` | Yeelight `192.168.10.150` in IoT zone `6980de97e060a06b8ef9b613` | TCP `55443` | PENDING (created by `scripts/unifi-add-yeelight.sh`) | HAOS → Yeelight Bedroom. Minimal rule following allow-haos-wiz-control pattern. No SSDP/multicast, no broad VLAN access. |
+| `allow-haos-yeelight-control` | **yes** | ALLOW | zone policy | HAOS `192.168.30.20` in Server zone `69f7de611bc6e72d2776b75b` | Yeelight `192.168.10.150` in IoT zone `6980de97e060a06b8ef9b613` | TCP `55443` | `69f869c91bc6e72d2776d75f` | HAOS → Yeelight Bedroom. Minimal rule, index 10001. IPV4 only. create_allow_respond: true. No SSDP/multicast, no broad VLAN access. |
 | `allow-haos-wiz-icmp-temp` | **no** | ALLOW | zone policy | HAOS `192.168.30.20`; source zone still Internal `677d9959ed22014620a6a981` | `wiz-bulbs-ipv4` in IoT zone | ICMP | `69f687011bc6e72d277674c6` | Temporary validation rule. **Disabled 2026-05-03**; left unchanged in Phase 2A. index=10001. |
 | `allow-server-to-pi-dns-udp` | yes | ALLOW | zone policy | Server zone `69f7de611bc6e72d2776b75b` ANY | Pi DNS `192.168.1.55` in Internal zone | UDP `53` | `69f7dec11bc6e72d2776b789` | Phase 2A continuity rule. |
 | `allow-server-to-pi-dns-tcp` | yes | ALLOW | zone policy | Server zone `69f7de611bc6e72d2776b75b` ANY | Pi DNS `192.168.1.55` in Internal zone | TCP `53` | `69f7dec11bc6e72d2776b78c` | Phase 2A continuity rule. |
@@ -107,6 +107,7 @@ Isolation plan and approval blocks: [`docs/opti/server-vlan30-isolation-plan-202
 | `block-server-wan-dns-udp` | Server → External | Server zone ANY | ANY | UDP 53 | BLOCK | `69f816c81bc6e72d2776c2c9` | ✅ Live Phase 2B |
 | `block-server-wan-dns-tcp` | Server → External | Server zone ANY | ANY | TCP 53 | BLOCK | `69f816cc1bc6e72d2776c2cd` | ✅ Live Phase 2B |
 | `allow-server-to-wan` | Server → External | Server zone ANY | ANY | all (non-53) | ALLOW | — | Not created — HAOS internet works via zone default |
+| `allow-haos-yeelight-control` | Server → IoT | HAOS `192.168.30.20` | Yeelight `192.168.10.150` | TCP 55443 | ALLOW | `69f869c91bc6e72d2776d75f` | ✅ Live 2026-05-04 |
 
 ## Follow-up validation needed
 

@@ -13,7 +13,7 @@ MAC addresses are intentionally masked. Do not commit full hardware addresses.
 | MacBook Pro 2015 | `mbp` | `192.168.1.78` | Default / untagged | `ac:bc:32:xx:xx:xx` | LIVE | UniFi fixed IP + SSH identity | Secondary admin client. |
 | iPhone 17 Pro | `iPhone17Pro` | `192.168.40.207` | MLO-LAN / VLAN 40 | `5c:13:cc:xx:xx:xx` | LIVE | UniFi fixed IP + DNS PTR | MLO/6 GHz client. |
 | Roborock S5 Max | n/a | `192.168.10.6` | IOT / VLAN 10 | `b0:4a:39:xx:xx:xx` | LIVE | UniFi fixed IP | IoT vacuum. |
-| Yeelight Bedroom | `yeelight-bedroom` | `192.168.10.150` | IOT / VLAN 10 | `28:6c:07:xx:xx:xx` | PENDING | UniFi fixed IP (pending script run) | Yeelight Color bulb. LAN Control enabled, TCP 55443. Firewall rule `allow-haos-yeelight-control` required for HAOS control. |
+| Yeelight Bedroom | `yeelight-bedroom` | `192.168.10.150` | IOT / VLAN 10 | `28:6c:07:xx:xx:xx` | LIVE | UniFi fixed IP | Yeelight Color bulb, model `color`, FW v76. LAN Control enabled, TCP 55443. HAOS control via `allow-haos-yeelight-control`. |
 | Opti / Proxmox host | `opti`, `proxmox` | `192.168.1.60` | Default / untagged | UNKNOWN | PLANNED | Repo plan | MAC unknown until hardware arrives. |
 | HAOS VM 101 | `ha`, `haos` | `192.168.30.20` | Server / VLAN 30 | `bc:24:11:xx:xx:xx` | LIVE | UniFi fixed IP + HAOS runtime | Manual UniFi reservation for VMID `101`; runtime validated from HAOS guest agent. |
 | Docker VM | `docker`, `proxy` | `192.168.30.10` | Server / VLAN 30 | UNKNOWN | PLANNED | Repo plan | VM MAC unknown until VM exists. |

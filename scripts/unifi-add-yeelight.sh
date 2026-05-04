@@ -169,83 +169,143 @@ if rc != 'ok':
 }
 
 # ── Step 2: Check / create firewall rule ──────────────────────────────────────
-step_firewall_rule() {
-  log "Step 2: Firewall rule $FW_RULE_NAME (HAOS→Yeelight TCP 55443)"
-
-  # Check if rule already exists
-  local policies existing_id
-  policies=$(_api_get "/proxy/network/v2/api/site/${UNIFI_SITE}/firewall/zone-policy")
-  existing_id=$(echo "$policies" | python3 -c "
-import json,sys
-d=json.load(sys.stdin)
-for p in d if isinstance(d,list) else d.get('data',d.get('policies',[])):
-    if p.get('name','') == '${FW_RULE_NAME}':
-        print(p.get('_id', p.get('id','')))
-        break
-" 2>/dev/null || true)
-
-  if [[ -n "$existing_id" ]]; then
-    ok "Firewall rule '$FW_RULE_NAME' already exists (id=$existing_id) — no change"
-    return
-  fi
-
-  log "Creating zone-policy rule '$FW_RULE_NAME' ..."
-
-  # Build payload following allow-haos-wiz-control pattern
-  # Source: HAOS IP in Server zone → Destination: Yeelight IP in IoT zone, TCP 55443
-  local body
-  body=$(python3 -c "
+# Zone-based policy payload (matches backup JSON structure from 2026-04-26)
+_build_zone_policy_body() {
+  python3 -c "
 import json
 payload = {
     'name': '${FW_RULE_NAME}',
     'enabled': True,
     'action': 'ALLOW',
+    'connection_state_type': 'ALL',
+    'connection_states': [],
+    'create_allow_respond': True,
+    'logging': False,
+    'ip_version': 'BOTH',
+    'match_ip_sec': False,
+    'match_opposite_protocol': False,
+    'protocol': 'tcp',
+    'icmp_typename': 'ANY',
+    'icmp_v6_typename': 'ANY',
+    'schedule': {'mode': 'ALWAYS'},
     'source': {
         'zone_id': '${SERVER_ZONE_ID}',
         'matching_target': 'IP',
-        'ip_addresses': ['${HAOS_IP}']
+        'match_opposite_ports': False,
+        'port_matching_type': 'ANY',
+        'ip_addresses': ['${HAOS_IP}/32']
     },
     'destination': {
         'zone_id': '${IOT_ZONE_ID}',
         'matching_target': 'IP',
-        'ip_addresses': ['${YEELIGHT_IP}']
-    },
-    'ip_version': 'ipv4',
-    'protocol': 'tcp',
-    'ports': ['55443'],
-    'create_allow_respond': True,
-    'logging': False,
-    'description': 'HAOS ${HAOS_IP} → Yeelight Bedroom ${YEELIGHT_IP} TCP 55443. Equivalent to allow-haos-wiz-control for Yeelight.'
+        'match_opposite_ports': False,
+        'port_matching_type': 'PORTS',
+        'ports': ['55443'],
+        'ip_addresses': ['${YEELIGHT_IP}/32']
+    }
 }
 print(json.dumps(payload))
-")
+"
+}
 
-  local resp
-  resp=$(_api_post "/proxy/network/v2/api/site/${UNIFI_SITE}/firewall/zone-policy" "$body")
+_extract_rule_id() {
+  python3 -c "
+import json,sys
+raw=sys.stdin.read()
+try:
+    d=json.loads(raw)
+    # Legacy endpoint wraps in {meta,data}
+    if isinstance(d,dict) and 'data' in d:
+        items=d['data']
+        if isinstance(items,list) and items:
+            print(items[0].get('_id',''))
+        elif isinstance(items,dict):
+            print(items.get('_id',''))
+    elif isinstance(d,dict):
+        print(d.get('_id',d.get('id','')))
+    elif isinstance(d,list) and d:
+        print(d[0].get('_id',''))
+except Exception as e:
+    import sys; print('PARSE_ERROR:',e,file=sys.stderr)
+" 2>/dev/null || true
+}
 
-  local rule_id rule_name
-  rule_id=$(echo "$resp" | python3 -c "
+step_firewall_rule() {
+  log "Step 2: Firewall rule $FW_RULE_NAME (HAOS→Yeelight TCP 55443)"
+
+  # ── Check if zone-policy rule already exists (legacy list endpoint) ─────────
+  local existing_id=""
+  local legacy_list
+  legacy_list=$(_api_get "/proxy/network/api/s/${UNIFI_SITE}/rest/firewallrule")
+  existing_id=$(echo "$legacy_list" | python3 -c "
 import json,sys
 d=json.load(sys.stdin)
-# v2 returns the rule directly or nested
-if isinstance(d, dict):
-    rid = d.get('_id') or d.get('id') or d.get('data',{}).get('_id','')
-    print(rid)
-" 2>/dev/null || echo "")
-  rule_name=$(echo "$resp" | python3 -c "
-import json,sys
-d=json.load(sys.stdin)
-if isinstance(d, dict):
-    print(d.get('name', d.get('data',{}).get('name','')))
-" 2>/dev/null || echo "")
+for p in d.get('data',[]):
+    if p.get('name','')=='${FW_RULE_NAME}':
+        print(p.get('_id',''))
+        break
+" 2>/dev/null || true)
 
-  if [[ -z "$rule_id" ]]; then
-    log "v2 API response: $resp"
-    die "Failed to create firewall rule — check response above"
+  if [[ -n "$existing_id" ]]; then
+    ok "Rule '$FW_RULE_NAME' already exists (id=$existing_id) — no change"
+    return
   fi
 
-  ok "Firewall rule created: '$rule_name' id=$rule_id"
-  echo "FIREWALL_RULE_ID=$rule_id"
+  # ── Attempt 1: POST to zone-policy endpoint (firewallpolicy) ───────────────
+  # GET returns 400 but POST may work; this is the zone-based format matching
+  # the existing Server-zone policies (allow-haos-wiz-control pattern).
+  log "Attempt 1: zone-policy via /rest/firewallpolicy"
+  local body resp rule_id
+  body=$(_build_zone_policy_body)
+  resp=$(_api_post "/proxy/network/api/s/${UNIFI_SITE}/rest/firewallpolicy" "$body")
+  rule_id=$(echo "$resp" | _extract_rule_id)
+
+  if [[ -n "$rule_id" && "$rule_id" != "PARSE_ERROR"* ]]; then
+    ok "Firewall zone-policy created: '$FW_RULE_NAME' id=$rule_id"
+    echo "FIREWALL_RULE_ID=$rule_id"
+    return
+  fi
+  log "  firewallpolicy response: $(echo "$resp" | head -c 300)"
+
+  # ── Attempt 2: Legacy firewallrule (LAN_IN ruleset, specific IPs) ──────────
+  # Falls back to classic iptables-based rule. Works on all firmware.
+  # Source: HAOS 192.168.30.20, Dest: Yeelight 192.168.10.150 TCP 55443.
+  # rule_index 10050 — above the existing WiZ/DNS rules at 10000-10001.
+  log "Attempt 2: legacy firewallrule (LAN_IN, specific IPs, TCP 55443)"
+  local legacy_body
+  legacy_body=$(python3 -c "
+import json
+print(json.dumps({
+    'name': '${FW_RULE_NAME}',
+    'enabled': True,
+    'ruleset': 'LAN_IN',
+    'rule_index': 10050,
+    'action': 'accept',
+    'protocol': 'tcp',
+    'logging': False,
+    'src_ip_type': 'ADDRv4',
+    'src_address': '${HAOS_IP}',
+    'dst_ip_type': 'ADDRv4',
+    'dst_address': '${YEELIGHT_IP}',
+    'dst_port': '55443',
+    'state_new': True,
+    'state_established': True,
+    'state_related': True,
+    'state_invalid': False
+}))
+")
+  resp=$(_api_post "/proxy/network/api/s/${UNIFI_SITE}/rest/firewallrule" "$legacy_body")
+  rule_id=$(echo "$resp" | _extract_rule_id)
+
+  if [[ -n "$rule_id" && "$rule_id" != "PARSE_ERROR"* ]]; then
+    ok "Legacy firewall rule created: '$FW_RULE_NAME' id=$rule_id"
+    log "NOTE: This is a legacy LAN_IN rule. Verify in UniFi UI under Legacy Firewall."
+    echo "FIREWALL_RULE_ID=$rule_id"
+    return
+  fi
+  log "  firewallrule response: $(echo "$resp" | head -c 300)"
+
+  die "Both zone-policy and legacy rule creation failed — see responses above"
 }
 
 # ── Step 3: Verify HAOS → Yeelight connectivity ───────────────────────────────
