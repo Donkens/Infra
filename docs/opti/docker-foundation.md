@@ -2,9 +2,10 @@
 
 ## Status
 
-**Phase 1C-C1 — 2026-05-04** — Caddy + Uptime Kuma live. Dockge and Dozzle compose
-files created but not started. DNS rewrites for `kuma.home.lan`, `dockge.home.lan`,
-and `dozzle.home.lan` not yet added to AdGuard.
+**Phase 1C-C1.5 — 2026-05-04** — Caddy + Uptime Kuma nåbara från LAN. DNS-rewrites
+för `kuma`, `dockge`, `dozzle` lagda i AdGuard. UniFi firewall-regel
+`allow-lan-admin-to-docker-http` (TCP 80, Internal → Docker VM) live. Dockge och
+Dozzle compose-filer finns men containrarna är inte startade.
 
 ## Architecture
 
@@ -89,15 +90,9 @@ http://dozzle.home.lan { reverse_proxy dozzle:8080 }
 | Name | IP | Status |
 | --- | --- | --- |
 | `proxy.home.lan` | `192.168.30.10` | ✅ live |
-| `kuma.home.lan` | `192.168.30.10` | PENDING — run `/tmp/adguard-rewrites.sh` on Pi |
-| `dockge.home.lan` | `192.168.30.10` | PENDING — same script |
-| `dozzle.home.lan` | `192.168.30.10` | PENDING — same script |
-
-Script written to Pi at `/tmp/adguard-rewrites.sh`. Run via:
-```bash
-ssh pi 'bash /tmp/adguard-rewrites.sh'
-```
-Credentials are entered interactively — not stored in chat or history.
+| `kuma.home.lan` | `192.168.30.10` | ✅ live — added 2026-05-04 (1C-C1.5) |
+| `dockge.home.lan` | `192.168.30.10` | ✅ live — added 2026-05-04 (1C-C1.5) |
+| `dozzle.home.lan` | `192.168.30.10` | ✅ live — added 2026-05-04 (1C-C1.5) |
 
 ## Guardrails
 
@@ -109,35 +104,37 @@ Credentials are entered interactively — not stored in chat or history.
 - No WAN exposure. No Cloudflare tunnel. No Vaultwarden.
 - Dozzle Docker socket mounted `:ro`.
 
-## Firewall note
+## Firewall
 
-HTTP port 80 from LAN to Docker VM (`192.168.30.10`) is not yet permitted by
-UniFi firewall. Only SSH (TCP 22) is allowed from Admin zone. A future rule will
-be needed to allow `192.168.30.x:80` access from LAN/Admin zones. No firewall
-changes were made in Phase 1C-C1.
+| Rule | Direction | Port | Status |
+| --- | --- | --- | --- |
+| `allow-lan-admin-to-docker-ssh` | Internal → Docker VM `192.168.30.10` | TCP 22 | ✅ live Phase 1A |
+| `allow-lan-admin-to-docker-http` | Internal → Docker VM `192.168.30.10` | TCP 80 | ✅ live Phase 1C-C1.5 — ID `69f8bb481bc6e72d2776e838` |
 
-## Validation — Phase 1C-C1 (2026-05-04)
+No TCP 443 yet (TLS not enabled). No WAN forwards.
 
-All curl validation run from inside Docker VM (`192.168.30.10`) — external HTTP
-blocked by UniFi firewall (expected, no HTTP rule exists yet).
+## Validation — Phase 1C-C1.5 (2026-05-04)
 
 | Check | Result |
 | --- | --- |
 | `docker ps` caddy | `Up`, `192.168.30.10:80→80`, `192.168.30.10:443→443` ✅ |
 | `docker ps` uptime-kuma | `Up (healthy)` ✅ |
-| `curl http://192.168.30.10/` | `200 OK` ✅ |
-| `curl -H Host:proxy.home.lan http://192.168.30.10/` | `200 OK` ✅ |
-| `curl -H Host:kuma.home.lan http://192.168.30.10/` | `302 /dashboard` (Uptime Kuma) ✅ |
-| `systemctl --failed` | `0 units` ✅ |
-| Disk `/` | `2.2G used / 111G free` ✅ |
-| HTTP from MBP | blocked by firewall (expected) |
+| `curl -I http://proxy.home.lan` from Mac mini | `200 OK` ✅ |
+| `curl -I http://kuma.home.lan` from Mac mini | `302 /dashboard` ✅ |
+| `curl -I http://proxy.home.lan` from MBP | `200 OK` ✅ |
+| `curl -I http://kuma.home.lan` from MBP | `302 /dashboard` ✅ |
+| DNS `kuma/dockge/dozzle.home.lan` from Pi | `192.168.30.10` ✅ |
+| DNS `kuma/dockge/dozzle.home.lan` from Mac mini | `192.168.30.10` ✅ |
+| `systemctl --failed` on Docker VM | `0 units` ✅ |
+| Caddy logs | clean — startup `auto_https off`, no errors ✅ |
+| Uptime Kuma logs | `Listening on 3001`, `No user, need setup` ✅ |
 
 ## Next steps
 
-1. Run `/tmp/adguard-rewrites.sh` on Pi to add DNS rewrites for `kuma`, `dockge`, `dozzle`.
-2. Validate `curl http://kuma.home.lan` from LAN client (after firewall rule for HTTP is added).
-3. Add UniFi firewall rule: allow LAN → `192.168.30.10` TCP 80 (for LAN HTTP access).
-4. Start Dockge and Dozzle stacks.
-5. Set admin password in Uptime Kuma UI (`http://kuma.home.lan/setup`).
-6. Add `tls internal` to Caddyfile and import Caddy root CA into macOS Keychain.
+1. ~~DNS rewrites kuma/dockge/dozzle~~ ✅ done 2026-05-04
+2. ~~UniFi firewall TCP 80~~ ✅ done 2026-05-04
+3. ~~curl-validering från Mac mini + MBP~~ ✅ done 2026-05-04
+4. Set admin password in Uptime Kuma UI (`http://kuma.home.lan/setup`).
+5. Start Dockge and Dozzle stacks (separate phase).
+6. Add `tls internal` to Caddyfile + import Caddy root CA into macOS Keychain.
 7. Schedule Proxmox backup job (external target).

@@ -1,7 +1,7 @@
 # UniFi firewall policies
 
 > Current custom UniFi firewall policy inventory.
-> Last verified: 2026-05-04 CEST — Phase 2B applied
+> Last verified: 2026-05-04 15:30 CEST — Phase 1C-C1.5 applied
 
 ## Scope
 
@@ -28,6 +28,7 @@ This file tracks custom UniFi firewall policies and IP groups on UDR-7. It does 
 | `allow-haos-wiz-control` | **yes** | ALLOW | zone policy | HAOS `192.168.30.20` in Server zone `69f7de611bc6e72d2776b75b` | `wiz-bulbs-ipv4` in IoT zone `6980de97e060a06b8ef9b613` | UDP `38899-38900` | `69f687011bc6e72d277674c3` | Permanent. Updated from Internal to Server source zone in Phase 2A. index=10000. |
 | `allow-haos-yeelight-control` | **yes** | ALLOW | zone policy | HAOS `192.168.30.20` in Server zone `69f7de611bc6e72d2776b75b` | Yeelight `192.168.10.150` in IoT zone `6980de97e060a06b8ef9b613` | TCP `55443` | `69f869c91bc6e72d2776d75f` | HAOS → Yeelight Bedroom. Minimal rule, index 10001. IPV4 only. create_allow_respond: true. No SSDP/multicast, no broad VLAN access. |
 | `allow-lan-admin-to-docker-ssh` | **yes** | ALLOW | zone policy | Internal zone `677d9959ed22014620a6a981` ANY | Docker VM `192.168.30.10` in Server zone `69f7de611bc6e72d2776b75b` | TCP `22` | `69f8842c1bc6e72d2776ddd0` | Phase 1A 2026-05-04. Admin SSH to Docker VM. `ip_version: BOTH` (MCP/API schema mismatch at creation time), `create_allow_respond: true`, index 10002. |
+| `allow-lan-admin-to-docker-http` | **yes** | ALLOW | zone policy | Internal zone `677d9959ed22014620a6a981` ANY | Docker VM `192.168.30.10` in Server zone `69f7de611bc6e72d2776b75b` | TCP `80` | `69f8bb481bc6e72d2776e838` | Phase 1C-C1.5 2026-05-04. HTTP access to Caddy reverse proxy. `ip_version: BOTH` (MCP/API schema mismatch), `create_allow_respond: true`, index 10003. |
 | `allow-haos-wiz-icmp-temp` | **no** | ALLOW | zone policy | HAOS `192.168.30.20`; source zone still Internal `677d9959ed22014620a6a981` | `wiz-bulbs-ipv4` in IoT zone | ICMP | `69f687011bc6e72d277674c6` | Temporary validation rule. **Disabled 2026-05-03**; left unchanged in Phase 2A. index=10001. |
 | `allow-server-to-pi-dns-udp` | yes | ALLOW | zone policy | Server zone `69f7de611bc6e72d2776b75b` ANY | Pi DNS `192.168.1.55` in Internal zone | UDP `53` | `69f7dec11bc6e72d2776b789` | Phase 2A continuity rule. |
 | `allow-server-to-pi-dns-tcp` | yes | ALLOW | zone policy | Server zone `69f7de611bc6e72d2776b75b` ANY | Pi DNS `192.168.1.55` in Internal zone | TCP `53` | `69f7dec11bc6e72d2776b78c` | Phase 2A continuity rule. |
@@ -110,6 +111,7 @@ Isolation plan and approval blocks: [`docs/opti/server-vlan30-isolation-plan-202
 | `allow-server-to-wan` | Server → External | Server zone ANY | ANY | all (non-53) | ALLOW | — | Not created — HAOS internet works via zone default |
 | `allow-haos-yeelight-control` | Server → IoT | HAOS `192.168.30.20` | Yeelight `192.168.10.150` | TCP 55443 | ALLOW | `69f869c91bc6e72d2776d75f` | ✅ Live 2026-05-04 |
 | `allow-lan-admin-to-docker-ssh` | Internal → Server | Internal zone ANY | IP `192.168.30.10` | TCP 22 | ALLOW | `69f8842c1bc6e72d2776ddd0` | ✅ Live Phase 1A 2026-05-04 |
+| `allow-lan-admin-to-docker-http` | Internal → Server | Internal zone ANY | IP `192.168.30.10` | TCP 80 | ALLOW | `69f8bb481bc6e72d2776e838` | ✅ Live Phase 1C-C1.5 2026-05-04 |
 
 ## Follow-up validation needed
 

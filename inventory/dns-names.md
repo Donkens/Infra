@@ -1,7 +1,7 @@
 # DNS names
 
 > Source-of-truth for important `home.lan` names.
-> Last verified: 2026-05-04 00:12 CEST
+> Last verified: 2026-05-04 15:30 CEST
 
 ## Authority model
 
@@ -43,9 +43,9 @@ As of 2026-05-02, `opti.home.lan` and `proxmox.home.lan` resolve to `192.168.1.6
 | `haos.home.lan` | `192.168.30.20` | HAOS alias (forward only) | n/a | AdGuard rewrite | LIVE |
 | `docker.home.lan` | `192.168.30.10` | Debian Docker VM | — | AdGuard rewrite | PENDING — VM live 2026-05-04, DNS resolves, no service yet |
 | `proxy.home.lan` | `192.168.30.10` | Caddy reverse proxy | — | AdGuard rewrite | LIVE — Caddy live 2026-05-04, `200 OK` verified |
-| `kuma.home.lan` | `192.168.30.10` | Uptime Kuma via Caddy | — | AdGuard planned | PENDING — service live 2026-05-04, DNS rewrite not yet added |
-| `dockge.home.lan` | `192.168.30.10` | Dockge via Caddy | — | AdGuard planned | PLANNED — compose file created, container not started |
-| `dozzle.home.lan` | `192.168.30.10` | Dozzle via Caddy | — | AdGuard planned | PLANNED — compose file created, container not started |
+| `kuma.home.lan` | `192.168.30.10` | Uptime Kuma via Caddy | — | AdGuard rewrite | LIVE — DNS rewrite added 2026-05-04, `302 /dashboard` verified from Mac mini + MBP |
+| `dockge.home.lan` | `192.168.30.10` | Dockge via Caddy | — | AdGuard rewrite | DNS LIVE 2026-05-04 — compose file created, container not started |
+| `dozzle.home.lan` | `192.168.30.10` | Dozzle via Caddy | — | AdGuard rewrite | DNS LIVE 2026-05-04 — compose file created, container not started |
 | `stremio.home.lan` | `192.168.30.10` | Optional Stremio Server | — | AdGuard planned | PLANNED |
 | `transmission.home.lan` | `192.168.30.10` | Optional, via Caddy only if used | — | AdGuard planned | PLANNED |
 | `mcp.home.lan` | `192.168.30.10` | Later MCP/dev services | — | AdGuard planned | PLANNED |
