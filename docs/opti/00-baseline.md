@@ -213,7 +213,7 @@ Target host RAM is `32 GB`.
 | --- | ---: |
 | Proxmox host reserve | `~4-6 GB` |
 | HAOS VM | `2 vCPU`, `6 GB RAM`, `64 GB disk` |
-| Docker VM | `6 vCPU`, `18 GB RAM`, `200 GB disk` |
+| Docker VM | `4 vCPU`, `12 GB RAM`, `120 GB disk` |
 | Headroom | Host overhead, bursts, cache, small future services |
 
 ## Low-RAM bootstrap profile

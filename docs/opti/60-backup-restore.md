@@ -131,10 +131,111 @@ Backups are not considered real until a restore-test is documented and completed
 
 The first Pi DNS off-Pi restore drill is documented, but Opti/Proxmox workload backups still need their own restore drill before heavy workloads, Vaultwarden, or additional critical services are deployed.
 
+## Docker VM 102 — app/config backup baseline (2026-05-04)
+
+> This is a **Docker application and config backup**, not a Proxmox full-VM backup.
+> Both layers are needed: this covers compose files and appdata; Proxmox vzdump covers
+> the full VM disk. They complement each other and are not substitutes.
+
+Script: `scripts/maintenance/docker-vm-backup.sh`
+Runtime install: `/usr/local/sbin/docker-vm-backup` on Docker VM (root:root 755)
+
+### What is backed up
+
+| Path | Contents |
+|---|---|
+| `/srv/compose/` | All compose stack directories: `caddy/`, `dockge/`, `dozzle/`, `uptime-kuma/`. Includes `compose.yaml`, `Caddyfile`, `.env.example` files. |
+| `/srv/appdata/caddy/` | Caddy runtime state (TLS cache, autosave config). |
+| `/srv/appdata/uptime-kuma/` | Uptime Kuma SQLite database and config. |
+| `/srv/appdata/dozzle/` | Dozzle `users.yml` (bcrypt hashes) and `admin/` directory. |
+| `/srv/appdata/dockge/` | Dockge state (empty at this baseline; fills after Dockge is started). |
+
+### What is excluded
+
+| Pattern | Reason |
+|---|---|
+| `*.sock` | Socket files cannot be archived by tar |
+| `*/tmp`, `*/tmp/*` | Transient temporary files |
+| `*/cache`, `*/cache/*` | Cache directories |
+| `*/.cache`, `*/.cache/*` | Hidden cache directories |
+| `*/node_modules/*` | Node module trees (safety for future services) |
+| `*/__pycache__` | Python bytecode (safety for future services) |
+| Container images | Rebuilt via `docker pull`; not in `/srv/` |
+
+### Backup locations
+
+| Layer | Path | Note |
+|---|---|---|
+| Local (Docker VM) | `/srv/backups/docker-vm-102/docker-vm-102-backup-YYYYmmdd-HHMMSS.tar.gz` | Retention: 7 newest kept |
+| Off-host (Mac mini) | `/Users/yasse/InfraBackups/docker-vm-102/` | rsync pull after each backup |
+| SHA256 checksum | Same dir as tarball, `.sha256` suffix | Portable — verifies on Linux and macOS |
+
+### How to run backup manually
+
+```bash
+# On Docker VM:
+sudo /usr/local/sbin/docker-vm-backup
+
+# Off-host pull from Mac mini:
+rsync -av docker:/srv/backups/docker-vm-102/ /Users/yasse/InfraBackups/docker-vm-102/
+
+# Verify checksum on Mac mini (macOS shasum):
+cd /Users/yasse/InfraBackups/docker-vm-102
+shasum -a 256 -c *.sha256
+
+# Verify checksum on Docker VM (Linux sha256sum):
+cd /srv/backups/docker-vm-102
+sha256sum -c *.sha256
+```
+
+### Restore test procedure
+
+Non-destructive. Extract to temp dir and verify structure without starting any service.
+
+```bash
+RESTORE_DIR="/tmp/docker-vm-102-restore-test-$(date +%Y%m%d-%H%M%S)"
+mkdir -p "$RESTORE_DIR"
+tar -xzf /Users/yasse/InfraBackups/docker-vm-102/docker-vm-102-backup-*.tar.gz -C "$RESTORE_DIR"
+find "$RESTORE_DIR" -maxdepth 4 -type d | sort | head -40
+# Verify expected dirs present: srv/compose/{caddy,uptime-kuma,dozzle,dockge}
+# Verify expected dirs present: srv/appdata/{caddy,uptime-kuma,dozzle,dockge}
+# Verify sensitive files exist (do NOT print contents):
+find "$RESTORE_DIR" -name 'users.yml' -o -name '*.env' | sort
+rm -rf "$RESTORE_DIR"
+```
+
+### Baseline result — 2026-05-04
+
+| Check | Result |
+|---|---|
+| Script created | `scripts/maintenance/docker-vm-backup.sh` ✅ |
+| Runtime install | `/usr/local/sbin/docker-vm-backup` root:root 755 ✅ |
+| Backup file | `docker-vm-102-backup-20260504-201659.tar.gz` (296K, 45 entries) ✅ |
+| SHA256 on Docker VM | `b3f44218786633bf80b62792a507e0f8b25999483a689ac853ba53b0b07da36c` ✅ |
+| Docker VM checksum | `sha256sum -c`: OK ✅ |
+| rsync to Mac mini | `/Users/yasse/InfraBackups/docker-vm-102/` — 294K transferred ✅ |
+| Mac mini checksum | `shasum -a 256 -c`: OK ✅ |
+| Restore test | PASS — all 4 compose stacks and 4 appdata dirs present; `users.yml` present ✅ |
+| `dockge` appdata | Empty at this baseline (Dockge not yet started — expected) ✅ |
+
+### Retention policy
+
+Default: keep newest 7 backups. Override via `RETENTION_KEEP=N` environment variable.
+The script removes the oldest `.tar.gz` and paired `.sha256` automatically.
+
+### Notes
+
+- rsync was installed on Docker VM during baseline: `apt-get install -y rsync` (2026-05-04).
+- File permissions: `600` (rw-------). Files chowned to `yasse` when run via sudo.
+- Backup does NOT include container images, live socket files, or Proxmox VM disk state.
+- This baseline covers Phase 1C-C2a service state (Caddy + Uptime Kuma + Dozzle live; Dockge compose ready but not started).
+- Re-run backup after Dockge is started (Phase 1C-C2b) to capture Dockge state.
+
 ## Vaultwarden gate
 
 Do not deploy Vaultwarden until:
 
-1. Backup destination exists.
-2. Backup process is documented.
-3. Restore-test is documented and completed.
+1. Backup destination exists. ✅ Docker VM backup baseline live 2026-05-04
+2. Backup process is documented. ✅ See above
+3. Restore-test is documented and completed. ✅ Restore-test PASS 2026-05-04
+4. Proxmox-level scheduled backup job with off-host target configured and tested.

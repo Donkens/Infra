@@ -53,7 +53,7 @@ If task-specific instructions conflict with this guide, prefer the stricter safe
 | Security docs | Auth, SSH hardening, secrets, DNS security, and firewall baseline are documented. |
 | Mac mini GitHub auth | Uses dedicated `id_ed25519_github` key. |
 | Pi GitHub auth | Dedicated Pi GitHub key works for repo sync. |
-| Docker VM SSH | Host key observed; key-only admin login not provisioned yet. |
+| Docker VM SSH | Live — `ssh docker` works as `yasse@docker` (key auth). Verified 2026-05-04. |
 | UDR | SSH target only; no private client keys observed on router. |
 | HAOS | SSH add-on/admin target only; no private SSH keys observed in checked shell context. |
 | Opti | Proxmox host; local private host key exists and must remain local. |

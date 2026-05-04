@@ -5,7 +5,7 @@ Internal `home.lan` routes only. No WAN exposure.
 | DNS name | Target IP | Upstream | Notes |
 | --- | --- | --- | --- |
 | `dockge.home.lan` | `192.168.30.10` | `dockge:5001` | Dockge UI via Caddy. |
-| `uptime.home.lan` | `192.168.30.10` | `uptime-kuma:3001` | Uptime Kuma via Caddy. |
+| `kuma.home.lan` | `192.168.30.10` | `uptime-kuma:3001` | Uptime Kuma via Caddy. |
 | `dozzle.home.lan` | `192.168.30.10` | `dozzle:8080` | Dozzle via Caddy. |
 | `stremio.home.lan` | `192.168.30.10` | `stremio:11470` | Stremio Server via Caddy. |
 | `ha.home.lan` | `192.168.30.20` | `:8123` direct | Not via Caddy initially. |

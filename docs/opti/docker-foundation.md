@@ -14,6 +14,12 @@ monitors konfigurerade (se nedan). Proxmox-monitor pausad p.g.a. firewall-scope.
 `DOZZLE_AUTH_PROVIDER=simple`). Docker socket read-only. Ingen host port. Via Caddy.
 Dockge ej startad. Validerad (C2a docs) 2026-05-04.
 
+**Docker backup baseline — 2026-05-04** — Backup-script `scripts/maintenance/docker-vm-backup.sh`
+skapat och installerat på Docker VM (`/usr/local/sbin/docker-vm-backup`). Första backup
+(`docker-vm-102-backup-20260504-201659.tar.gz`, 296K, 45 entries) körd och verifierad.
+Off-host kopia på Mac mini (`/Users/yasse/InfraBackups/docker-vm-102/`). SHA256 matchar
+på båda hosts. Restore-test PASS. Se `docs/opti/60-backup-restore.md`.
+
 ## Architecture
 
 ```
@@ -173,7 +179,8 @@ No TCP 443 yet (TLS not enabled). No WAN forwards.
 4. ~~Admin-lösenord + Uptime Kuma baseline monitors~~ ✅ done 2026-05-04
 5. ~~Dozzle (C2a) — simple auth, socket RO~~ ✅ done 2026-05-04
 6. ~~Dozzle C2a validation docs~~ ✅ done 2026-05-04
-7. Start Dockge (C2b — separate phase).
-8. Add `tls internal` to Caddyfile + import Caddy root CA into macOS Keychain.
-9. Schedule Proxmox backup job (external target).
-10. Lös firewall-scope Docker VM → Proxmox och aktivera Proxmox-monitor.
+7. ~~Docker backup baseline~~ ✅ done 2026-05-04 — script + restore-test PASS
+8. Start Dockge (C2b — separate phase).
+9. Add `tls internal` to Caddyfile + import Caddy root CA into macOS Keychain.
+10. Schedule Proxmox backup job (external target).
+11. Lös firewall-scope Docker VM → Proxmox och aktivera Proxmox-monitor.
