@@ -1,7 +1,7 @@
 # DHCP reservations
 
 > Important UniFi fixed-IP reservations and planned infrastructure addresses.
-> Last verified: 2026-05-04 CEST
+> Last verified: 2026-05-04 CEST (Docker VM 102 MAC added)
 
 MAC addresses are intentionally masked. Do not commit full hardware addresses.
 
@@ -16,7 +16,7 @@ MAC addresses are intentionally masked. Do not commit full hardware addresses.
 | Yeelight Bedroom | `yeelight-bedroom` | `192.168.10.150` | IOT / VLAN 10 | `28:6c:07:xx:xx:xx` | LIVE | UniFi fixed IP | Yeelight Color bulb, model `color`, FW v76. LAN Control enabled, TCP 55443. HAOS control via `allow-haos-yeelight-control`. |
 | Opti / Proxmox host | `opti`, `proxmox` | `192.168.1.60` | Default / untagged | UNKNOWN | PLANNED | Repo plan | MAC unknown until hardware arrives. |
 | HAOS VM 101 | `ha`, `haos` | `192.168.30.20` | Server / VLAN 30 | `bc:24:11:xx:xx:xx` | LIVE | UniFi fixed IP + HAOS runtime | Manual UniFi reservation for VMID `101`; runtime validated from HAOS guest agent. |
-| Docker VM | `docker`, `proxy` | `192.168.30.10` | Server / VLAN 30 | UNKNOWN | PLANNED | Repo plan | VM MAC unknown until VM exists. |
+| Docker VM | `docker`, `proxy` | `192.168.30.10` | Server / VLAN 30 | `bc:24:11:xx:xx:xx` | LIVE — no UniFi reservation yet | Proxmox VM runtime | MAC `BC:24:11:50:9C:4D` verified 2026-05-04. UniFi fixed-IP reservation not yet created. |
 
 ## Notes
 

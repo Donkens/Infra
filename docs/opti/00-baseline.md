@@ -1,11 +1,12 @@
 # Opti baseline
 
-## Verified baseline — 2026-05-02
+## Verified baseline — 2026-05-04
 
 Latest read-only Proxmox audit: [Proxmox Phase 0 audit — 2026-05-03](proxmox-phase-0-audit-2026-05-03.md).
 
 The Opti is installed and validated as a Proxmox VE host. HAOS VM `101` is live
-on Server VLAN 30. The Debian Docker VM has not been created yet.
+on Server VLAN 30. Debian Docker VM `102` is live on Server VLAN 30 as of
+2026-05-04 Phase 1A — see [docker-vm-102-baseline.md](docker-vm-102-baseline.md).
 
 | Area | Value |
 | --- | --- |
@@ -69,6 +70,7 @@ iface vmbr0 inet static
 | VMID | Name | Role | Network | Status |
 | ---: | --- | --- | --- | --- |
 | `101` | `haos` | Home Assistant OS | `192.168.30.20/24`, VLAN 30 | live |
+| `102` | `docker` | Debian Docker VM | `192.168.30.10/24`, VLAN 30 | live — Phase 1A 2026-05-04 |
 
 HAOS VM `101` uses `q35`, `OVMF`, `cpu host`, `2` cores, `6144 MB` RAM,
 `64 GB` on `local-lvm`, and `net0` on `vmbr0` with VLAN tag `30`. The QEMU

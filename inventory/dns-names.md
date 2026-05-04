@@ -41,8 +41,8 @@ As of 2026-05-02, `opti.home.lan` and `proxmox.home.lan` resolve to `192.168.1.6
 | `proxmox.home.lan` | `192.168.1.60` | Proxmox UI/API | n/a | AdGuard rewrite | LIVE |
 | `ha.home.lan` | `192.168.30.20` | Home Assistant OS | `ha.home.lan.` | Forward: AdGuard; PTR: Unbound | LIVE |
 | `haos.home.lan` | `192.168.30.20` | HAOS alias (forward only) | n/a | AdGuard rewrite | LIVE |
-| `docker.home.lan` | `192.168.30.10` | Debian Docker VM | — | AdGuard planned | PLANNED |
-| `proxy.home.lan` | `192.168.30.10` | Caddy reverse proxy | — | AdGuard planned | PLANNED |
+| `docker.home.lan` | `192.168.30.10` | Debian Docker VM | — | AdGuard rewrite | PENDING — VM live 2026-05-04, DNS resolves, no service yet |
+| `proxy.home.lan` | `192.168.30.10` | Caddy reverse proxy | — | AdGuard planned | PLANNED — Caddy not yet installed |
 | `dockge.home.lan` | `192.168.30.10` | Dockge via Caddy | — | AdGuard planned | PLANNED |
 | `uptime.home.lan` | `192.168.30.10` | Uptime Kuma via Caddy | — | AdGuard planned | PLANNED |
 | `dozzle.home.lan` | `192.168.30.10` | Dozzle via Caddy | — | AdGuard planned | PLANNED |
