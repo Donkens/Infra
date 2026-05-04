@@ -1,4 +1,4 @@
-generated_at: '2026-05-04T01:00:33+00:00'
+generated_at: '2026-05-04T19:53:56+00:00'
 source_path: /home/pi/AdGuardHome/AdGuardHome.yaml
 schema_version: 34
 http:
@@ -24,7 +24,7 @@ dns:
 filtering_summary:
   filters_count: 4
   whitelist_filters_count: 0
-  rewrites_count: 25
+  rewrites_count: 28
   user_rule_count: 6
 client_summary:
   persistent_client_count: 11
