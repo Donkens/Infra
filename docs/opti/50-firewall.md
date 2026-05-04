@@ -12,6 +12,7 @@ UDR-7 remains the gateway, VLAN, firewall, and WireGuard authority.
 | Default LAN | `192.168.30.20` | `8123` | Direct HAOS access |
 | Mac mini / MacBook | `192.168.30.10` | `22` | Docker VM admin |
 | Mac mini / MacBook | `192.168.1.60` | `8006`, `22` if needed | Proxmox admin |
+| MLO VLAN 40 (`192.168.40.0/24`) | `192.168.1.60` | `8006` | Proxmox UI from iPhone — PVE host firewall Phase 2C |
 | Server VLAN 30 | `192.168.1.55` | `tcp/udp 53` | Pi DNS |
 | Server VLAN 30 | WAN | `80/443`, NTP | Updates and Docker pulls |
 | IoT VLAN | HAOS | only required HA ports | Home Assistant integrations |

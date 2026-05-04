@@ -223,13 +223,24 @@ configuration was altered in Phase 2A. Phase 2B live changes are recorded below.
 enable: 1
 ```
 
-`/etc/pve/nodes/opti/host.fw`:
+`/etc/pve/nodes/opti/host.fw` (current — updated Phase 2C 2026-05-04):
 
 ```
 [OPTIONS]
 enable: 1
 
 [RULES]
+IN ACCEPT -source 192.168.1.0/24 -p tcp -dport 22 -log nolog
+IN ACCEPT -source 192.168.1.0/24 -p tcp -dport 8006 -log nolog
+IN ACCEPT -source 192.168.40.0/24 -p tcp -dport 8006 -log nolog
+IN ACCEPT -source 192.168.1.0/24 -p tcp -dport 3128 -log nolog
+IN ACCEPT -source 192.168.1.0/24 -p icmp -log nolog
+IN DROP -log nolog
+```
+
+Phase 2B original (before Phase 2C addition):
+
+```
 IN ACCEPT -source 192.168.1.0/24 -p tcp -dport 22 -log nolog
 IN ACCEPT -source 192.168.1.0/24 -p tcp -dport 8006 -log nolog
 IN ACCEPT -source 192.168.1.0/24 -p tcp -dport 3128 -log nolog
@@ -360,3 +371,46 @@ Server VLAN 30 isolation (restricting what HAOS and Docker VM 102 can
 reach on Default LAN and other VLANs) is handled via UniFi zone-policy,
 not PVE host firewall. This is a separate GO task and is not part of
 the Proxmox firewall review.
+
+---
+
+## Phase 2C — MLO VLAN 40 access to Proxmox UI (2026-05-04)
+
+### Root cause
+
+iPhone 17 Pro (`192.168.40.207`, MLO VLAN 40 `192.168.40.0/24`) could not reach
+`https://192.168.1.60:8006`. The PVE host firewall applied in Phase 2B allowlisted
+only `192.168.1.0/24`; all other sources hit the final `IN DROP`. No UniFi rule
+blocked the traffic — MLO VLAN 40 and Default LAN are both in the Internal zone,
+so routing and UDR-side policy were not the issue.
+
+### Change
+
+Added one ACCEPT rule to `/etc/pve/nodes/opti/host.fw`:
+
+```
+IN ACCEPT -source 192.168.40.0/24 -p tcp -dport 8006 -log nolog
+```
+
+Placed after the existing Default LAN 8006 ACCEPT, before the 3128 rule.
+MLO subnet gets **port 8006 only** — no SSH, SPICE, or ICMP from VLAN 40.
+
+Backup before edit: `/etc/pve/nodes/opti/host.fw.bak-20260504`.
+
+`pve-firewall compile` confirmed `detected changes` with the new rule present
+in `PVEFW-HOST-IN` before reload. `systemctl reload pve-firewall` applied.
+
+### Post-reload validation
+
+| Check | Result |
+| --- | --- |
+| `nc -vz 192.168.1.60 8006` from Mac mini | ✅ succeeded |
+| `nc -vz 192.168.1.60 22` from Mac mini | ✅ succeeded |
+| Proxmox Web UI from iPhone `https://192.168.1.60:8006` | ✅ reachable — verified 2026-05-04 |
+| Proxmox Web UI from iPhone `https://proxmox.home.lan:8006` | ✅ reachable — verified 2026-05-04 |
+
+### Rollback
+
+```bash
+ssh opti 'cp /etc/pve/nodes/opti/host.fw.bak-20260504 /etc/pve/nodes/opti/host.fw && systemctl reload pve-firewall'
+```
