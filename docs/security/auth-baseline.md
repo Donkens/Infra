@@ -1,7 +1,7 @@
 # Auth Baseline
 
-Last verified: 2026-05-04 14:42 CEST
-Source host: Mac mini (`mini`) / user `yasse`
+Last verified: 2026-05-04 14:49 CEST
+Source hosts: Mac mini (`mini`) / user `yasse`; MacBook Pro (`mbp`) / user `hd`
 Mode: read-only inventory from local SSH config and remote key-only checks
 
 ## Summary
@@ -17,9 +17,10 @@ This document records the current SSH authentication baseline for the home infra
 | GitHub account | `Donkens` |
 | Repo remote | `git@github.com:Donkens/Infra.git` |
 | Default branch | `main` |
-| Local repo host | `mini` |
-| Local repo path | `/Users/yasse/repos/Infra` |
-| Local status during check | `main...origin/main` |
+| Mac mini repo path | `/Users/yasse/repos/Infra` |
+| MacBook repo path | `/Users/hd/repos/Infra` |
+| Mac mini local status during check | `main...origin/main` |
+| MacBook local status during check | `main...origin/main`, with untracked `docs/pi-cleanup-audit-2026-05-01.md` |
 
 Note: `gh` CLI was not installed on the Mac mini during this inventory, so GitHub account SSH-key registration was not verified from the local CLI.
 
@@ -33,6 +34,16 @@ Note: `gh` CLI was not installed on the Mac mini during this inventory, so GitHu
 | OS | macOS Darwin 25.5.0 ARM64 |
 | Role | Primary admin/client host |
 
+## Local admin host: MacBook Pro
+
+| Item | Value |
+|---|---|
+| Hostname | `mbp` |
+| User | `hd` |
+| Home | `/Users/hd` |
+| OS | macOS Darwin 24.6.0 x86_64 |
+| Role | Secondary admin/client host |
+
 ## SSH client config summary from Mac mini
 
 | Target | SSH user | Hostname | IdentityFile | IdentitiesOnly | ForwardAgent |
@@ -44,6 +55,18 @@ Note: `gh` CLI was not installed on the Mac mini during this inventory, so GitHu
 | UDR-7 | `root` | `udr.home.lan` | `~/.ssh/id_ed25519_udr2` | yes | no |
 | HAOS | `hassio` | `ha.home.lan` | `~/.ssh/id_ed25519_macmini` | yes | no |
 | Opti | `root` | `opti.home.lan` | `~/.ssh/id_ed25519_macmini` | yes | no |
+
+## SSH client config summary from MacBook Pro
+
+| Target | SSH user | Hostname | IdentityFile | IdentitiesOnly | ForwardAgent |
+|---|---|---|---|---:|---:|
+| GitHub | `git` | `github.com` | `~/.ssh/id_ed25519_mbp` | yes | no |
+| Pi | `pi` | `pi.home.lan` | `~/.ssh/id_ed25519_pi` | yes | no |
+| Mac mini | `yasse` | `macmini.home.lan` | `~/.ssh/id_ed25519_macmini` | yes | yes |
+| MacBook Pro | `hd` | `mbp.home.lan` | `~/.ssh/id_ed25519_mbp` | yes | no |
+| UDR-7 | `root` | `udr.home.lan` | `~/.ssh/id_ed25519_udr2` | yes | no |
+| HAOS | `hassio` | `ha.home.lan` | `~/.ssh/id_ed25519_mbp` | yes | no |
+| Opti | `root` | `opti.home.lan` | `~/.ssh/id_ed25519_mbp` | yes | no |
 
 Note: `PasswordAuthentication` appeared as `yes` in the client-side expanded config. This does not prove the server accepts password login; it only means the local client does not globally disable password auth for these hosts. For automation and audits, use `BatchMode=yes` and `NumberOfPasswordPrompts=0`.
 
@@ -61,6 +84,15 @@ Note: `PasswordAuthentication` appeared as `yes` in the client-side expanded con
 | `id_ed25519_udr2.pub` | `SHA256:zorJul5YiPwIV2PkmKghWE/yn7Nl7M9u7mh0MPYZ5Lw` | `udr7` |
 | `id_ed25519.pub` | `SHA256:omWAIS2qDhY7kIZYFW66Q2iPMSbavF+y4re8Ll7aaCI` | `yasse@Mac-mini.local` |
 
+## Local public key inventory on MacBook Pro
+
+| Public key | Fingerprint | Comment |
+|---|---|---|
+| `id_ed25519_macmini.pub` | `SHA256:IxV/v8tpNBG542/yNj1g3nz1AbwGnpQfbJwQJZx+9A0` | none shown |
+| `id_ed25519_mbp.pub` | `SHA256:Tc/gNhhJ+/Cwkui/1T36YVwHSs1quLjGK7J0MbItpaU` | none shown |
+| `id_ed25519_pi.pub` | `SHA256:U1atPM5FFTUrHPYE9dg4w1Yr0hye9XovIC2VJhy3M5w` | none shown |
+| `id_ed25519_udr2.pub` | `SHA256:zorJul5YiPwIV2PkmKghWE/yn7Nl7M9u7mh0MPYZ5Lw` | `udr7` |
+
 ## SSH agent loaded keys on Mac mini
 
 | Fingerprint | Comment |
@@ -70,7 +102,16 @@ Note: `PasswordAuthentication` appeared as `yes` in the client-side expanded con
 | `SHA256:Tc/gNhhJ+/Cwkui/1T36YVwHSs1quLjGK7J0MbItpaU` | none shown |
 | `SHA256:zorJul5YiPwIV2PkmKghWE/yn7Nl7M9u7mh0MPYZ5Lw` | `udr7` |
 
-## Remote key-only checks
+## SSH agent loaded keys on MacBook Pro
+
+| Fingerprint | Comment |
+|---|---|
+| `SHA256:Tc/gNhhJ+/Cwkui/1T36YVwHSs1quLjGK7J0MbItpaU` | none shown |
+| `SHA256:zorJul5YiPwIV2PkmKghWE/yn7Nl7M9u7mh0MPYZ5Lw` | `udr7` |
+| `SHA256:IxV/v8tpNBG542/yNj1g3nz1AbwGnpQfbJwQJZx+9A0` | none shown |
+| `SHA256:U1atPM5FFTUrHPYE9dg4w1Yr0hye9XovIC2VJhy3M5w` | none shown |
+
+## Remote key-only checks from Mac mini
 
 The following checks succeeded with `BatchMode=yes`, `NumberOfPasswordPrompts=0`, and `ConnectTimeout=5` from Mac mini. That confirms non-interactive SSH key auth works for these hosts from the current Mac mini setup.
 
@@ -148,6 +189,16 @@ Authorized client keys on UDR-7:
 
 Note: UDR SSH emitted an OpenSSH warning that the connection is not using a post-quantum key exchange algorithm. This is expected for many embedded/network appliances and is not an immediate LAN issue, but it should be tracked as a vendor/OpenSSH capability note.
 
+## Remote key-only checks from MacBook Pro
+
+The following checks succeeded with `BatchMode=yes`, `NumberOfPasswordPrompts=0`, and `ConnectTimeout=5` from MacBook Pro. That confirms non-interactive SSH key auth works from the secondary admin/client host too.
+
+| Target | Runtime hostname | User | Home | Result |
+|---|---|---|---|---:|
+| `pi` | `pi` | `pi` | `/home/pi` | PASS |
+| `mini` | `mini` | `yasse` | `/Users/yasse` | PASS |
+| `udr` | `udrhomelan` | `root` | `/root` | PASS |
+
 ## Policy baseline
 
 ### Allowed flows
@@ -157,7 +208,11 @@ Note: UDR SSH emitted an OpenSSH warning that the connection is not using a post
 | Mac mini -> Pi | allowed | Key-only auth verified |
 | Mac mini -> MacBook | allowed | Key-only auth verified |
 | Mac mini -> UDR-7 | allowed | Key-only auth verified; root user expected for UDR |
+| MacBook -> Pi | allowed | Key-only auth verified |
+| MacBook -> Mac mini | allowed | Key-only auth verified |
+| MacBook -> UDR-7 | allowed | Key-only auth verified; root user expected for UDR |
 | Mac mini -> GitHub | allowed | Uses SSH remote; local `gh` CLI not installed during check |
+| MacBook -> GitHub | allowed | Uses SSH remote |
 | Agents -> infra hosts | conditional | Must follow repo guardrails and Phase 0/1/2 approval model |
 
 ### Blocked / discouraged flows
@@ -179,6 +234,7 @@ Note: UDR SSH emitted an OpenSSH warning that the connection is not using a post
 4. Review whether `id_ed25519_pi_claude` should remain nopass. If retained, document its exact scope and constraints.
 5. Old UDR retire/metadata files exist under `~/.ssh` on Mac mini. They should not be copied into the repo. Optional local cleanup can be done later after confirming they are no longer needed.
 6. Install or use `gh` CLI only if GitHub-side key inventory needs to be verified locally; otherwise repo access via SSH is enough for day-to-day work.
+7. MacBook repo had an untracked local file during verification: `docs/pi-cleanup-audit-2026-05-01.md`. This is not an auth issue, but should be reviewed separately.
 
 ## Safe audit commands
 
