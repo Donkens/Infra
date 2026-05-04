@@ -152,25 +152,50 @@ See `docs/opti/60-backup-restore.md` for full backup policy and architecture not
 > a documented restore-test are still required before critical workloads are
 > deployed.
 
-## Not done in Phase 1A/1B/1C-A
+## Phase 1C-C1 — Caddy + Uptime Kuma — 2026-05-04
 
-- No Caddy.
-- No Dockge.
-- No Uptime Kuma.
-- No Dozzle.
+First long-running services deployed. All four compose files created on VM.
+Only Caddy and Uptime Kuma started. No Dockge/Dozzle containers running yet.
+
+See `docs/opti/docker-foundation.md` for full architecture, compose layout,
+Caddyfile, and validation results.
+
+| Container | Image | Status |
+| --- | --- | --- |
+| `caddy` | `caddy:2.8.4-alpine` | live ✅ |
+| `uptime-kuma` | `louislam/uptime-kuma:1.23.15` | live ✅ (healthy) |
+
+| Check | Result |
+| --- | --- |
+| Caddy `:80` | `200 OK` ✅ |
+| `proxy.home.lan` | `200 OK` via Caddy ✅ |
+| `kuma.home.lan` via Host-header | `302 /dashboard` via Caddy ✅ |
+| `systemctl --failed` | `0 units` ✅ |
+| Disk after deploy | `2.2G used / 111G free` ✅ |
+
+## Not done in Phase 1A/1B/1C-A/1C-C1
+
+- ~~Caddy.~~ **Resolved Phase 1C-C1 2026-05-04: `caddy:2.8.4-alpine` live.**
+- ~~Uptime Kuma.~~ **Resolved Phase 1C-C1 2026-05-04: `louislam/uptime-kuma:1.23.15` live.**
+- No Dockge (compose file exists, container not started).
+- No Dozzle (compose file exists, container not started).
 - No node_exporter.
-- No long-running containers or services.
+- DNS rewrites for `kuma.home.lan`, `dockge.home.lan`, `dozzle.home.lan` not yet in AdGuard.
+- No HTTP firewall rule (LAN→Docker VM :80).
+- No TLS (`auto_https off`; `tls internal` deferred).
+- Uptime Kuma admin password not set (first-run setup pending).
 - ~~Docker Engine not installed.~~ **Resolved Phase 1B 2026-05-04.**
 - ~~No compose runtime baseline.~~ **Resolved Phase 1B 2026-05-04: Compose plugin `v5.1.3`.**
 - ~~No UniFi DHCP reservation.~~ Confirmed live 2026-05-04.
-- ~~No Proxmox backup for VM 102.~~ **Resolved Phase 1C-A 2026-05-04: interim backup + off-host copy verified.**
+- ~~No Proxmox backup for VM 102.~~ **Resolved Phase 1C-A 2026-05-04.**
 - No scheduled Proxmox backup job.
 - No restore-test for VM 102.
 
-## Next step — Phase 1C-B/C
+## Next step — Phase 1C-C2
 
-Deploy first lightweight Docker service stack (Caddy/Dockge/Uptime Kuma/Dozzle)
-as separate, audited steps. Requires DNS rewrites in AdGuard for
-`dockge.home.lan`, `kuma.home.lan`, `dozzle.home.lan` before deploy. No
-Vaultwarden, Jellyfin, media/download-heavy workloads, or WAN exposure until
-backup and restore policy is upgraded.
+1. Run `/tmp/adguard-rewrites.sh` on Pi to add DNS rewrites.
+2. Add UniFi firewall rule: LAN → `192.168.30.10` TCP 80.
+3. Validate `curl http://kuma.home.lan` from LAN.
+4. Set Uptime Kuma admin password via UI.
+5. Start Dockge and Dozzle.
+6. Add `tls internal` and import Caddy root CA.
