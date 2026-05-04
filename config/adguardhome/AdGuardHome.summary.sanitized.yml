@@ -1,4 +1,4 @@
-generated_at: '2026-05-03T01:03:33+00:00'
+generated_at: '2026-05-04T01:00:33+00:00'
 source_path: /home/pi/AdGuardHome/AdGuardHome.yaml
 schema_version: 34
 http:
@@ -12,7 +12,7 @@ dns:
   upstream_dns_type_summary:
     loopback: 1
   bootstrap_dns_count: 2
-  protection_enabled: false
+  protection_enabled: true
   filtering_enabled: true
   blocking_mode: nxdomain
   cache_size: 33554432
