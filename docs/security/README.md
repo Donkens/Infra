@@ -9,6 +9,7 @@ This directory collects security-related documentation for the home infrastructu
 | [`auth-baseline.md`](auth-baseline.md) | Main SSH/authentication baseline for Mac mini, MacBook, Pi, UDR-7, HAOS, Opti, Docker VM, and GitHub flows. |
 | [`ssh-hardening.md`](ssh-hardening.md) | SSH hardening baseline for key-only auth, `ForwardAgent no`, known-host handling, host roles, key rotation, and recovery paths. |
 | [`secrets-policy.md`](secrets-policy.md) | Repository-wide policy for private keys, tokens, `.env`, raw configs, HA secrets, backups, and secret incident response. |
+| [`dns-security.md`](dns-security.md) | DNS security baseline for AdGuard Home, Unbound, UDR DNS bypass prevention, DoT/DNSecure, and DNS change management. |
 | [`github-key-cleanup-2026-05-04.md`](github-key-cleanup-2026-05-04.md) | Records the Mac mini GitHub key cleanup from MacBook-oriented key to dedicated GitHub key. |
 | [`pi-auth-side-verification-2026-05-04.md`](pi-auth-side-verification-2026-05-04.md) | Pi-side auth verification: GitHub access passes; lateral SSH from Pi remains intentionally limited. |
 | [`udr-auth-side-verification-2026-05-04.md`](udr-auth-side-verification-2026-05-04.md) | UDR-side SSH posture: router is an SSH target, not a jump host; active authorized keys documented. |
@@ -34,13 +35,13 @@ Security docs in this directory should stay high-signal and sanitized.
 - Device-code authorization should be temporary and task-specific, not always-on by default.
 - Keep routers, HAOS, and service nodes as SSH targets only unless an outbound SSH flow is explicitly needed and documented.
 - Commit `.env.example` placeholders, not real `.env` values.
+- Keep raw DNS runtime configs and query logs out of Git unless explicitly sanitized.
 
 ## Future candidates
 
 | Candidate | Scope |
 |---|---|
 | `firewall-baseline.md` | High-level firewall intent and trusted admin paths. |
-| `dns-security.md` | AdGuard/Unbound security posture, DNS bypass prevention, DoT/DoH notes. |
 
 ## Safe review commands
 
