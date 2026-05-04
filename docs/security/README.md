@@ -10,6 +10,7 @@ This directory collects security-related documentation for the home infrastructu
 | [`ssh-hardening.md`](ssh-hardening.md) | SSH hardening baseline for key-only auth, `ForwardAgent no`, known-host handling, host roles, key rotation, and recovery paths. |
 | [`secrets-policy.md`](secrets-policy.md) | Repository-wide policy for private keys, tokens, `.env`, raw configs, HA secrets, backups, and secret incident response. |
 | [`dns-security.md`](dns-security.md) | DNS security baseline for AdGuard Home, Unbound, UDR DNS bypass prevention, DoT/DNSecure, and DNS change management. |
+| [`firewall-baseline.md`](firewall-baseline.md) | Firewall baseline for UDR-7 intent, LAN/IoT/Server VLAN segmentation, trusted admin paths, DNS bypass prevention, and WAN exposure policy. |
 | [`github-key-cleanup-2026-05-04.md`](github-key-cleanup-2026-05-04.md) | Records the Mac mini GitHub key cleanup from MacBook-oriented key to dedicated GitHub key. |
 | [`pi-auth-side-verification-2026-05-04.md`](pi-auth-side-verification-2026-05-04.md) | Pi-side auth verification: GitHub access passes; lateral SSH from Pi remains intentionally limited. |
 | [`udr-auth-side-verification-2026-05-04.md`](udr-auth-side-verification-2026-05-04.md) | UDR-side SSH posture: router is an SSH target, not a jump host; active authorized keys documented. |
@@ -36,12 +37,11 @@ Security docs in this directory should stay high-signal and sanitized.
 - Keep routers, HAOS, and service nodes as SSH targets only unless an outbound SSH flow is explicitly needed and documented.
 - Commit `.env.example` placeholders, not real `.env` values.
 - Keep raw DNS runtime configs and query logs out of Git unless explicitly sanitized.
+- Document every firewall exception with source, destination, protocol, port, reason, verification, and rollback.
 
 ## Future candidates
 
-| Candidate | Scope |
-|---|---|
-| `firewall-baseline.md` | High-level firewall intent and trusted admin paths. |
+No active security doc candidates at this time. Add new candidates here as the infrastructure grows.
 
 ## Safe review commands
 
