@@ -1,7 +1,7 @@
 # UniFi firewall policies
 
 > Current custom UniFi firewall policy inventory.
-> Last verified: 2026-05-04 CEST
+> Last verified: 2026-05-04 CEST — Phase 2B applied
 
 ## Scope
 
@@ -54,34 +54,62 @@ Live-tested from HAOS `192.168.30.20` via SSH after the UniFi zone migration.
 | VLAN 30 zone move | Server VLAN 30 (`69ee65711bc6e72d27744844`) moved from `Internal` `677d9959ed22014620a6a981` to `Server` `69f7de611bc6e72d2776b75b` |
 | WiZ rule update | `allow-haos-wiz-control.source.zone_id` updated from `677d9959ed22014620a6a981` to `69f7de611bc6e72d2776b75b` |
 | Continuity ALLOW | Server → Pi DNS UDP/TCP 53; Internal → HAOS TCP 8123 and TCP 22 |
-| Phase 2B blocks | Not applied |
+| Phase 2B blocks | Applied 2026-05-04 |
 
-## Server VLAN 30 remaining gaps
+## Server VLAN 30 Phase 2B — completed 2026-05-04
 
-| Gap | Detail |
+Applied after Phase 2A validation. DNS bypass gaps closed.
+
+| Item | Detail |
 |---|---|
-| Gateway DNS bypass open | `@192.168.30.1:53` answers from HAOS — `block-internal-gateway-dns-*` rules use `network_ids` that exclude Server VLAN 30 |
-| WAN DNS bypass uncovered | `block-internal-wan-dns-*` rules use `network_ids` that exclude Server VLAN 30 |
+| Gateway DNS bypass blocked | `block-server-gateway-dns-udp/tcp` — Server → Gateway `192.168.30.1` UDP/TCP 53 BLOCK |
+| WAN DNS bypass blocked | `block-server-wan-dns-udp/tcp` — Server → External ANY UDP/TCP 53 BLOCK |
+| Server → Internal isolation | Zone default `block_all` (set when Server zone was created) already blocks Server-initiated connections to Internal. No explicit rule needed. `block-server-to-internal` rule created then **disabled** after discovering it also blocked ESTABLISHED return traffic, breaking HAOS reachability from Internal. |
+
+### Phase 2B key finding — zone default block
+
+When the custom `Server` zone was created, UniFi automatically set `block_all` for `Server → Internal` (and other cross-zone pairs). This means:
+- HAOS cannot initiate TCP/ICMP to Internal zone hosts (confirmed: `ping 192.168.1.60` from HAOS → 100% loss).
+- Return/ESTABLISHED traffic from HAOS back to Internal clients IS allowed (handled by the existing ALLOW rules with `create_allow_respond: true`).
+- An explicit `block-server-to-internal` with `connection_state_type: ALL` blocked ESTABLISHED return traffic, breaking HAOS TCP reachability from Internal. Rule was disabled after validation.
+
+### Phase 2B validation results — 2026-05-04
+
+| Test | Expected | Result |
+|---|---|---|
+| `HA_CORE_OK_AFTER_2B` | PASS | ✅ PASS |
+| HAOS resolution info | `issues: []` | ✅ PASS |
+| HAOS → Pi DNS `@192.168.1.55` | `192.168.1.55` | ✅ PASS |
+| HAOS → Internet `ping 1.1.1.1` | 0% loss | ✅ PASS |
+| HAOS UI `192.168.30.20:8123` from Mac mini | reachable | ✅ PASS |
+| HAOS SSH `192.168.30.20:22` from Mac mini | reachable | ✅ PASS |
+| Gateway DNS bypass `@192.168.30.1:53` | TIMEOUT | ✅ BLOCKED |
+| WAN DNS bypass `@1.1.1.1:53` | TIMEOUT | ✅ BLOCKED |
+| Server → Internal ICMP `192.168.1.60` | BLOCKED | ✅ BLOCKED (zone default) |
+| `allow-haos-wiz-control` | enabled, source zone Server | ✅ OK |
+| `qm status 101` | running | ✅ PASS |
+| No Docker VM 102 rules | none created | ✅ confirmed |
 
 Isolation plan and approval blocks: [`docs/opti/server-vlan30-isolation-plan-2026-05-03.md`](../docs/opti/server-vlan30-isolation-plan-2026-05-03.md)
 
-## Planned policies for Server zone
+## Live policies for Server zone
 
-| Policy | Direction | Source | Destination | Port | Action | Status |
-|---|---|---|---|---|---|---|
-| `allow-server-to-pi-dns-udp` | Server → Internal | Server zone ANY | IP `192.168.1.55` | UDP 53 | ALLOW | Live Phase 2A |
-| `allow-server-to-pi-dns-tcp` | Server → Internal | Server zone ANY | IP `192.168.1.55` | TCP 53 | ALLOW | Live Phase 2A |
-| `allow-server-to-wan` | Server → External | Server zone ANY | ANY | all (non-53) | ALLOW | Planned |
-| `allow-lan-admin-to-haos` | Internal → Server | Internal zone ANY | IP `192.168.30.20` | TCP 8123 | ALLOW | Live Phase 2A |
-| `allow-lan-admin-to-haos-ssh` | Internal → Server | Internal zone ANY | IP `192.168.30.20` | TCP 22 | ALLOW | Live Phase 2A continuity |
-| `block-server-wan-dns-udp` | Server → External | Server zone ANY | ANY | UDP 53 | BLOCK | Planned |
-| `block-server-wan-dns-tcp` | Server → External | Server zone ANY | ANY | TCP 53 | BLOCK | Planned |
-| `block-server-gateway-dns-udp` | Server → Gateway | Server zone ANY | IP `192.168.30.1` | UDP 53 | BLOCK | Planned |
-| `block-server-gateway-dns-tcp` | Server → Gateway | Server zone ANY | IP `192.168.30.1` | TCP 53 | BLOCK | Planned |
-| `block-server-to-internal` | Server → Internal | Server zone ANY | ANY | all | BLOCK | Planned |
+| Policy | Direction | Source | Destination | Port | Action | ID | Status |
+|---|---|---|---|---|---|---|---|
+| `allow-server-to-pi-dns-udp` | Server → Internal | Server zone ANY | IP `192.168.1.55` | UDP 53 | ALLOW | `69f7dec11bc6e72d2776b789` | ✅ Live Phase 2A |
+| `allow-server-to-pi-dns-tcp` | Server → Internal | Server zone ANY | IP `192.168.1.55` | TCP 53 | ALLOW | `69f7dec11bc6e72d2776b78c` | ✅ Live Phase 2A |
+| `block-server-to-internal` | Server → Internal | Server zone ANY | ANY | all | BLOCK | `69f816d31bc6e72d2776c2d0` | ⛔ Disabled — redundant; zone default already blocks; explicit rule breaks ESTABLISHED return traffic |
+| `allow-lan-admin-to-haos` | Internal → Server | Internal zone ANY | IP `192.168.30.20` | TCP 8123 | ALLOW | `69f7dec11bc6e72d2776b78f` | ✅ Live Phase 2A |
+| `allow-lan-admin-to-haos-ssh` | Internal → Server | Internal zone ANY | IP `192.168.30.20` | TCP 22 | ALLOW | `69f7df531bc6e72d2776b7c0` | ✅ Live Phase 2A |
+| `block-server-gateway-dns-udp` | Server → Gateway | Server zone ANY | IP `192.168.30.1` | UDP 53 | BLOCK | `69f816ba1bc6e72d2776c2c2` | ✅ Live Phase 2B |
+| `block-server-gateway-dns-tcp` | Server → Gateway | Server zone ANY | IP `192.168.30.1` | TCP 53 | BLOCK | `69f816c31bc6e72d2776c2c6` | ✅ Live Phase 2B |
+| `block-server-wan-dns-udp` | Server → External | Server zone ANY | ANY | UDP 53 | BLOCK | `69f816c81bc6e72d2776c2c9` | ✅ Live Phase 2B |
+| `block-server-wan-dns-tcp` | Server → External | Server zone ANY | ANY | TCP 53 | BLOCK | `69f816cc1bc6e72d2776c2cd` | ✅ Live Phase 2B |
+| `allow-server-to-wan` | Server → External | Server zone ANY | ANY | all (non-53) | ALLOW | — | Not created — HAOS internet works via zone default |
 
 ## Follow-up validation needed
 
 - IoT-to-gateway DNS needs explicit client-side test documentation; current policy inventory confirms IoT-to-WAN DNS block and IoT-to-Pi DNS allow.
 - `docs/unifi-firewall-state-2026-04-15.md` is superseded/stale for current policy count. Keep it as historical context only.
-- `allow-haos-wiz-icmp-temp` is disabled, not deleted. Delete via UniFi UI during Phase 2B (Settings → Security → Traffic & Firewall Rules → find rule → Delete).
+- `allow-haos-wiz-icmp-temp` (`69f687011bc6e72d277674c6`) is disabled, not deleted. Delete via UniFi UI when convenient (Settings → Security → Traffic & Firewall Rules → find rule → Delete).
+- `block-server-to-internal` (`69f816d31bc6e72d2776c2d0`) is disabled. Delete via UniFi UI when convenient, or leave disabled as documentation of the zone-default-block finding.

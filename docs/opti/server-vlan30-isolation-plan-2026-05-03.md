@@ -1,7 +1,7 @@
 # Server VLAN 30 Isolation Plan — UniFi
 
 Datum: 2026-05-03
-Status: **WARN** — Phase 2A genomförd 2026-05-04; Phase 2B isolerings-/blockregler saknas.
+Status: **PASS** — Phase 2A genomförd 2026-05-04; Phase 2B DNS-bypass-block applicerade 2026-05-04.
 
 ---
 
@@ -23,8 +23,9 @@ Tre ursprungliga kritiska gap bekräftades via live-analys 2026-05-03:
    till en ny zon slutar regeln matcha HAOS och WiZ-styrning slutar fungera
    **omedelbart** om inte regeln uppdateras i samma steg.
 
-Phase 2B (isolerings-/DNS-blockregler) är fortfarande ej applicerad. Docker VM
-102 är frånvarande; inga regler för `.10` skapas förrän VM 102 existerar.
+Phase 2B applicerad 2026-05-04. Docker VM 102 är frånvarande; inga regler för
+`.10` skapades. Se Phase 2B-sektionen nedan för fullständiga resultat och
+nyckelinsikten om zon-default-block.
 
 ---
 
@@ -244,42 +245,41 @@ Ingen `allow-server-to-wan` skapades i Phase 2A eftersom zone-matrix inte visade
 explicit default-drop för `Server → External` och HAOS internet validerades OK.
 Inga Phase 2B blockregler skapades.
 
-### Phase 2B — Isoleringsregler (efter 2A)
+### Phase 2B — Isoleringsregler (genomförd 2026-05-04)
 
-| Prioritet | Namn | Källa | Destination | Port | Åtgärd | Risk om saknas | Återställning |
-|---|---|---|---|---|---|---|---|
-| A | `allow-server-to-pi-dns-udp` | Server-zon ANY | Internal-zon IP `192.168.1.55` | UDP 53 | ALLOW | HAOS + Docker VM 102 kan inte lösa DNS | Ta bort regeln |
-| B | `allow-server-to-pi-dns-tcp` | Server-zon ANY | Internal-zon IP `192.168.1.55` | TCP 53 | ALLOW | DNS fallback missar | Ta bort regeln |
-| C | `allow-server-to-wan` | Server-zon ANY | External-zon ANY | Alla (utom port 53) | ALLOW | HAOS kan inte nå internet | Ta bort regeln |
-| D | `allow-lan-admin-to-haos` | Internal-zon ANY | Server-zon IP `192.168.30.20` | TCP 8123 | ALLOW | Admin kan inte nå HAOS UI | Ta bort regeln |
-| E | `block-server-wan-dns-udp` | Server-zon ANY | External-zon ANY | UDP 53 | BLOCK | HAOS kan kringgå Pi DNS mot WAN | Ta bort regeln |
-| F | `block-server-wan-dns-tcp` | Server-zon ANY | External-zon ANY | TCP 53 | BLOCK | Se ovan | Ta bort regeln |
-| G | `block-server-gateway-dns-udp` | Server-zon ANY | Gateway-zon IP `192.168.30.1` | UDP 53 | BLOCK | HAOS kan använda UDR dnsmasq | Ta bort regeln |
-| H | `block-server-gateway-dns-tcp` | Server-zon ANY | Gateway-zon IP `192.168.30.1` | TCP 53 | BLOCK | Se ovan | Ta bort regeln |
-| I | `block-server-to-internal` | Server-zon ANY | Internal-zon ANY | Alla | BLOCK | Server VLAN 30 kan nå Default LAN fritt | Ta bort regeln |
+| Regel | Källa | Destination | Port | Åtgärd | ID | Status |
+|---|---|---|---|---|---|---|
+| `allow-server-to-pi-dns-udp` | Server-zon ANY | Internal IP `192.168.1.55` | UDP 53 | ALLOW | `69f7dec11bc6e72d2776b789` | ✅ Live Phase 2A |
+| `allow-server-to-pi-dns-tcp` | Server-zon ANY | Internal IP `192.168.1.55` | TCP 53 | ALLOW | `69f7dec11bc6e72d2776b78c` | ✅ Live Phase 2A |
+| `block-server-wan-dns-udp` | Server-zon ANY | External ANY | UDP 53 | BLOCK | `69f816c81bc6e72d2776c2c9` | ✅ Live Phase 2B, index=10000 |
+| `block-server-wan-dns-tcp` | Server-zon ANY | External ANY | TCP 53 | BLOCK | `69f816cc1bc6e72d2776c2cd` | ✅ Live Phase 2B, index=10001 |
+| `block-server-gateway-dns-udp` | Server-zon ANY | Gateway IP `192.168.30.1` | UDP 53 | BLOCK | `69f816ba1bc6e72d2776c2c2` | ✅ Live Phase 2B, index=10000 |
+| `block-server-gateway-dns-tcp` | Server-zon ANY | Gateway IP `192.168.30.1` | TCP 53 | BLOCK | `69f816c31bc6e72d2776c2c6` | ✅ Live Phase 2B, index=10001 |
+| `block-server-to-internal` | Server-zon ANY | Internal ANY | alla | BLOCK | `69f816d31bc6e72d2776c2d0` | ⛔ Skapad men **inaktiverad** — se nedan |
+| `allow-server-to-wan` | Server-zon ANY | External ANY | alla | ALLOW | — | Ej skapad — HAOS internet fungerar via zon-default |
 
-**Regelordning — kritisk:**
+**Nyckelinsikt — zon-default blockerar Server → Internal:**
 
-Regler tillämpas i stigande `rule_index`. Inom varje zon-par gäller:
+När `Server`-zonen skapades satte UniFi automatiskt `block_all` för `Server → Internal`. Inga explicitregler krävs för att blockera HAOS från att nå Default LAN — zon-default gör det.
 
-```
-Server → Internal:
-  10000  allow-server-to-pi-dns-udp  (A)
-  10001  allow-server-to-pi-dns-tcp  (B)
-  10002  block-server-to-internal    (I) ← måste komma EFTER A och B
+`block-server-to-internal` skapades med `connection_state_type=ALL` och visade sig blockera ESTABLISHED return-trafik från HAOS tillbaka till Internal-klienter (TCP SYN-ACK-paket). Effekt: HAOS:8123 och SSH port 22 slutade svara från hela Internal-zonen. Regeln inaktiverades omedelbart och HAOS återställdes. Zon-default täcker use-caset utan sidoeffekter.
 
-Server → External:
-  10000  block-server-wan-dns-udp    (E) ← måste komma FÖRE C
-  10001  block-server-wan-dns-tcp    (F)
-  10002  allow-server-to-wan         (C)
+**Valideringsresultat Phase 2B — 2026-05-04:**
 
-Server → Gateway:
-  10000  block-server-gateway-dns-udp (G)
-  10001  block-server-gateway-dns-tcp (H)
-
-Internal → Server:
-  10000  allow-lan-admin-to-haos     (D)
-```
+| Test | Förväntat | Resultat |
+|---|---|---|
+| `HA_CORE_OK_AFTER_2B` | PASS | ✅ PASS |
+| HAOS resolution info | `issues: []` | ✅ PASS |
+| HAOS → Pi DNS `@192.168.1.55` | `192.168.1.55` | ✅ PASS |
+| HAOS → Internet `ping 1.1.1.1` | 0% förlust | ✅ PASS |
+| HAOS UI `192.168.30.20:8123` | nåbar | ✅ PASS |
+| HAOS SSH `192.168.30.20:22` | nåbar | ✅ PASS |
+| Gateway DNS bypass `@192.168.30.1:53` | TIMEOUT | ✅ BLOCKAD |
+| WAN DNS bypass `@1.1.1.1:53` | TIMEOUT | ✅ BLOCKAD |
+| Server → Internal ICMP `192.168.1.60` | BLOCKAD | ✅ BLOCKAD (zon-default) |
+| `allow-haos-wiz-control` | aktiverad, source zone Server | ✅ OK |
+| `qm status 101` | running | ✅ PASS |
+| Docker VM 102-regler skapade | inga | ✅ ej skapade |
 
 ### Befintliga regler — uppdateringar
 
@@ -464,7 +464,7 @@ Kräver innan GO:
 
 ---
 
-### [APPROVAL REQUIRED] GO unifi-server-isolation-rules Phase 2B
+### ~~[APPROVAL REQUIRED] GO unifi-server-isolation-rules Phase 2B~~ COMPLETED 2026-05-04
 
 ```
 Action:   Lägg till zone-policies för Server-zonen:
