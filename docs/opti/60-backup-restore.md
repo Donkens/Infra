@@ -29,6 +29,11 @@ Latest Proxmox Phase 0 audit on 2026-05-03 found:
   Proxmox/off-host restore strategy.
 - No confirmed off-host Proxmox/VM restore-test exists yet.
 
+Proxmox dump audit on 2026-05-04:
+
+- VM 101 interim backup verified present on Opti and Mac mini ✅
+- VM 102 interim backup completed as Phase 1C-A — see section below ✅
+
 ## Proxmox interim vzdump — Phase 2A (2026-05-03)
 
 First Proxmox-level backup of VM 101 (haos) completed on 2026-05-03 as an
@@ -58,6 +63,35 @@ other critical services are deployed.
 > **QGA note:** `INFO: skipping guest-agent 'fs-freeze', agent configured but not
 > running` — backup is crash-consistent, not guest-fs-frozen. This is the known
 > QGA WARN state and does not affect backup validity for a stateless OS like HAOS.
+
+## Proxmox interim vzdump — Phase 1C-A (2026-05-04)
+
+Second Proxmox-level backup completed for VM 102 (docker) on 2026-05-04 as an
+interim pre-deploy snapshot. This is **not** a scheduled job and **not** the
+final backup architecture. Taken before any Docker services are deployed so a
+clean rollback point exists.
+
+| Field | Value |
+| --- | --- |
+| Backup file | `vzdump-qemu-102-2026_05_04-16_45_42.vma.zst` |
+| Backup date | 2026-05-04 16:45:42 CEST |
+| Mode | `snapshot` (guest-fs-frozen — QGA fs-freeze succeeded ✅) |
+| Compression | `zstd` |
+| Compressed size | `579 MB` |
+| Sparse ratio | 98% zero data (thin VM, no containers yet) |
+| Duration | 36 seconds |
+| Local path | `/var/lib/vz/dump/vzdump-qemu-102-2026_05_04-16_45_42.vma.zst` |
+| Off-host path | `/Users/yasse/InfraBackups/proxmox-dumps/vzdump-qemu-102-2026_05_04-16_45_42.vma.zst` |
+| SHA256 | `068a0d55cf4149ae2e931c0fb3dd7c71e1999d61b28c25eb1f57f165e295808c` |
+| SHA256 match | ✅ identical on Opti and Mac mini |
+| Companion files | `.log` copied off-host |
+| VM status after | `running` |
+| Restore-test | not yet completed — required before critical workloads |
+
+> **QGA note:** `INFO: issuing guest-agent 'fs-freeze' command` then
+> `INFO: issuing guest-agent 'fs-thaw' command` — backup is guest-fs-frozen,
+> not merely crash-consistent. This is the preferred QGA state; better than the
+> VM 101 backup which had QGA unavailable.
 
 ### What remains (proper backup architecture)
 

@@ -129,7 +129,30 @@ UniFi client name: `Docker VM 102`. Note: `Debian Docker VM · VLAN 30 · 192.16
 - Docker group membership may require a fresh SSH login before `docker` works
   without `sudo` for user `yasse`.
 
-## Not done in Phase 1A/1B
+## Phase 1C-A — Backup gate — 2026-05-04
+
+Interim Proxmox-level backup of VM 102 completed before any Docker services
+were deployed. This establishes a clean rollback point.
+
+| Field | Value |
+| --- | --- |
+| Backup file | `vzdump-qemu-102-2026_05_04-16_45_42.vma.zst` |
+| Backup date | 2026-05-04 16:45:42 CEST |
+| Mode | `snapshot`, QGA fs-freeze succeeded ✅ |
+| Compressed size | `579 MB` |
+| SHA256 | `068a0d55cf4149ae2e931c0fb3dd7c71e1999d61b28c25eb1f57f165e295808c` |
+| SHA256 match | ✅ identical on Opti and Mac mini |
+| Off-host path | `/Users/yasse/InfraBackups/proxmox-dumps/vzdump-qemu-102-2026_05_04-16_45_42.vma.zst` |
+| VM status after | `running` |
+
+See `docs/opti/60-backup-restore.md` for full backup policy and architecture notes.
+
+> **Interim note:** This is not a scheduled job and not the final backup
+> architecture. A proper scheduled backup target (external USB SSD or NFS) and
+> a documented restore-test are still required before critical workloads are
+> deployed.
+
+## Not done in Phase 1A/1B/1C-A
 
 - No Caddy.
 - No Dockge.
@@ -140,11 +163,14 @@ UniFi client name: `Docker VM 102`. Note: `Debian Docker VM · VLAN 30 · 192.16
 - ~~Docker Engine not installed.~~ **Resolved Phase 1B 2026-05-04.**
 - ~~No compose runtime baseline.~~ **Resolved Phase 1B 2026-05-04: Compose plugin `v5.1.3`.**
 - ~~No UniFi DHCP reservation.~~ Confirmed live 2026-05-04.
-- No Proxmox backup job update to include VM 102.
+- ~~No Proxmox backup for VM 102.~~ **Resolved Phase 1C-A 2026-05-04: interim backup + off-host copy verified.**
+- No scheduled Proxmox backup job.
+- No restore-test for VM 102.
 
-## Next step — Phase 1C
+## Next step — Phase 1C-B/C
 
-Plan first lightweight service stack only after this baseline is committed and
-synced: Caddy/Dockge/Uptime Kuma/Dozzle should be introduced as separate,
-audited steps. No Vaultwarden, Jellyfin, media/download-heavy workloads, or
-WAN exposure until backup and restore policy is upgraded.
+Deploy first lightweight Docker service stack (Caddy/Dockge/Uptime Kuma/Dozzle)
+as separate, audited steps. Requires DNS rewrites in AdGuard for
+`dockge.home.lan`, `kuma.home.lan`, `dozzle.home.lan` before deploy. No
+Vaultwarden, Jellyfin, media/download-heavy workloads, or WAN exposure until
+backup and restore policy is upgraded.
