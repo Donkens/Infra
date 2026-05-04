@@ -11,8 +11,8 @@ Dozzle compose-filer finns men containrarna är inte startade.
 monitors konfigurerade (se nedan). Proxmox-monitor pausad p.g.a. firewall-scope.
 
 **Phase 1C-C2a — 2026-05-04** — Dozzle live med simple auth (`users.yml` bcrypt,
-`DOZZLE_AUTH_PROVIDER=simple`). Docker socket read-only. Ingen host port. Dockge
-ej startad.
+`DOZZLE_AUTH_PROVIDER=simple`). Docker socket read-only. Ingen host port. Via Caddy.
+Dockge ej startad. Validerad (C2a docs) 2026-05-04.
 
 ## Architecture
 
@@ -136,10 +136,14 @@ No TCP 443 yet (TLS not enabled). No WAN forwards.
 | Caddy logs | clean — startup `auto_https off`, no errors ✅ |
 | Uptime Kuma logs | `Listening on 3001`, `No user, need setup` ✅ |
 | `docker ps` dozzle | `Up`, internal only ✅ |
-| `curl http://dozzle.home.lan` (GET) | `307 → /login?redirectUrl=/` — auth active ✅ |
-| Dozzle logs | `Connected to Docker`, `Accepting connections on :8080` ✅ |
-| Dozzle auth | `DOZZLE_AUTH_PROVIDER=simple`, `/data/users.yml` bcrypt ✅ |
+| `curl http://dozzle.home.lan` (GET) | `200 OK` (login form) — auth active, verified 2026-05-04 ✅ |
+| `curl -I http://dozzle.home.lan` (HEAD) | `405 Method Not Allowed` (expected) |
+| Dozzle logs | `Connected to Docker`, `Accepting connections :8080`, `Token created` (user logged in) ✅ |
+| Dozzle auth | `DOZZLE_AUTH_PROVIDER=simple`, `/data/users.yml` bcrypt, logins work ✅ |
 | Docker socket dozzle | `:ro` verified via `docker inspect` ✅ |
+| Caddy logs | clean — streaming errors are client disconnect (expected) ✅ |
+| `systemctl --failed` | 0 units ✅ |
+| Disk | `2.2G / 118G` (2%) ✅ |
 
 ## Uptime Kuma monitors — baseline 2026-05-04
 
@@ -164,7 +168,8 @@ No TCP 443 yet (TLS not enabled). No WAN forwards.
 3. ~~curl-validering från Mac mini + MBP~~ ✅ done 2026-05-04
 4. ~~Admin-lösenord + Uptime Kuma baseline monitors~~ ✅ done 2026-05-04
 5. ~~Dozzle (C2a) — simple auth, socket RO~~ ✅ done 2026-05-04
-6. Start Dockge (C2b — separate phase).
-6. Add `tls internal` to Caddyfile + import Caddy root CA into macOS Keychain.
-7. Schedule Proxmox backup job (external target).
-8. Lös firewall-scope Docker VM → Proxmox och aktivera Proxmox-monitor.
+6. ~~Dozzle C2a validation docs~~ ✅ done 2026-05-04
+7. Start Dockge (C2b — separate phase).
+8. Add `tls internal` to Caddyfile + import Caddy root CA into macOS Keychain.
+9. Schedule Proxmox backup job (external target).
+10. Lös firewall-scope Docker VM → Proxmox och aktivera Proxmox-monitor.
