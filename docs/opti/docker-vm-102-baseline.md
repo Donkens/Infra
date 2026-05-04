@@ -2,8 +2,37 @@
 
 ## Phase 1A — 2026-05-04
 
-VM `102` created as Debian 13 trixie base. Docker Engine not yet installed.
-No services, no Caddy, no Dockge, no Uptime Kuma, no Dozzle in this phase.
+VM `102` created as Debian 13 trixie base. No services, no Caddy, no Dockge,
+no Uptime Kuma, and no Dozzle were installed in this phase.
+
+## Phase 1B — Docker Engine baseline — 2026-05-04
+
+Docker Engine and the Docker Compose plugin are installed and validated on VM
+`102`. This is a runtime baseline only: no long-running containers or services
+were deployed. The only container executed was the temporary `hello-world`
+validation container.
+
+| Check | Result |
+| --- | --- |
+| Docker Engine | `29.4.2`, build `055a478` ✅ |
+| Docker Compose plugin | `v5.1.3` ✅ |
+| `docker.service` | `active` ✅ |
+| `/srv/compose` | `drwxrwxr-x`, `yasse:docker` ✅ |
+| `/srv/appdata` | `drwxrwxr-x`, `yasse:docker` ✅ |
+| `/srv/backups` | `drwxrwxr-x`, `yasse:docker` ✅ |
+| Disk `/` | `118G` total, `1.4G` used, `112G` free at validation ✅ |
+| `systemctl --failed` | `0` failed units ✅ |
+| `yasse` group membership | member of `docker` (`gid 989`) ✅ |
+| Runtime test | `sudo docker run --rm hello-world` → `Hello from Docker!` ✅ |
+
+Docker was installed from Docker's official Debian apt repository using the VM's
+Debian 13/trixie codename. Package install was limited to Docker Engine,
+Docker CLI, containerd, Buildx plugin, and Compose plugin.
+
+> WARN: the shell session active during the install could require a new SSH login
+> before `docker` works without `sudo` for user `yasse`. This is expected after
+> adding an existing user to the `docker` group. A fresh SSH session should pick
+> up the new group membership.
 
 ## VM config
 
@@ -68,14 +97,22 @@ UniFi client name: `Docker VM 102`. Note: `Debian Docker VM · VLAN 30 · 192.16
 
 ## DNS status
 
-- `docker.home.lan` → `192.168.30.10` — pre-configured in AdGuard, status PENDING (VM live, DNS already resolves)
-- `proxy.home.lan` → `192.168.30.10` — pre-configured in AdGuard, status PENDING (service not yet running)
+- `docker.home.lan` → `192.168.30.10` — pre-configured in AdGuard, status LIVE for host access
+- `proxy.home.lan` → `192.168.30.10` — pre-configured in AdGuard, status PENDING (Caddy/service not yet running)
+
+## Filesystem layout
+
+| Path | Owner/group | Mode | Purpose |
+| --- | --- | --- | --- |
+| `/srv/compose` | `yasse:docker` | `775` | Docker Compose projects |
+| `/srv/appdata` | `yasse:docker` | `775` | Persistent app data/configs |
+| `/srv/backups` | `yasse:docker` | `775` | Local backup staging/export area |
 
 ## Target resource profile
 
 | Profile | CPU | RAM | Disk |
 | --- | ---: | ---: | ---: |
-| Current (Phase 1A) | `4 vCPU` | `12 GB` | `120 GB` |
+| Current (Phase 1A/1B) | `4 vCPU` | `12 GB` | `120 GB` |
 | Target (`32 GB` host) | `6 vCPU` | `18 GB` | `200 GB` |
 
 ## WARN items
@@ -89,16 +126,25 @@ UniFi client name: `Docker VM 102`. Note: `Debian Docker VM · VLAN 30 · 192.16
 - ~~UniFi DHCP fixed-IP reservation not yet created.~~ **Resolved 2026-05-04:** `use_fixedip: true` confirmed.
 - `ip_version: BOTH` on firewall rule — functionally correct but cosmetically
   differs from HAOS-SSH rule (`IPV4`). Update via UI if desired.
+- Docker group membership may require a fresh SSH login before `docker` works
+  without `sudo` for user `yasse`.
 
-## Not done in Phase 1A
+## Not done in Phase 1A/1B
 
-- Docker Engine not installed.
-- No compose, no services.
+- No Caddy.
+- No Dockge.
+- No Uptime Kuma.
+- No Dozzle.
+- No node_exporter.
+- No long-running containers or services.
+- ~~Docker Engine not installed.~~ **Resolved Phase 1B 2026-05-04.**
+- ~~No compose runtime baseline.~~ **Resolved Phase 1B 2026-05-04: Compose plugin `v5.1.3`.**
 - ~~No UniFi DHCP reservation.~~ Confirmed live 2026-05-04.
 - No Proxmox backup job update to include VM 102.
-- No node_exporter.
 
-## Next step — Phase 1B
+## Next step — Phase 1C
 
-Install Docker Engine + Compose plugin, create `/srv/compose` and `/srv/appdata`
-filesystem layout, validate `docker run hello-world`.
+Plan first lightweight service stack only after this baseline is committed and
+synced: Caddy/Dockge/Uptime Kuma/Dozzle should be introduced as separate,
+audited steps. No Vaultwarden, Jellyfin, media/download-heavy workloads, or
+WAN exposure until backup and restore policy is upgraded.
