@@ -165,6 +165,7 @@ No TCP 443 yet (TLS not enabled). No WAN forwards.
 | HAOS | HTTP(S) | `http://192.168.30.20:8123` | `200 OK` | 🟢 UP |
 | Uptime Kuma | HTTP(S) | `http://kuma.home.lan` | `200 OK` | 🟢 UP |
 | Caddy proxy | HTTP(S) | `http://proxy.home.lan` | `200 OK` | 🟢 UP |
+| Dockge | HTTP(S) | `http://dockge.home.lan` | `200 OK` | 🟢 UP — added 2026-05-04 (C2b) |
 | Proxmox | HTTP(S) | `https://proxmox.home.lan:8006` | `200 OK` | ⏸ PAUSED — Docker VM ligger i Server VLAN 30, ej Default LAN; firewall blockerar Docker VM → Proxmox. Aktivera när scope är löst. |
 
 > AdGuard DNS-monitor verifierar A-record för `adguard.home.lan` mot `192.168.30.10`
