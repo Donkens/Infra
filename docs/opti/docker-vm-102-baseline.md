@@ -62,9 +62,9 @@ Functionally IPv4-only at this IP; can be updated to `IPV4` via UniFi UI if desi
 
 ## DHCP reservation
 
-MAC `BC:24:11:50:9C:4D` — full MAC known. UniFi fixed-IP reservation for
-`192.168.30.10` not yet created. Create via UniFi UI or MCP in Phase 1B to
-prevent IP conflict if VM reboots before DHCP is locked.
+MAC `BC:24:11:50:9C:4D` — full MAC known. UniFi fixed-IP reservation confirmed
+live: `use_fixedip: true`, `fixed_ip: 192.168.30.10`, verified 2026-05-04.
+UniFi client name: `Docker VM 102`. Note: `Debian Docker VM · VLAN 30 · 192.168.30.10 · Proxmox VMID 102`.
 
 ## DNS status
 
@@ -86,7 +86,7 @@ prevent IP conflict if VM reboots before DHCP is locked.
   correctly.
 - `qemu-guest-agent` not pre-installed in Debian genericcloud image; installed
   manually in Phase 1A. Package: `qemu-guest-agent 1:10.0.8+ds-0+deb13u1+b1`.
-- UniFi DHCP fixed-IP reservation not yet created for `BC:24:11:50:9C:4D`.
+- ~~UniFi DHCP fixed-IP reservation not yet created.~~ **Resolved 2026-05-04:** `use_fixedip: true` confirmed.
 - `ip_version: BOTH` on firewall rule — functionally correct but cosmetically
   differs from HAOS-SSH rule (`IPV4`). Update via UI if desired.
 
@@ -94,7 +94,7 @@ prevent IP conflict if VM reboots before DHCP is locked.
 
 - Docker Engine not installed.
 - No compose, no services.
-- No UniFi DHCP reservation.
+- ~~No UniFi DHCP reservation.~~ Confirmed live 2026-05-04.
 - No Proxmox backup job update to include VM 102.
 - No node_exporter.
 
