@@ -7,8 +7,13 @@ för `kuma`, `dockge`, `dozzle` lagda i AdGuard. UniFi firewall-regel
 `allow-lan-admin-to-docker-http` (TCP 80, Internal → Docker VM) live. Dockge
 compose-fil finns men containern är inte startad. Dozzle körs via Caddy.
 
-**Uptime Kuma baseline — 2026-05-04** — Admin-lösenord satt. Sex aktiva gröna
-monitors konfigurerade (se nedan). Proxmox-monitor pausad p.g.a. firewall-scope.
+**Uptime Kuma monitor audit — 2026-05-05** — Live-state är WARN men grönt:
+alla 10 monitors är UP. Docker/Caddy HTTPS monitors (`proxy`, `kuma`, `dockge`,
+`dozzle`) använder per-monitor Caddy CA med `auth_method=mtls`, `ignore_tls=0`,
+och tomma client cert/key-fält. Kända WARN: HAOS-duplikat, Proxmox-monitor
+saknas (inte pausad), AdGuard DNS/Web/UI är otydliga/dubblerade, `Docker VM`
+använder `docker.home.lan` i stället för rå IP, och `Docker VM`/`Dockge` har
+`maxretries=1`. Se `docs/opti/uptime-kuma-monitor-audit-2026-05-05.md`.
 
 **Phase 1C-C2a — 2026-05-04** — Dozzle live med simple auth (`users.yml` bcrypt,
 `DOZZLE_AUTH_PROVIDER=simple`). Docker socket read-only. Ingen host port. Via Caddy.
@@ -246,21 +251,26 @@ Only `tlsCa` is populated; client `tlsCert` and `tlsKey` are empty.
 
 ## Uptime Kuma monitors — baseline 2026-05-04
 
+> Live audit 2026-05-05 supersedes the older green-only baseline below for
+> operational truth. Current status is WARN, with all monitors UP. See
+> `docs/opti/uptime-kuma-monitor-audit-2026-05-05.md`.
+
 | Monitor | Type | Target | Expected | Status |
 | --- | --- | --- | --- | --- |
-| AdGuard UI | HTTP(S) | `https://adguard.home.lan` | `200 OK` | 🟢 UP |
-| AdGuard DNS | DNS | A `adguard.home.lan` → `192.168.30.10` resolve check | resolves | 🟢 UP |
-| Docker VM | Ping/reachability | `192.168.30.10` | reachable | 🟢 UP |
-| HAOS | HTTP(S) | `http://192.168.30.20:8123` | `200 OK` | 🟢 UP |
+| AdGuard UI | Port | `Adguard.home.lan:443` | TCP open | 🟢 UP — WARN: duplicate TCP 443 signal with `Adguard Web` |
+| Adguard Web | Port | `Adguard.home.lan:443` | TCP open | 🟢 UP — WARN: duplicate TCP 443 signal with `AdGuard UI` |
+| AdGuard DNS | DNS | `proxy.home.lan` via `192.168.1.55` → `192.168.30.10` | resolves | 🟢 UP — WARN: name/target unclear |
+| Docker VM | Ping/reachability | `docker.home.lan` | reachable | 🟢 UP — acceptable if DNS-dependent target is intended; `maxretries=1` |
+| HAOS | Port + HTTP(S) | ID `9` `ha.home.lan:8123`; ID `10` `http://ha.home.lan:8123/` | TCP open / `200 OK` | 🟢 UP — WARN: duplicate monitors |
 | Uptime Kuma | HTTP(S) | `https://kuma.home.lan` | `200 OK` | 🟢 UP — per-monitor Caddy `tlsCa`, `auth_method=mtls` |
 | Caddy proxy | HTTP(S) | `https://proxy.home.lan` | `200 OK` | 🟢 UP — per-monitor Caddy `tlsCa`, `auth_method=mtls` |
-| Dockge | HTTP(S) | `https://dockge.home.lan` | `200 OK` | 🟢 UP — per-monitor Caddy `tlsCa`, `auth_method=mtls` |
+| Dockge | HTTP(S) | `https://dockge.home.lan` | `200 OK` | 🟢 UP — per-monitor Caddy `tlsCa`, `auth_method=mtls`; `maxretries=1` |
 | Dozzle | HTTP(S) | `https://dozzle.home.lan` | `200 OK` after redirect to login | 🟢 UP — monitor ID `14`, method `GET`, per-monitor Caddy `tlsCa`, `auth_method=mtls` |
-| Proxmox | HTTP(S) | `https://proxmox.home.lan:8006` | `200 OK` | ⏸ PAUSED — Docker VM ligger i Server VLAN 30, ej Default LAN; firewall blockerar Docker VM → Proxmox. Aktivera när scope är löst. |
+| Proxmox | HTTP(S) | `https://proxmox.home.lan:8006` | `200 OK` | ⚠️ ABSENT — expected paused monitor is not present in live Kuma DB |
 
-> AdGuard DNS-monitor verifierar A-record för `adguard.home.lan` mot `192.168.30.10`
-> (Docker VM IP). Detta är ett DNS-funktionstest, inte ett reachability-test mot Pi.
-> Duplikat/felkonfigurerad HAOS-monitor städad bort 2026-05-04.
+> Approval gates for future cleanup: `GO KUMA FIX MONITORS`,
+> `GO KUMA ADD PROXMOX PAUSED`, `GO KUMA ADGUARD CLEANUP`,
+> `GO KUMA HAOS CLEANUP`.
 
 ## Next steps
 
