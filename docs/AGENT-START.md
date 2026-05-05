@@ -30,7 +30,7 @@ If task-specific instructions conflict with this guide, prefer the stricter safe
 | `udr` | UDR-7 gateway/router | `root` | n/a | SSH target only; root user expected. |
 | `opti` | Proxmox/compute host | `root` | n/a / future | Treat as sensitive host. |
 | `ha` | HAOS SSH add-on | `hassio` | n/a | Admin target only; do not dump HA secrets/tokens. |
-| `docker` | Docker VM | TBD | future | SSH auth not fully provisioned yet. |
+| `docker` | Docker VM | `yasse` | n/a | Docker VM 102. SSH alias is host-local; verify before use. On Mac mini, `ssh docker` may work if configured. On this MBP, `ssh docker` alias is stale/broken; use `ssh -i ~/.ssh/id_ed25519_mbp yasse@192.168.30.10`. |
 
 ## Which docs to read
 
@@ -53,7 +53,7 @@ If task-specific instructions conflict with this guide, prefer the stricter safe
 | Security docs | Auth, SSH hardening, secrets, DNS security, and firewall baseline are documented. |
 | Mac mini GitHub auth | Uses dedicated `id_ed25519_github` key. |
 | Pi GitHub auth | Dedicated Pi GitHub key works for repo sync. |
-| Docker VM SSH | Live — `ssh docker` works as `yasse@docker` (key auth). Verified 2026-05-04. |
+| Docker VM SSH | Live with host-local alias caveat. On Mac mini, `ssh docker` may work if configured. On this MBP, `ssh docker` alias is stale/broken. Verified MBP access path: `ssh -i ~/.ssh/id_ed25519_mbp yasse@192.168.30.10`. Agents must verify SSH alias before assuming it works. |
 | UDR | SSH target only; no private client keys observed on router. |
 | HAOS | SSH add-on/admin target only; no private SSH keys observed in checked shell context. |
 | Opti | Proxmox host; local private host key exists and must remain local. |

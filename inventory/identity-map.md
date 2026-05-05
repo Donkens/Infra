@@ -36,6 +36,7 @@ See `docs/agent-host-verification.md` for the operator runbook.
 - UDR SSH user is `root`, not `ubnt`. UDR hostname is `udrhomelan`.
 - Pi repo path is **lowercase**: `/home/pi/repos/infra` (not `Infra`).
 - Mac mini and MacBook share the same GitHub remote — always confirm local identity before writes.
+- Docker VM SSH aliases are host-local, not guaranteed across machines. On Mac mini, `ssh docker` may work if configured. On this MBP, `ssh docker` alias is stale/broken; verified MBP access path is `ssh -i ~/.ssh/id_ed25519_mbp yasse@192.168.30.10`. Agents must verify SSH alias before assuming it works.
 
 ## No Secrets
 

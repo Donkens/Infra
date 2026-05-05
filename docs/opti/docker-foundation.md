@@ -190,8 +190,10 @@ should narrow `allow-lan-admin-to-docker-http` to TCP `80` and add a dedicated
 Rollback:
 
 ```bash
-ssh docker 'cd /srv/compose/caddy && cp Caddyfile.pre-c3b-tls-internal-20260505-145948.bak Caddyfile && docker compose restart caddy'
+ssh -i ~/.ssh/id_ed25519_mbp yasse@192.168.30.10 'cd /srv/compose/caddy && cp Caddyfile.pre-c3b-tls-internal-20260505-145948.bak Caddyfile && docker compose restart caddy'
 ```
+
+SSH alias note: `docker` is host-local, not guaranteed across machines. On Mac mini, `ssh docker` may work if configured. On this MBP, `ssh docker` alias is stale/broken; verified MBP access path is `ssh -i ~/.ssh/id_ed25519_mbp yasse@192.168.30.10`. Agents must verify SSH alias before assuming it works.
 
 ## Phase 1C-C4 — Uptime Kuma HTTPS monitor move — 2026-05-05
 
