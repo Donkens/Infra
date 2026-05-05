@@ -1,5 +1,19 @@
 # Backup and restore policy
 
+## Phase 1E baseline — 2026-05-06
+
+Backup freshness monitoring added:
+
+| Component | Status |
+|---|---|
+| Kuma Push monitor "Proxmox backup freshness" (ID 16, heartbeat 1500 min) | ✅ LIVE |
+| Health-check script (Mac mini, 05:00 daily) | ✅ LIVE — `check-proxmox-backup-age.sh` |
+| LaunchAgent `com.yasse.proxmox-backup-age-check` | ✅ Laddad |
+| Token env-fil | ✅ `/Users/yasse/.config/infra/proxmox-backup-monitor.env` (chmod 600, ej committad) |
+| Första manuella körning | ⚠️ WARN/EXPECTED — VM101 49.5h gammal (väntar på 03:00 backup ikväll) |
+
+Kuma-monitorn visar DOWN tills Proxmox-backup kör 2026-05-06 03:00 + Mac mini sync 04:00. Förväntat och självläkande. **Bekräfta PASS efter 05:00 imorgon.**
+
 ## Phase 1D baseline — 2026-05-05
 
 Proxmox backup automation baseline is live:
