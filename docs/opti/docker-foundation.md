@@ -128,9 +128,26 @@ http://dozzle.home.lan { reverse_proxy dozzle:8080 }
 | Rule | Direction | Port | Status |
 | --- | --- | --- | --- |
 | `allow-lan-admin-to-docker-ssh` | Internal → Docker VM `192.168.30.10` | TCP 22 | ✅ live Phase 1A |
-| `allow-lan-admin-to-docker-http` | Internal → Docker VM `192.168.30.10` | TCP 80 | ✅ live Phase 1C-C1.5 — ID `69f8bb481bc6e72d2776e838` |
+| `allow-lan-admin-to-docker-http` | Internal → Docker VM `192.168.30.10` | TCP ANY | ⚠️ live Phase 1C-C3a — ID `69f8bb481bc6e72d2776e838`; name stale/broader than intended, currently covers TCP 443 |
 
-No TCP 443 yet (TLS not enabled). No WAN forwards.
+No dedicated TCP 443 rule yet. Phase 1C-C3a verified that the TCP 443 path is
+already allowed by the existing broader-than-intended Docker HTTP rule. No WAN
+forwards.
+
+## Validation — Phase 1C-C3a (2026-05-05)
+
+| Check | Result |
+| --- | --- |
+| Mac mini → `192.168.30.10:443` | `Connection refused`, not timeout — path reaches Docker/Caddy publish layer |
+| MBP → `192.168.30.10:443` | `Connection refused`, not timeout — path reaches Docker/Caddy publish layer |
+| Docker VM `ss -lntp` | `192.168.30.10:443` published by Docker |
+| Caddy container listen | `:80` only with current HTTP-only Caddyfile |
+| UniFi policy detail | `allow-lan-admin-to-docker-http` is `protocol: tcp`, `destination.port_matching_type: ANY`, destination IP `192.168.30.10` |
+
+Readiness: WARN. HTTPS path is firewall-ready for Caddy `tls internal`, but current
+UniFi policy is broader than its name and docs originally stated. Later cleanup
+should narrow `allow-lan-admin-to-docker-http` to TCP `80` and add a dedicated
+`allow-lan-admin-to-docker-https` TCP `443` rule with the same source/destination scope.
 
 ## Validation — Phase 1C-C2a (2026-05-04)
 
@@ -182,6 +199,6 @@ No TCP 443 yet (TLS not enabled). No WAN forwards.
 6. ~~Dozzle C2a validation docs~~ ✅ done 2026-05-04
 7. ~~Docker backup baseline~~ ✅ done 2026-05-04 — script + restore-test PASS
 8. ~~Start Dockge (C2b)~~ ✅ done 2026-05-04 — `200 OK`, password set, all stacks visible.
-9. Add `tls internal` to Caddyfile + import Caddy root CA into macOS Keychain.
+9. Add `tls internal` to Caddyfile + import Caddy root CA into macOS Keychain. TCP 443 path preflight done with WARN 2026-05-05.
 10. Schedule Proxmox backup job (external target).
 11. Lös firewall-scope Docker VM → Proxmox och aktivera Proxmox-monitor.
