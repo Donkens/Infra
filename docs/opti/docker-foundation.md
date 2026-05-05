@@ -8,11 +8,12 @@ för `kuma`, `dockge`, `dozzle` lagda i AdGuard. UniFi firewall-regel
 compose-fil finns men containern är inte startad. Dozzle körs via Caddy.
 
 **Uptime Kuma monitor audit — 2026-05-05** — Live-state är WARN men grönt:
-alla 10 monitors är UP. Docker/Caddy HTTPS monitors (`proxy`, `kuma`, `dockge`,
+alla aktiva monitors är UP. Docker/Caddy HTTPS monitors (`proxy`, `kuma`, `dockge`,
 `dozzle`) använder per-monitor Caddy CA med `auth_method=mtls`, `ignore_tls=0`,
-och tomma client cert/key-fält. Kända WARN: HAOS-duplikat, Proxmox-monitor
-saknas (inte pausad), AdGuard DNS/Web/UI är otydliga/dubblerade, `Docker VM`
-använder `docker.home.lan` i stället för rå IP, och `Docker VM`/`Dockge` har
+och tomma client cert/key-fält. HAOS-duplikatet är städat: ID `9` är pausad och
+ID `10` är canonical HTTP-monitor. Kvarvarande WARN: Proxmox-monitor saknas
+(inte pausad), AdGuard DNS/Web/UI är otydliga/dubblerade, `Docker VM` använder
+`docker.home.lan` i stället för rå IP, och `Docker VM`/`Dockge` har
 `maxretries=1`. Se `docs/opti/uptime-kuma-monitor-audit-2026-05-05.md`.
 
 **Phase 1C-C2a — 2026-05-04** — Dozzle live med simple auth (`users.yml` bcrypt,
@@ -261,16 +262,15 @@ Only `tlsCa` is populated; client `tlsCert` and `tlsKey` are empty.
 | Adguard Web | Port | `Adguard.home.lan:443` | TCP open | 🟢 UP — WARN: duplicate TCP 443 signal with `AdGuard UI` |
 | AdGuard DNS | DNS | `proxy.home.lan` via `192.168.1.55` → `192.168.30.10` | resolves | 🟢 UP — WARN: name/target unclear |
 | Docker VM | Ping/reachability | `docker.home.lan` | reachable | 🟢 UP — acceptable if DNS-dependent target is intended; `maxretries=1` |
-| HAOS | Port + HTTP(S) | ID `9` `ha.home.lan:8123`; ID `10` `http://ha.home.lan:8123/` | TCP open / `200 OK` | 🟢 UP — WARN: duplicate monitors |
+| HAOS | HTTP(S) + paused duplicate | ID `10` `http://ha.home.lan:8123/`; ID `9` `ha.home.lan:8123` | `200 OK`; duplicate paused | 🟢 UP — ID `10` canonical; ID `9` renamed `HAOS TCP 8123 (paused duplicate)` and paused 2026-05-05 |
 | Uptime Kuma | HTTP(S) | `https://kuma.home.lan` | `200 OK` | 🟢 UP — per-monitor Caddy `tlsCa`, `auth_method=mtls` |
 | Caddy proxy | HTTP(S) | `https://proxy.home.lan` | `200 OK` | 🟢 UP — per-monitor Caddy `tlsCa`, `auth_method=mtls` |
 | Dockge | HTTP(S) | `https://dockge.home.lan` | `200 OK` | 🟢 UP — per-monitor Caddy `tlsCa`, `auth_method=mtls`; `maxretries=1` |
 | Dozzle | HTTP(S) | `https://dozzle.home.lan` | `200 OK` after redirect to login | 🟢 UP — monitor ID `14`, method `GET`, per-monitor Caddy `tlsCa`, `auth_method=mtls` |
 | Proxmox | HTTP(S) | `https://proxmox.home.lan:8006` | `200 OK` | ⚠️ ABSENT — expected paused monitor is not present in live Kuma DB |
 
-> Approval gates for future cleanup: `GO KUMA FIX MONITORS`,
-> `GO KUMA ADD PROXMOX PAUSED`, `GO KUMA ADGUARD CLEANUP`,
-> `GO KUMA HAOS CLEANUP`.
+> Remaining approval gates for future cleanup: `GO KUMA FIX MONITORS`,
+> `GO KUMA ADD PROXMOX PAUSED`, `GO KUMA ADGUARD CLEANUP`.
 
 ## Next steps
 

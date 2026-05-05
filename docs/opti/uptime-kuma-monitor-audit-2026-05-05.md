@@ -4,6 +4,11 @@ Phase: `Phase 0 read-only`
 
 Status: WARN
 
+Update 2026-05-05, `GO KUMA HAOS CLEANUP`: HAOS duplicate cleanup applied.
+Monitor ID `9` was renamed to `HAOS TCP 8123 (paused duplicate)` and paused.
+Monitor ID `10` remains the canonical HAOS HTTP monitor and is UP. Overall
+audit status remains WARN because Proxmox and AdGuard cleanup items remain open.
+
 Scope:
 - Uptime Kuma runtime in Docker VM `102` (`docker`, `192.168.30.10`).
 - Kuma URL: `https://kuma.home.lan`.
@@ -15,18 +20,21 @@ DNS, Proxmox, HAOS, containers, or the Kuma DB.
 
 ## Executive summary
 
-Kuma is operationally green: all 10 current monitors are UP. The Docker/Caddy
+Kuma is operationally green: all active current monitors are UP. The Docker/Caddy
 HTTPS monitors for `proxy`, `kuma`, `dockge`, and `dozzle` match the expected
 `tls internal` trust pattern with per-monitor Caddy CA, `auth_method=mtls`,
 `ignore_tls=0`, and empty client cert/key fields.
 
-The audit remains WARN because the monitor set has baseline drift:
-- HAOS is duplicated: ID `9` is a port check and ID `10` is an HTTP check.
+The audit remains WARN because the monitor set still has baseline drift:
 - Proxmox monitor is absent, not paused.
 - `AdGuard DNS` name/target is unclear.
 - `Adguard Web` and `AdGuard UI` are duplicate TCP 443 port checks.
 - `Docker VM` uses `docker.home.lan` rather than raw IP `192.168.30.10`.
 - `Dockge` and `Docker VM` use `maxretries=1` while most others use `0`.
+
+Resolved during HAOS cleanup:
+- ID `9` is now paused and explicitly named `HAOS TCP 8123 (paused duplicate)`.
+- ID `10` remains canonical: `HAOS`, HTTP, `http://ha.home.lan:8123/`, UP.
 
 ## Monitor inventory
 
@@ -37,7 +45,7 @@ The audit remains WARN because the monitor set has baseline drift:
 | 5 | AdGuard DNS | `dns` | query `proxy.home.lan` via `192.168.1.55`; latest result `Records: 192.168.30.10` | `GET` | 60 | 60 | 48 | 0 | `200-299` | UP | no TLS material | WARN |
 | 6 | Adguard Web | `port` | `Adguard.home.lan:443` | `GET` | 60 | 60 | 48 | 0 | `200-299` | UP | no TLS material | WARN |
 | 7 | Docker VM | `ping` | `docker.home.lan` | `GET` | 60 | 60 | 48 | 1 | `200-299` | UP | no TLS material | PASS/WARN |
-| 9 | HAOS | `port` | `ha.home.lan:8123` | `GET` | 60 | 60 | 48 | 0 | `200-299` | UP | no TLS material | WARN |
+| 9 | HAOS TCP 8123 (paused duplicate) | `port` | `ha.home.lan:8123` | `GET` | 60 | 60 | 48 | 0 | `200-299` | PAUSED; latest heartbeat was UP | no TLS material | PASS |
 | 10 | HAOS | `http` | `http://ha.home.lan:8123/` | `GET` | 60 | 60 | 48 | 0 | `200-299` | UP: `200 - OK` | no TLS material | PASS |
 | 11 | AdGuard UI | `port` | `Adguard.home.lan:443` | `GET` | 60 | 60 | 48 | 0 | `200-299` | UP | no TLS material | WARN |
 | 13 | Dockge | `http` | `https://dockge.home.lan` | `GET` | 60 | 60 | 48 | 1 | `200-299` | UP: `200 - OK` | `ignore_tls=0`, `auth_method=mtls`, `tls_ca=<CA_PRESENT>`, `tls_cert=<EMPTY>`, `tls_key=<EMPTY>` | PASS |
@@ -51,18 +59,19 @@ The audit remains WARN because the monitor set has baseline drift:
   `tls_cert=<EMPTY>`, `tls_key=<EMPTY>`, and `ignore_tls=0`.
 - Dozzle monitor ID `14` uses `GET` and is UP with `200 - OK`.
 - No monitor has `ignore_tls=1`.
-- All current monitors are UP.
+- All active current monitors are UP.
+- HAOS duplicate port monitor ID `9` is paused and clearly named.
 
 ## WARN findings
 
-### HAOS duplicate
+### HAOS duplicate — resolved 2026-05-05
 
-HAOS exists twice:
-- ID `9`: `port` monitor for `ha.home.lan:8123`.
-- ID `10`: `http` monitor for `http://ha.home.lan:8123/`.
+HAOS still exists as two records, but no longer as two active monitors:
+- ID `9`: `port` monitor for `ha.home.lan:8123`, renamed
+  `HAOS TCP 8123 (paused duplicate)` and paused.
+- ID `10`: `http` monitor for `http://ha.home.lan:8123/`, active and UP.
 
-Both are UP. This is not an outage, but it creates duplicate signal. The HTTP
-monitor is closer to the service baseline.
+ID `10` is the canonical HAOS monitor.
 
 ### Proxmox monitor absent
 
@@ -100,9 +109,10 @@ should be documented or normalized.
 Do not apply these changes without a separate approval gate.
 
 1. HAOS cleanup:
+   - Done 2026-05-05 under `GO KUMA HAOS CLEANUP`.
    - Keep ID `10` as the canonical HAOS HTTP monitor.
-   - Disable, delete, or rename ID `9` depending on whether a separate TCP port
-     check is intentionally desired.
+   - Keep ID `9` paused unless a separate TCP port check is intentionally
+     desired later.
 
 2. Proxmox paused monitor:
    - Add a paused Proxmox monitor for `https://proxmox.home.lan:8006`, or
@@ -132,4 +142,3 @@ Do not apply these changes without a separate approval gate.
 - `GO KUMA FIX MONITORS`
 - `GO KUMA ADD PROXMOX PAUSED`
 - `GO KUMA ADGUARD CLEANUP`
-- `GO KUMA HAOS CLEANUP`
