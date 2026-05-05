@@ -30,6 +30,7 @@ Safe before `32 GB` when memory pressure is acceptable:
 - Dozzle
 - `node_exporter`
 - Stremio Server only if resources allow
+- Incident note: [Uptime Kuma high CPU incident (2026-05-05)](uptime-kuma-high-cpu-incident-2026-05-05.md)
 
 Defer until `32 GB`:
 
