@@ -182,6 +182,34 @@ Rollback:
 ssh docker 'cd /srv/compose/caddy && cp Caddyfile.pre-c3b-tls-internal-20260505-145948.bak Caddyfile && docker compose restart caddy'
 ```
 
+## Phase 1C-C4 — Uptime Kuma HTTPS monitor move — 2026-05-05
+
+Status: FAIL, rolled back to HTTP to keep monitors green.
+
+Attempted scoped monitor URL changes via Uptime Kuma `editMonitor` socket API:
+
+| Monitor | Attempted URL | Result |
+| --- | --- | --- |
+| `Caddy proxy` | `https://proxy.home.lan` | DOWN: `unable to get local issuer certificate` |
+| `Uptime Kuma` | `https://kuma.home.lan` | DOWN: `unable to get local issuer certificate` |
+| `Dockge` | `https://dockge.home.lan` | DOWN/PENDING: `unable to get local issuer certificate` |
+
+Rollback applied immediately via the same Uptime Kuma `editMonitor` path:
+
+| Monitor | Restored URL | Latest status after rollback |
+| --- | --- | --- |
+| `Caddy proxy` | `http://proxy.home.lan` | UP: `200 - OK` |
+| `Uptime Kuma` | `http://kuma.home.lan` | UP: `200 - OK` |
+| `Dockge` | `http://dockge.home.lan` | UP: `200 - OK` |
+
+No `Dozzle` monitor exists in the Uptime Kuma DB as of this phase; none was created.
+
+Blocker: Mac mini and MBP trust the Caddy local root CA, but the `uptime-kuma`
+container does not. Moving these monitors to HTTPS requires a separate approved
+trust plan for Kuma itself, such as per-monitor CA configuration or container
+trust-store handling. This phase intentionally changed only monitor URLs and did
+not restart containers.
+
 ## Validation — Phase 1C-C2a (2026-05-04)
 
 | Check | Result |
@@ -213,9 +241,10 @@ ssh docker 'cd /srv/compose/caddy && cp Caddyfile.pre-c3b-tls-internal-20260505-
 | AdGuard DNS | DNS | A `adguard.home.lan` → `192.168.30.10` resolve check | resolves | 🟢 UP |
 | Docker VM | Ping/reachability | `192.168.30.10` | reachable | 🟢 UP |
 | HAOS | HTTP(S) | `http://192.168.30.20:8123` | `200 OK` | 🟢 UP |
-| Uptime Kuma | HTTP(S) | `http://kuma.home.lan` | `200 OK` | 🟢 UP |
-| Caddy proxy | HTTP(S) | `http://proxy.home.lan` | `200 OK` | 🟢 UP |
-| Dockge | HTTP(S) | `http://dockge.home.lan` | `200 OK` | 🟢 UP — added 2026-05-04 (C2b) |
+| Uptime Kuma | HTTP(S) | `http://kuma.home.lan` | `200 OK` | 🟢 UP — HTTPS move attempted and rolled back in C4; Kuma container lacks Caddy CA trust |
+| Caddy proxy | HTTP(S) | `http://proxy.home.lan` | `200 OK` | 🟢 UP — HTTPS move attempted and rolled back in C4; Kuma container lacks Caddy CA trust |
+| Dockge | HTTP(S) | `http://dockge.home.lan` | `200 OK` | 🟢 UP — added 2026-05-04 (C2b); HTTPS move attempted and rolled back in C4 |
+| Dozzle | — | — | — | Not present yet; no monitor created in C4 |
 | Proxmox | HTTP(S) | `https://proxmox.home.lan:8006` | `200 OK` | ⏸ PAUSED — Docker VM ligger i Server VLAN 30, ej Default LAN; firewall blockerar Docker VM → Proxmox. Aktivera när scope är löst. |
 
 > AdGuard DNS-monitor verifierar A-record för `adguard.home.lan` mot `192.168.30.10`
@@ -233,5 +262,6 @@ ssh docker 'cd /srv/compose/caddy && cp Caddyfile.pre-c3b-tls-internal-20260505-
 7. ~~Docker backup baseline~~ ✅ done 2026-05-04 — script + restore-test PASS
 8. ~~Start Dockge (C2b)~~ ✅ done 2026-05-04 — `200 OK`, password set, all stacks visible.
 9. ~~Add `tls internal` to Caddyfile + import Caddy root CA into macOS Keychain~~ ✅ Caddy TLS live 2026-05-05; Mac mini and MBP trust PASS.
-10. Schedule Proxmox backup job (external target).
-11. Lös firewall-scope Docker VM → Proxmox och aktivera Proxmox-monitor.
+10. Resolve Uptime Kuma container trust for Caddy local CA before moving Docker service monitors to HTTPS.
+11. Schedule Proxmox backup job (external target).
+12. Lös firewall-scope Docker VM → Proxmox och aktivera Proxmox-monitor.
