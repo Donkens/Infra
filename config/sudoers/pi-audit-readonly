@@ -1,5 +1,5 @@
-# Pi diagnostic NOPASSWD rules
-# Managed in: /etc/sudoers.d/pi-diagnostics
+# Pi read-only audit NOPASSWD rules
+# Managed in: /etc/sudoers.d/pi-audit-readonly
 Defaults:pi !requiretty
 Defaults:pi !use_pty
 pi ALL=(ALL) NOPASSWD: /bin/systemctl is-active AdGuardHome

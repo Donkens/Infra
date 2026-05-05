@@ -8,7 +8,7 @@ SOURCE_BACKUP_SCRIPT="$REPO/scripts/backup/backup-dns-configs.sh"
 INSTALLED_BACKUP_DIR="/usr/local/lib/infra"
 INSTALLED_BACKUP_SCRIPT="$INSTALLED_BACKUP_DIR/backup-dns-configs.sh"
 WRAPPER_PATH="/usr/local/sbin/infra-backup-dns-export"
-SUDOERS_PATH="/etc/sudoers.d/infra-backup"
+SUDOERS_PATH="/etc/sudoers.d/pi-dns-backup-export"
 
 echo "[1/8] Installerar root-owned backup script i /usr/local/lib/infra..."
 install -d -m 755 -o root -g root "$INSTALLED_BACKUP_DIR"

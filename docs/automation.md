@@ -78,7 +78,7 @@ Timer cleanup applied 2026-04-29:
 | `/usr/local/sbin/infra-backup-dns-export` | Root-owned wrapper that executes fixed export path | Calls `/usr/local/lib/infra/backup-dns-configs.sh --export-repo` | No commit/push by itself | HIGH |
 | `scripts/install/infra-auto-sync.sh` | Runtime automation script copied to `/usr/local/bin` | Repo config exports via wrapper, Git index/commits | Can commit and push | HIGH |
 | `scripts/maintenance/prune-dns-backups.sh` | Dry-run-first DNS backup retention | Deletes old `state/backups/dns-backup-*` only with `--apply` | No commit/push | LOW in dry-run, HIGH with `--apply` |
-| `scripts/install/infra-auto-sync-install.sh` | Installs wrapper sudoers model, runtime script, and systemd unit/timer | `/usr/local/lib/infra`, `/usr/local/sbin`, `/etc/sudoers.d`, `/usr/local/bin`, systemd | No commit/push | HIGH |
+| `scripts/install/infra-auto-sync-install.sh` | Installs backup export helper, runtime script, and systemd unit/timer | `/usr/local/lib/infra`, `/usr/local/sbin`, `/etc/sudoers.d/pi-dns-backup-export`, `/usr/local/bin`, systemd | No commit/push | HIGH |
 | `scripts/install/tune-dns-socket-buffers.sh` | Tunes Unbound socket buffers and validates/restarts Unbound | `/etc/unbound`, local tuning logs, service state | No commit/push | HIGH |
 | `scripts/debug/debug-https-rr.sh` | Debugs and can install synthetic HTTPS RR Unbound drop-in | `/etc/unbound`, service state | No commit/push | HIGH |
 | `scripts/maintenance/dns-health-report.sh` | Prints DNS/service diagnostic report | stdout only | No commit/push | MEDIUM because output may include operational log excerpts |
