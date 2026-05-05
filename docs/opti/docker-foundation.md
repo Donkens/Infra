@@ -10,11 +10,13 @@ compose-fil finns men containern är inte startad. Dozzle körs via Caddy.
 **Uptime Kuma monitor audit — 2026-05-05** — Live-state är WARN men grönt:
 alla aktiva monitors är UP. Docker/Caddy HTTPS monitors (`proxy`, `kuma`, `dockge`,
 `dozzle`) använder per-monitor Caddy CA med `auth_method=mtls`, `ignore_tls=0`,
-och tomma client cert/key-fält. HAOS-duplikatet är städat: ID `9` är pausad och
-ID `10` är canonical HTTP-monitor. Kvarvarande WARN: Proxmox-monitor saknas
-(inte pausad), AdGuard DNS/Web/UI är otydliga/dubblerade, `Docker VM` använder
-`docker.home.lan` i stället för rå IP, och `Docker VM`/`Dockge` har
-`maxretries=1`. Se `docs/opti/uptime-kuma-monitor-audit-2026-05-05.md`.
+och tomma client cert/key-fält. HAOS-duplikatet städat: ID `9` pausad, ID `10`
+canonical HTTP-monitor. AdGuard-cleanup 2026-05-05: ID `5` omdöpt till `AdGuard
+DNS resolves proxy.home.lan`; ID `6` konverterad till HTTP `AdGuard UI`
+(`https://adguard.home.lan/login.html`, `ignore_tls=1`, UP `200 - OK`); ID `11`
+pausad som `AdGuard TCP 443 (paused duplicate)`. Kvarvarande WARN: Proxmox-monitor
+saknas, `Docker VM` använder `docker.home.lan` i stället för rå IP, och
+`Docker VM`/`Dockge` har `maxretries=1`. Se `docs/opti/uptime-kuma-monitor-audit-2026-05-05.md`.
 
 **Phase 1C-C2a — 2026-05-04** — Dozzle live med simple auth (`users.yml` bcrypt,
 `DOZZLE_AUTH_PROVIDER=simple`). Docker socket read-only. Ingen host port. Via Caddy.
