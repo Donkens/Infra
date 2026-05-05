@@ -1,8 +1,17 @@
 # Uptime Kuma Monitor Audit — 2026-05-05
 
-Phase: `Phase 0 read-only`
+Phase: `Phase 0 read-only → Phase 2 applied`
 
-Status: WARN
+Status: WARN (reduced — Proxmox monitor now present and paused)
+
+Update 2026-05-05, `GO KUMA ADD PROXMOX PAUSED`: Proxmox monitor added.
+- ID `15`, type `http`, URL `https://proxmox.home.lan:8006`, method `GET`.
+- `ignore_tls=1` (Proxmox self-signed cert — no Caddy CA, no mtls).
+- `active=0` (paused). Will remain paused until Docker VM → Proxmox firewall
+  scope is intentionally resolved.
+- To activate: set `active=1` in Kuma UI or approve a separate GO gate.
+Overall audit status remains WARN (minor items: `Docker VM` DNS target,
+retry-policy inconsistency).
 
 Update 2026-05-05, `GO KUMA ADGUARD CLEANUP`: AdGuard monitor cleanup applied.
 - ID `5` renamed to `AdGuard DNS resolves proxy.home.lan`; type `dns`; UP.
@@ -32,10 +41,12 @@ HTTPS monitors for `proxy`, `kuma`, `dockge`, and `dozzle` match the expected
 `tls internal` trust pattern with per-monitor Caddy CA, `auth_method=mtls`,
 `ignore_tls=0`, and empty client cert/key fields.
 
-The audit remains WARN because the monitor set still has baseline drift:
-- Proxmox monitor is absent, not paused.
+The audit remains WARN (minor) — the monitor set still has baseline drift:
 - `Docker VM` uses `docker.home.lan` rather than raw IP `192.168.30.10`.
 - `Dockge` and `Docker VM` use `maxretries=1` while most others use `0`.
+
+Resolved 2026-05-05 (`GO KUMA ADD PROXMOX PAUSED`):
+- Proxmox monitor ID `15` added and paused (`active=0`, `ignore_tls=1`).
 
 Resolved during AdGuard cleanup 2026-05-05:
 - ID `5` renamed `AdGuard DNS resolves proxy.home.lan`; semantics now clear.
@@ -60,6 +71,7 @@ Resolved during HAOS cleanup:
 | 11 | AdGuard TCP 443 (paused duplicate) | `port` | `Adguard.home.lan:443` | `GET` | 60 | 60 | 48 | 0 | `200-299` | PAUSED | no TLS material | PASS |
 | 13 | Dockge | `http` | `https://dockge.home.lan` | `GET` | 60 | 60 | 48 | 1 | `200-299` | UP: `200 - OK` | `ignore_tls=0`, `auth_method=mtls`, `tls_ca=<CA_PRESENT>`, `tls_cert=<EMPTY>`, `tls_key=<EMPTY>` | PASS |
 | 14 | Dozzle | `http` | `https://dozzle.home.lan` | `GET` | 60 | 60 | 48 | 0 | `200-299` | UP: `200 - OK` | `ignore_tls=0`, `auth_method=mtls`, `tls_ca=<CA_PRESENT>`, `tls_cert=<EMPTY>`, `tls_key=<EMPTY>` | PASS |
+| 15 | Proxmox | `http` | `https://proxmox.home.lan:8006` | `GET` | 60 | 60 | 48 | 0 | `200-299` | PAUSED (never polled) | `ignore_tls=1` (self-signed cert); no CA/mtls | PASS |
 
 ## PASS items
 
@@ -71,6 +83,7 @@ Resolved during HAOS cleanup:
 - All active current monitors are UP.
 - HAOS duplicate port monitor ID `9` is paused and clearly named.
 - AdGuard monitors ID `5`, `6`, `11` cleaned up 2026-05-05.
+- Proxmox monitor ID `15` added and paused 2026-05-05.
 
 ## WARN findings
 
@@ -83,10 +96,11 @@ HAOS still exists as two records, but no longer as two active monitors:
 
 ID `10` is the canonical HAOS monitor.
 
-### Proxmox monitor absent
+### Proxmox monitor — resolved 2026-05-05
 
-Baseline expected a Proxmox monitor to exist in paused state while Docker VM to
-Proxmox firewall scope remains blocked. Live Kuma state has no Proxmox monitor.
+ID `15` `Proxmox` added as `http`, `https://proxmox.home.lan:8006`, `GET`,
+`ignore_tls=1`, `active=0` (paused). Will remain paused until Docker VM →
+Proxmox firewall scope is intentionally resolved via a separate GO gate.
 
 ### AdGuard monitors — resolved 2026-05-05
 
@@ -119,9 +133,8 @@ Do not apply these changes without a separate approval gate.
      desired later.
 
 2. Proxmox paused monitor:
-   - Add a paused Proxmox monitor for `https://proxmox.home.lan:8006`, or
-     update baseline to say Proxmox monitoring is absent until firewall scope is
-     resolved.
+   - Done 2026-05-05 under `GO KUMA ADD PROXMOX PAUSED`.
+   - ID `15` paused. Activate when Docker VM → Proxmox firewall scope is resolved.
 
 3. AdGuard cleanup:
    - Done 2026-05-05 under `GO KUMA ADGUARD CLEANUP`.

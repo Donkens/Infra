@@ -14,8 +14,10 @@ och tomma client cert/key-fält. HAOS-duplikatet städat: ID `9` pausad, ID `10`
 canonical HTTP-monitor. AdGuard-cleanup 2026-05-05: ID `5` omdöpt till `AdGuard
 DNS resolves proxy.home.lan`; ID `6` konverterad till HTTP `AdGuard UI`
 (`https://adguard.home.lan/login.html`, `ignore_tls=1`, UP `200 - OK`); ID `11`
-pausad som `AdGuard TCP 443 (paused duplicate)`. Kvarvarande WARN: Proxmox-monitor
-saknas, `Docker VM` använder `docker.home.lan` i stället för rå IP, och
+pausad som `AdGuard TCP 443 (paused duplicate)`. Proxmox-monitor tillagd 2026-05-05 (`GO KUMA ADD PROXMOX PAUSED`): ID `15`,
+`http`, `https://proxmox.home.lan:8006`, `GET`, `ignore_tls=1`, `active=0`
+(pausad tills Docker VM → Proxmox firewall-scope är löst). Kvarvarande WARN:
+`Docker VM` använder `docker.home.lan` i stället för rå IP, och
 `Docker VM`/`Dockge` har `maxretries=1`. Se `docs/opti/uptime-kuma-monitor-audit-2026-05-05.md`.
 
 **Phase 1C-C2a — 2026-05-04** — Dozzle live med simple auth (`users.yml` bcrypt,
