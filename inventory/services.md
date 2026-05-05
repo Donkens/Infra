@@ -53,10 +53,10 @@ Applied 2026-04-29. Ingen package removal, ingen maskning, och Cockpit lämnades
 
 | Service | Port | Protocol | Status | Note |
 |---|---|---|---|---|
-| Caddy | 80 | HTTP | live | `caddy:2.8.4-alpine`. Binds `192.168.30.10:80` only. `auto_https off`. Proxy-nätet `proxy` ägs av denna stack. Verifierad 2026-05-04: `200 OK` på `:80` och `proxy.home.lan`. DNS `proxy.home.lan` live. |
-| Uptime Kuma | 3001 | HTTP | live | `louislam/uptime-kuma:1.23.15`. Intern nät only, ingen host-port. Via Caddy → `kuma.home.lan`. Verifierad 2026-05-04 (1C-C1.5). Admin-lösenord satt. Baseline: 6 aktiva monitors (AdGuard UI, AdGuard DNS, Docker VM, HAOS, Uptime Kuma, Caddy proxy). Proxmox-monitor pausad. |
-| Dockge | 5001 | HTTP | live | `louislam/dockge:1.4.2`. Via Caddy → `dockge.home.lan`. Docker socket RW. Lösenord satt. `200 OK` verifierad 2026-05-04 (C2b). |
-| Dozzle | 8080 | HTTP | live | `amir20/dozzle:v8.11.3`. Intern nät only, ingen host-port. Via Caddy → `dozzle.home.lan`. Docker socket `:ro`. Simple auth: `DOZZLE_AUTH_PROVIDER=simple`, `users.yml` bcrypt i `/srv/appdata/dozzle/`. Verifierad 2026-05-04 (C2a): `307 → /login` från Mac mini. |
+| Caddy | 80/443 | HTTP/HTTPS | live | `caddy:2.8.4-alpine`. Binds `192.168.30.10:80` and `192.168.30.10:443`. Phase 1C-C3b 2026-05-05: `tls internal` live with `auto_https disable_redirects`; existing HTTP routes preserved. Proxy-nätet `proxy` ägs av denna stack. CA fingerprint `21:15:4C:3B:5E:AD:15:A5:14:EA:E4:BF:24:FB:CF:50:D3:F1:08:80:2B:DF:93:84:39:4F:63:4A:20:59:5D:34`. |
+| Uptime Kuma | 3001 | HTTP behind Caddy HTTP/HTTPS | live | `louislam/uptime-kuma:1.23.15`. Intern nät only, ingen host-port. Via Caddy → `kuma.home.lan`. HTTPS live via Caddy `tls internal`; HTTP monitor left unchanged for transition stability. Admin-lösenord satt. Proxmox-monitor pausad. |
+| Dockge | 5001 | HTTP behind Caddy HTTP/HTTPS | live | `louislam/dockge:1.4.2`. Via Caddy → `dockge.home.lan`. HTTPS live via Caddy `tls internal`. Docker socket RW. Lösenord satt. `200 OK` verifierad 2026-05-05 over HTTP and HTTPS. |
+| Dozzle | 8080 | HTTP behind Caddy HTTP/HTTPS | live | `amir20/dozzle:v8.11.3`. Intern nät only, ingen host-port. Via Caddy → `dozzle.home.lan`. HTTPS live via Caddy `tls internal`. Docker socket `:ro`. Simple auth: `DOZZLE_AUTH_PROVIDER=simple`, `users.yml` bcrypt i `/srv/appdata/dozzle/`. HEAD returns `405` expected; GET login path remains auth-protected. |
 
 ## HAOS — 192.168.30.20
 

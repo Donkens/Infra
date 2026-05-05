@@ -25,13 +25,21 @@ skapat och installerat på Docker VM (`/usr/local/sbin/docker-vm-backup`). Förs
 Off-host kopia på Mac mini (`/Users/yasse/InfraBackups/docker-vm-102/`). SHA256 matchar
 på båda hosts. Restore-test PASS. Se `docs/opti/60-backup-restore.md`.
 
+**Phase 1C-C3b — 2026-05-05** — Caddy `tls internal` live for
+`proxy.home.lan`, `kuma.home.lan`, `dozzle.home.lan`, and `dockge.home.lan`.
+Existing HTTP routes preserved. `auto_https disable_redirects` is required:
+`auto_https off` disables certificate automation and caused TLS handshake failure
+during the first attempt. Mac mini trusts the Caddy root CA; MBP has the CA file
+and validates with explicit `--cacert`, but macOS refused remote trust-settings
+over SSH without interactive authorization.
+
 ## Architecture
 
 ```
 LAN client (*.home.lan)
         │
         ▼
- Caddy :80 (HTTP)           ← only bind: 192.168.30.10:80/443
+ Caddy :80/:443 (HTTP + HTTPS) ← bind: 192.168.30.10:80/443
         │
   [Docker network: proxy]
    ┌────┴───────────────────────────┐
@@ -45,7 +53,7 @@ LAN client (*.home.lan)
 - `proxy` is a Docker bridge network owned by the Caddy stack.
 - Uptime Kuma, Dockge, and Dozzle publish no host ports.
 - All access goes through Caddy reverse proxy.
-- TLS: `auto_https off` in Phase 1C-C1. Add `tls internal` or ACME in a later phase.
+- TLS: Caddy `tls internal` live for LAN HTTPS; HTTP routes remain enabled.
 
 ## Compose layout on Docker VM
 
@@ -53,7 +61,7 @@ LAN client (*.home.lan)
 /srv/compose/
   caddy/
     compose.yaml      ← live
-    Caddyfile         ← live, auto_https off
+    Caddyfile         ← live, auto_https disable_redirects + tls internal
     .env.example
   dockge/
     compose.yaml      ← file exists, container not started
@@ -82,27 +90,32 @@ LAN client (*.home.lan)
 | `dozzle` | `amir20/dozzle:v8.11.3` | live ✅ | internal only — auth via `/data/users.yml` |
 | `dockge` | `louislam/dockge:1.4.2` | live ✅ | internal only — Docker socket RW |
 
-## Caddyfile — current (HTTP-only)
+## Caddyfile — current (HTTP + HTTPS)
 
 ```caddyfile
 {
   admin off
-  auto_https off
-  log { output stderr; format json; level INFO }
+  auto_https disable_redirects
+  log {
+    output stderr
+    format json
+    level INFO
+  }
 }
 
 :80 { respond "OK" 200 }
 http://proxy.home.lan  { respond "Caddy proxy.home.lan — OK" 200 }
+https://proxy.home.lan { tls internal; respond "Caddy proxy.home.lan — OK" 200 }
 http://kuma.home.lan   { reverse_proxy uptime-kuma:3001 }
+https://kuma.home.lan  { tls internal; reverse_proxy uptime-kuma:3001 }
 http://dockge.home.lan { reverse_proxy dockge:5001 }
+https://dockge.home.lan { tls internal; reverse_proxy dockge:5001 }
 http://dozzle.home.lan { reverse_proxy dozzle:8080 }
+https://dozzle.home.lan { tls internal; reverse_proxy dozzle:8080 }
 ```
 
 > `admin off` means `caddy reload` via API does not work — use `docker compose restart`
 > for Caddyfile changes until admin socket is re-enabled.
->
-> `dockge.home.lan` DNS and Caddy route exist, but Dockge is intentionally not
-> started yet. Expect backend failure there until Phase 1C-C2b.
 
 ## DNS rewrites — AdGuard (Pi)
 
@@ -148,6 +161,27 @@ Readiness: WARN. HTTPS path is firewall-ready for Caddy `tls internal`, but curr
 UniFi policy is broader than its name and docs originally stated. Later cleanup
 should narrow `allow-lan-admin-to-docker-http` to TCP `80` and add a dedicated
 `allow-lan-admin-to-docker-https` TCP `443` rule with the same source/destination scope.
+
+## Validation — Phase 1C-C3b (2026-05-05)
+
+| Check | Result |
+| --- | --- |
+| Pre-change backup | `docker-vm-102-backup-20260505-145939.tar.gz`, SHA256 `2a6cd6e078e9102f6c80fde6d92ecf22c5a2e45764aa324dbccc57cb716f1b78` |
+| Caddyfile backup | `/srv/compose/caddy/Caddyfile.pre-c3b-tls-internal-20260505-145948.bak` |
+| Caddy validation | PASS before restart |
+| Restart scope | Only `caddy` restarted; `uptime-kuma`, `dozzle`, and `dockge` retained uptime |
+| Caddy local CA | `Caddy Local Authority - 2026 ECC Root`, SHA256 fingerprint `21:15:4C:3B:5E:AD:15:A5:14:EA:E4:BF:24:FB:CF:50:D3:F1:08:80:2B:DF:93:84:39:4F:63:4A:20:59:5D:34` |
+| Mac mini HTTPS system trust | `proxy` `200`, `kuma` `302`, `dozzle` `405`, `dockge` `200` |
+| MBP HTTPS system trust | WARN: CA cert present, but trust-settings over SSH denied; explicit `--cacert` validates all four routes |
+| HTTP preserved from Mac mini | `proxy` `200`, `kuma` `302`, `dozzle` `405`, `dockge` `200` |
+| HTTP preserved from MBP | `proxy` `200`, `kuma` `302`, `dozzle` `405`, `dockge` `200` |
+| Post-change backup | `docker-vm-102-backup-20260505-150235.tar.gz`, SHA256 `60cb0540d8fdca8faec5ad3d248a92ccfc6a2582dc1b5cc50fe9e30d7bb57774` |
+
+Rollback:
+
+```bash
+ssh docker 'cd /srv/compose/caddy && cp Caddyfile.pre-c3b-tls-internal-20260505-145948.bak Caddyfile && docker compose restart caddy'
+```
 
 ## Validation — Phase 1C-C2a (2026-05-04)
 
@@ -199,6 +233,6 @@ should narrow `allow-lan-admin-to-docker-http` to TCP `80` and add a dedicated
 6. ~~Dozzle C2a validation docs~~ ✅ done 2026-05-04
 7. ~~Docker backup baseline~~ ✅ done 2026-05-04 — script + restore-test PASS
 8. ~~Start Dockge (C2b)~~ ✅ done 2026-05-04 — `200 OK`, password set, all stacks visible.
-9. Add `tls internal` to Caddyfile + import Caddy root CA into macOS Keychain. TCP 443 path preflight done with WARN 2026-05-05.
+9. ~~Add `tls internal` to Caddyfile + import Caddy root CA into macOS Keychain~~ ⚠️ Caddy TLS live 2026-05-05; Mac mini trusted, MBP trust pending interactive Keychain authorization.
 10. Schedule Proxmox backup job (external target).
 11. Lös firewall-scope Docker VM → Proxmox och aktivera Proxmox-monitor.
