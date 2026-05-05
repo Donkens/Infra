@@ -184,9 +184,9 @@ ssh docker 'cd /srv/compose/caddy && cp Caddyfile.pre-c3b-tls-internal-20260505-
 
 ## Phase 1C-C4 — Uptime Kuma HTTPS monitor move — 2026-05-05
 
-Status: FAIL, rolled back to HTTP to keep monitors green.
+Status: PASS after Phase 1C-C4a per-monitor CA fix.
 
-Attempted scoped monitor URL changes via Uptime Kuma `editMonitor` socket API:
+Initial URL-only attempt failed and was rolled back to keep monitors green:
 
 | Monitor | Attempted URL | Result |
 | --- | --- | --- |
@@ -204,11 +204,20 @@ Rollback applied immediately via the same Uptime Kuma `editMonitor` path:
 
 No `Dozzle` monitor exists in the Uptime Kuma DB as of this phase; none was created.
 
-Blocker: Mac mini and MBP trust the Caddy local root CA, but the `uptime-kuma`
-container does not. Moving these monitors to HTTPS requires a separate approved
-trust plan for Kuma itself, such as per-monitor CA configuration or container
-trust-store handling. This phase intentionally changed only monitor URLs and did
-not restart containers.
+Phase 1C-C4a then applied Caddy `root.crt` PEM as per-monitor `tlsCa` via the
+Uptime Kuma `editMonitor` socket API. No compose changes, Caddy changes, UniFi
+changes, DNS changes, container restarts, or new monitors.
+
+| Monitor | Current URL | TLS config | Latest status |
+| --- | --- | --- | --- |
+| `Caddy proxy` | `https://proxy.home.lan` | `auth_method=mtls`, `tls_ca` present, `ignore_tls=0` | UP: `200 - OK` |
+| `Uptime Kuma` | `https://kuma.home.lan` | `auth_method=mtls`, `tls_ca` present, `ignore_tls=0` | UP: `200 - OK` |
+| `Dockge` | `https://dockge.home.lan` | `auth_method=mtls`, `tls_ca` present, `ignore_tls=0` | UP: `200 - OK` |
+
+No `Dozzle` monitor exists in the Uptime Kuma DB as of this phase; none was created.
+
+Note: Uptime Kuma `1.23.15` exposes the server CA field under `authMethod=mtls`.
+Only `tlsCa` is populated; client `tlsCert` and `tlsKey` are empty.
 
 ## Validation — Phase 1C-C2a (2026-05-04)
 
@@ -241,10 +250,10 @@ not restart containers.
 | AdGuard DNS | DNS | A `adguard.home.lan` → `192.168.30.10` resolve check | resolves | 🟢 UP |
 | Docker VM | Ping/reachability | `192.168.30.10` | reachable | 🟢 UP |
 | HAOS | HTTP(S) | `http://192.168.30.20:8123` | `200 OK` | 🟢 UP |
-| Uptime Kuma | HTTP(S) | `http://kuma.home.lan` | `200 OK` | 🟢 UP — HTTPS move attempted and rolled back in C4; Kuma container lacks Caddy CA trust |
-| Caddy proxy | HTTP(S) | `http://proxy.home.lan` | `200 OK` | 🟢 UP — HTTPS move attempted and rolled back in C4; Kuma container lacks Caddy CA trust |
-| Dockge | HTTP(S) | `http://dockge.home.lan` | `200 OK` | 🟢 UP — added 2026-05-04 (C2b); HTTPS move attempted and rolled back in C4 |
-| Dozzle | — | — | — | Not present yet; no monitor created in C4 |
+| Uptime Kuma | HTTP(S) | `https://kuma.home.lan` | `200 OK` | 🟢 UP — per-monitor Caddy `tlsCa`, `auth_method=mtls` |
+| Caddy proxy | HTTP(S) | `https://proxy.home.lan` | `200 OK` | 🟢 UP — per-monitor Caddy `tlsCa`, `auth_method=mtls` |
+| Dockge | HTTP(S) | `https://dockge.home.lan` | `200 OK` | 🟢 UP — per-monitor Caddy `tlsCa`, `auth_method=mtls` |
+| Dozzle | — | — | — | Not present yet; no monitor created in C4/C4a |
 | Proxmox | HTTP(S) | `https://proxmox.home.lan:8006` | `200 OK` | ⏸ PAUSED — Docker VM ligger i Server VLAN 30, ej Default LAN; firewall blockerar Docker VM → Proxmox. Aktivera när scope är löst. |
 
 > AdGuard DNS-monitor verifierar A-record för `adguard.home.lan` mot `192.168.30.10`
@@ -262,6 +271,6 @@ not restart containers.
 7. ~~Docker backup baseline~~ ✅ done 2026-05-04 — script + restore-test PASS
 8. ~~Start Dockge (C2b)~~ ✅ done 2026-05-04 — `200 OK`, password set, all stacks visible.
 9. ~~Add `tls internal` to Caddyfile + import Caddy root CA into macOS Keychain~~ ✅ Caddy TLS live 2026-05-05; Mac mini and MBP trust PASS.
-10. Resolve Uptime Kuma container trust for Caddy local CA before moving Docker service monitors to HTTPS.
+10. Add Dozzle monitor explicitly in a later phase if desired.
 11. Schedule Proxmox backup job (external target).
 12. Lös firewall-scope Docker VM → Proxmox och aktivera Proxmox-monitor.
