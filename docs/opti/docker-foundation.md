@@ -29,9 +29,8 @@ på båda hosts. Restore-test PASS. Se `docs/opti/60-backup-restore.md`.
 `proxy.home.lan`, `kuma.home.lan`, `dozzle.home.lan`, and `dockge.home.lan`.
 Existing HTTP routes preserved. `auto_https disable_redirects` is required:
 `auto_https off` disables certificate automation and caused TLS handshake failure
-during the first attempt. Mac mini trusts the Caddy root CA; MBP has the CA file
-and validates with explicit `--cacert`, but macOS refused remote trust-settings
-over SSH without interactive authorization.
+during the first attempt. Mac mini and MBP both trust the Caddy root CA for
+system `curl` validation as of Phase 1C-C3c.
 
 ## Architecture
 
@@ -172,7 +171,7 @@ should narrow `allow-lan-admin-to-docker-http` to TCP `80` and add a dedicated
 | Restart scope | Only `caddy` restarted; `uptime-kuma`, `dozzle`, and `dockge` retained uptime |
 | Caddy local CA | `Caddy Local Authority - 2026 ECC Root`, SHA256 fingerprint `21:15:4C:3B:5E:AD:15:A5:14:EA:E4:BF:24:FB:CF:50:D3:F1:08:80:2B:DF:93:84:39:4F:63:4A:20:59:5D:34` |
 | Mac mini HTTPS system trust | `proxy` `200`, `kuma` `302`, `dozzle` `405`, `dockge` `200` |
-| MBP HTTPS system trust | WARN: CA cert present, but trust-settings over SSH denied; explicit `--cacert` validates all four routes |
+| MBP HTTPS system trust | PASS 2026-05-05 C3c: `proxy` `200`, `kuma` `302`, `dozzle` `405` expected HEAD behavior, `dockge` `200` |
 | HTTP preserved from Mac mini | `proxy` `200`, `kuma` `302`, `dozzle` `405`, `dockge` `200` |
 | HTTP preserved from MBP | `proxy` `200`, `kuma` `302`, `dozzle` `405`, `dockge` `200` |
 | Post-change backup | `docker-vm-102-backup-20260505-150235.tar.gz`, SHA256 `60cb0540d8fdca8faec5ad3d248a92ccfc6a2582dc1b5cc50fe9e30d7bb57774` |
@@ -233,6 +232,6 @@ ssh docker 'cd /srv/compose/caddy && cp Caddyfile.pre-c3b-tls-internal-20260505-
 6. ~~Dozzle C2a validation docs~~ ✅ done 2026-05-04
 7. ~~Docker backup baseline~~ ✅ done 2026-05-04 — script + restore-test PASS
 8. ~~Start Dockge (C2b)~~ ✅ done 2026-05-04 — `200 OK`, password set, all stacks visible.
-9. ~~Add `tls internal` to Caddyfile + import Caddy root CA into macOS Keychain~~ ⚠️ Caddy TLS live 2026-05-05; Mac mini trusted, MBP trust pending interactive Keychain authorization.
+9. ~~Add `tls internal` to Caddyfile + import Caddy root CA into macOS Keychain~~ ✅ Caddy TLS live 2026-05-05; Mac mini and MBP trust PASS.
 10. Schedule Proxmox backup job (external target).
 11. Lös firewall-scope Docker VM → Proxmox och aktivera Proxmox-monitor.

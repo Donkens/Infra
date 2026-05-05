@@ -25,5 +25,4 @@ Current TLS notes:
   `https://dozzle.home.lan`, and `https://dockge.home.lan`.
 - Caddy local root CA fingerprint:
   `21:15:4C:3B:5E:AD:15:A5:14:EA:E4:BF:24:FB:CF:50:D3:F1:08:80:2B:DF:93:84:39:4F:63:4A:20:59:5D:34`.
-- Mac mini trusts the CA via login Keychain. MBP has the CA file but still needs
-  interactive trust authorization for system trust; `curl --cacert` validation passes.
+- Mac mini and MBP trust the CA for system `curl` validation as of Phase 1C-C3c.
