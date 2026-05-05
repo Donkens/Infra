@@ -30,21 +30,7 @@ Läs `AGENTS.md § ENVIRONMENT` för iCloud-sökvägar och symlink-policy innan 
 | `enable-extended-stats.sh` | Pi | Aktivera utökad Unbound-statistik |
 | `infra-auto-sync-install.sh` | Pi | Installera auto-sync systemd timer på Pi (`/usr/local/bin/infra-auto-sync.sh`) |
 | `infra-auto-sync.sh` | Pi | Körs av `infra-auto-sync.timer` — synkar repo-exports nightly |
-| `install-pi-sudo-wrappers.sh` | Pi | Installerar root-owned wrappers till `/usr/local/sbin/` och exakt sudoers allowlist för `pi` |
 | `tune-dns-socket-buffers.sh` | Pi | Justera kernel socket-buffertar för DNS |
-
-## sudo-wrappers/
-
-| Script | Körs på | Syfte |
-|---|---|---|
-| `infra-dns-status` | Pi via `/usr/local/sbin/` | Kompakt DNS/service/timer/log/disk-status |
-| `infra-unbound-validate-reload` | Pi via `/usr/local/sbin/` | Validera Unbound config och reload `unbound` |
-| `infra-dns-reload` | Pi via `/usr/local/sbin/` | Säker DNS reload path med smoke tests |
-| `infra-dns-restart` | Pi via `/usr/local/sbin/` | Högre risk: restart `unbound` + `AdGuardHome`; kräver separat approval live |
-| `infra-adguard-safe-restart` | Pi via `/usr/local/sbin/` | Högre risk: restart `AdGuardHome` utan att exponera raw config; kräver separat approval live |
-| `infra-health-report` | Pi via `/usr/local/sbin/` | Kompakt agentvänlig health report |
-| `infra-backup-health-check` | Pi via `/usr/local/sbin/` | Read-only backup health check |
-| `infra-restore-drill-check` | Pi via `/usr/local/sbin/` | Read-only restore drill readiness check |
 
 ## maintenance/
 

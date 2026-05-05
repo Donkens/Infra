@@ -19,7 +19,6 @@ Current source-of-truth entry points:
 - [Open network checks](docs/open-network-checks.md)
 - [Pi maintenance checklist](docs/pi-maintenance-checklist.md)
 - [Security boundaries](docs/security-boundaries.md)
-- [Pi sudo wrapper model](docs/security/pi-sudo-wrapper-model.md)
 - [Health rollout 2026-04-28](docs/health-rollout-2026-04-28.md)
 - [Pi reboot validation](runbooks/pi-reboot-validation.md)
 - [Verify backup-health timer](runbooks/verify-backup-health-timer.md)
