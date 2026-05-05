@@ -202,8 +202,6 @@ Rollback applied immediately via the same Uptime Kuma `editMonitor` path:
 | `Uptime Kuma` | `http://kuma.home.lan` | UP: `200 - OK` |
 | `Dockge` | `http://dockge.home.lan` | UP: `200 - OK` |
 
-No `Dozzle` monitor exists in the Uptime Kuma DB as of this phase; none was created.
-
 Phase 1C-C4a then applied Caddy `root.crt` PEM as per-monitor `tlsCa` via the
 Uptime Kuma `editMonitor` socket API. No compose changes, Caddy changes, UniFi
 changes, DNS changes, container restarts, or new monitors.
@@ -214,7 +212,11 @@ changes, DNS changes, container restarts, or new monitors.
 | `Uptime Kuma` | `https://kuma.home.lan` | `auth_method=mtls`, `tls_ca` present, `ignore_tls=0` | UP: `200 - OK` |
 | `Dockge` | `https://dockge.home.lan` | `auth_method=mtls`, `tls_ca` present, `ignore_tls=0` | UP: `200 - OK` |
 
-No `Dozzle` monitor exists in the Uptime Kuma DB as of this phase; none was created.
+Phase 1C-C4b added the missing Dozzle monitor only:
+
+| Monitor | ID | Current URL | Method | TLS config | Latest status |
+| --- | ---: | --- | --- | --- | --- |
+| `Dozzle` | `14` | `https://dozzle.home.lan` | `GET` | `auth_method=mtls`, `tls_ca` present, `tls_cert` empty, `tls_key` empty, `ignore_tls=0` | UP: `200 - OK` |
 
 Note: Uptime Kuma `1.23.15` exposes the server CA field under `authMethod=mtls`.
 Only `tlsCa` is populated; client `tlsCert` and `tlsKey` are empty.
@@ -253,7 +255,7 @@ Only `tlsCa` is populated; client `tlsCert` and `tlsKey` are empty.
 | Uptime Kuma | HTTP(S) | `https://kuma.home.lan` | `200 OK` | 🟢 UP — per-monitor Caddy `tlsCa`, `auth_method=mtls` |
 | Caddy proxy | HTTP(S) | `https://proxy.home.lan` | `200 OK` | 🟢 UP — per-monitor Caddy `tlsCa`, `auth_method=mtls` |
 | Dockge | HTTP(S) | `https://dockge.home.lan` | `200 OK` | 🟢 UP — per-monitor Caddy `tlsCa`, `auth_method=mtls` |
-| Dozzle | — | — | — | Not present yet; no monitor created in C4/C4a |
+| Dozzle | HTTP(S) | `https://dozzle.home.lan` | `200 OK` after redirect to login | 🟢 UP — monitor ID `14`, method `GET`, per-monitor Caddy `tlsCa`, `auth_method=mtls` |
 | Proxmox | HTTP(S) | `https://proxmox.home.lan:8006` | `200 OK` | ⏸ PAUSED — Docker VM ligger i Server VLAN 30, ej Default LAN; firewall blockerar Docker VM → Proxmox. Aktivera när scope är löst. |
 
 > AdGuard DNS-monitor verifierar A-record för `adguard.home.lan` mot `192.168.30.10`
@@ -271,6 +273,6 @@ Only `tlsCa` is populated; client `tlsCert` and `tlsKey` are empty.
 7. ~~Docker backup baseline~~ ✅ done 2026-05-04 — script + restore-test PASS
 8. ~~Start Dockge (C2b)~~ ✅ done 2026-05-04 — `200 OK`, password set, all stacks visible.
 9. ~~Add `tls internal` to Caddyfile + import Caddy root CA into macOS Keychain~~ ✅ Caddy TLS live 2026-05-05; Mac mini and MBP trust PASS.
-10. Add Dozzle monitor explicitly in a later phase if desired.
+10. ~~Add Dozzle monitor explicitly~~ ✅ done 2026-05-05 (C4b), monitor ID `14`.
 11. Schedule Proxmox backup job (external target).
 12. Lös firewall-scope Docker VM → Proxmox och aktivera Proxmox-monitor.
