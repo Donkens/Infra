@@ -2,7 +2,17 @@
 
 Phase: `Phase 0 read-only → Phase 2 applied`
 
-Status: WARN (reduced — Proxmox monitor now present and paused)
+Status: PASS (remaining items accepted as policy — see `GO KUMA DOCS POLICY ONLY`)
+
+Update 2026-05-05, `GO KUMA DOCS POLICY ONLY`: Remaining WARN items closed as
+accepted policy. No monitor changes.
+- `Docker VM` (ID `7`) uses `docker.home.lan` intentionally: ping via DNS name
+  verifies both host reachability and the DNS path in one check.
+- `maxretries=1` on `Docker VM` and `Dockge` is accepted policy for infra
+  monitors: slightly less noisy than `maxretries=0` for hosts that may have
+  brief transient failures.
+- Baseline is now PASS with accepted notes. No further normalization planned
+  unless explicitly revisited.
 
 Update 2026-05-05, `GO KUMA ADD PROXMOX PAUSED`: Proxmox monitor added.
 - ID `15`, type `http`, URL `https://proxmox.home.lan:8006`, method `GET`.
@@ -41,9 +51,9 @@ HTTPS monitors for `proxy`, `kuma`, `dockge`, and `dozzle` match the expected
 `tls internal` trust pattern with per-monitor Caddy CA, `auth_method=mtls`,
 `ignore_tls=0`, and empty client cert/key fields.
 
-The audit remains WARN (minor) — the monitor set still has baseline drift:
-- `Docker VM` uses `docker.home.lan` rather than raw IP `192.168.30.10`.
-- `Dockge` and `Docker VM` use `maxretries=1` while most others use `0`.
+All open items resolved. Baseline is now PASS with accepted notes:
+- `Docker VM` uses `docker.home.lan` intentionally (DNS + host reachability).
+- `maxretries=1` on `Docker VM` and `Dockge` is accepted policy.
 
 Resolved 2026-05-05 (`GO KUMA ADD PROXMOX PAUSED`):
 - Proxmox monitor ID `15` added and paused (`active=0`, `ignore_tls=1`).
@@ -65,7 +75,7 @@ Resolved during HAOS cleanup:
 | 2 | Uptime Kuma | `http` | `https://kuma.home.lan` | `GET` | 60 | 60 | 48 | 0 | `200-299` | UP: `200 - OK` | `ignore_tls=0`, `auth_method=mtls`, `tls_ca=<CA_PRESENT>`, `tls_cert=<EMPTY>`, `tls_key=<EMPTY>` | PASS |
 | 5 | AdGuard DNS resolves proxy.home.lan | `dns` | query `proxy.home.lan` via `192.168.1.55`; latest result `Records: 192.168.30.10` | `GET` | 60 | 60 | 48 | 0 | `200-299` | UP | no TLS material | PASS |
 | 6 | AdGuard UI | `http` | `https://adguard.home.lan/login.html` | `GET` | 60 | 60 | 48 | 0 | `200-299` | UP: `200 - OK` | `ignore_tls=1` | PASS |
-| 7 | Docker VM | `ping` | `docker.home.lan` | `GET` | 60 | 60 | 48 | 1 | `200-299` | UP | no TLS material | PASS/WARN |
+| 7 | Docker VM | `ping` | `docker.home.lan` | `GET` | 60 | 60 | 48 | 1 | `200-299` | UP | no TLS material | PASS (DNS target intentional; maxretries=1 accepted) |
 | 9 | HAOS TCP 8123 (paused duplicate) | `port` | `ha.home.lan:8123` | `GET` | 60 | 60 | 48 | 0 | `200-299` | PAUSED; latest heartbeat was UP | no TLS material | PASS |
 | 10 | HAOS | `http` | `http://ha.home.lan:8123/` | `GET` | 60 | 60 | 48 | 0 | `200-299` | UP: `200 - OK` | no TLS material | PASS |
 | 11 | AdGuard TCP 443 (paused duplicate) | `port` | `Adguard.home.lan:443` | `GET` | 60 | 60 | 48 | 0 | `200-299` | PAUSED | no TLS material | PASS |
@@ -109,18 +119,17 @@ Proxmox firewall scope is intentionally resolved via a separate GO gate.
   URL `https://adguard.home.lan/login.html`; `ignore_tls=1`; UP `200 - OK`.
 - ID `11` renamed `AdGuard TCP 443 (paused duplicate)` and paused.
 
-### Docker VM target form
+### Docker VM target form — accepted policy 2026-05-05
 
-ID `7` `Docker VM` uses `docker.home.lan` rather than raw IP `192.168.30.10`.
-This is acceptable if the monitor is intentionally DNS-dependent. If the
-baseline intent is direct host reachability independent of DNS, change the
-target to the raw IP in a later approved fix phase.
+ID `7` `Docker VM` uses `docker.home.lan` intentionally. A ping via DNS name
+verifies both host reachability and the DNS resolution path in a single check.
+No change planned.
 
-### Retry consistency
+### Retry consistency — accepted policy 2026-05-05
 
-ID `7` `Docker VM` and ID `13` `Dockge` use `maxretries=1`. Most other current
-monitors use `maxretries=0`. This is not currently harmful, but the policy
-should be documented or normalized.
+ID `7` `Docker VM` and ID `13` `Dockge` use `maxretries=1`. This is accepted
+for infra monitors where a single transient failure should not trigger an alert.
+No normalization planned.
 
 ## Recommended future fix plan
 
@@ -141,12 +150,12 @@ Do not apply these changes without a separate approval gate.
    - ID `5` renamed; ID `6` converted to HTTP and UP; ID `11` paused.
 
 4. Docker VM target policy:
-   - Either document `docker.home.lan` as intentional or change ID `7` to
-     `192.168.30.10`.
+   - Done 2026-05-05 under `GO KUMA DOCS POLICY ONLY`.
+   - `docker.home.lan` documented as intentional.
 
 5. Retry policy:
-   - Decide whether `maxretries=0` or `maxretries=1` is preferred for the
-     baseline and update monitor settings/docs consistently.
+   - Done 2026-05-05 under `GO KUMA DOCS POLICY ONLY`.
+   - `maxretries=1` on `Docker VM` and `Dockge` accepted as policy.
 
 ## Approval gates
 
