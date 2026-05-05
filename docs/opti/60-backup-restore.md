@@ -20,7 +20,7 @@ Proxmox backup automation baseline is live:
 
 | Component | Status |
 |---|---|
-| Scheduled backup job (VMs 101+102, daily 03:00, keep-last=3) | ✅ LIVE — `jobs.cfg` ID `ba5952c1` |
+| Scheduled backup job (VMs 101+102, daily 03:00, keep-last=2) | ✅ LIVE — `jobs.cfg` ID `ba5952c1` |
 | Off-host sync script + LaunchAgent (Mac mini 04:00 daily) | ✅ LIVE — `sync-proxmox-vm-backups.sh` |
 | VM 102 (docker) restore-test | ✅ PASS 2026-05-05 |
 | VM 101 (haos) restore-test | ✅ PASS 2026-05-03 |
