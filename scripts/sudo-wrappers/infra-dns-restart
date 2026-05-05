@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# Purpose: Higher-risk guarded restart path for Unbound and AdGuard Home.
+# Author:  codex-agent | Date: 2026-05-05
+set -euo pipefail
+IFS=$'\n\t'
+
+readonly SYSTEMCTL="/usr/bin/systemctl"
+readonly DIG="/usr/bin/dig"
+readonly SS="/usr/bin/ss"
+readonly TIMEOUT="/usr/bin/timeout"
+
+find_unbound_checkconf() {
+  local candidate
+  for candidate in /usr/sbin/unbound-checkconf /usr/bin/unbound-checkconf /usr/local/sbin/unbound-checkconf /usr/local/bin/unbound-checkconf; do
+    if [ -x "$candidate" ]; then
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+  done
+  command -v unbound-checkconf 2>/dev/null || return 1
+}
+
+require_dig() {
+  local label="$1"
+  local server="$2"
+  local port="$3"
+  local name="$4"
+  local out
+  printf 'CHECK: dig %s via %s:%s\n' "$label" "$server" "$port"
+  out="$("$TIMEOUT" 10s "$DIG" @"$server" -p "$port" "$name" A +short)"
+  if [ -z "$out" ]; then
+    printf 'STATUS: FAIL\n'
+    printf 'RESULT: FAIL empty DNS answer for %s\n' "$label"
+    exit 1
+  fi
+  printf '%s\n' "$out" | sed 's/^/RESULT: /'
+}
+
+printf 'CHECK: risk\n'
+printf 'RESULT: WARN higher-risk wrapper; requires separate live approval before use\n'
+
+checkconf="$(find_unbound_checkconf)" || {
+  printf 'STATUS: FAIL\n'
+  printf 'RESULT: FAIL unbound-checkconf not found\n'
+  exit 1
+}
+
+printf 'CHECK: unbound-checkconf path=%s\n' "$checkconf"
+"$TIMEOUT" 20s "$checkconf"
+printf 'RESULT: PASS unbound config valid\n'
+
+printf 'CHECK: restart unbound\n'
+"$TIMEOUT" 30s "$SYSTEMCTL" restart unbound
+printf 'RESULT: PASS unbound restart requested\n'
+
+printf 'CHECK: restart AdGuardHome\n'
+"$TIMEOUT" 30s "$SYSTEMCTL" restart AdGuardHome
+printf 'RESULT: PASS AdGuardHome restart requested\n'
+
+printf 'CHECK: service active states\n'
+"$TIMEOUT" 10s "$SYSTEMCTL" is-active --quiet unbound
+"$TIMEOUT" 10s "$SYSTEMCTL" is-active --quiet AdGuardHome
+printf 'RESULT: PASS unbound and AdGuardHome active\n'
+
+printf 'CHECK: listening ports\n'
+"$TIMEOUT" 10s "$SS" -lntup 2>/dev/null | grep -E ':(53|443|853|3000)\b' || true
+
+require_dig "unbound cloudflare.com" "127.0.0.1" "5335" "cloudflare.com"
+require_dig "adguard cloudflare.com" "192.168.1.55" "53" "cloudflare.com"
+
+printf 'STATUS: PASS\n'

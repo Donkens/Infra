@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+# Purpose: Read-only DNS backup health check for Pi.
+# Author:  codex-agent | Date: 2026-05-05
+set -euo pipefail
+IFS=$'\n\t'
+
+readonly REPO="/home/pi/repos/infra"
+readonly BACKUP_ROOT="$REPO/state/backups"
+readonly LATEST_LINK="$BACKUP_ROOT/latest"
+readonly LOG_DIR="$REPO/logs"
+readonly STATE_DIR="$REPO/state"
+readonly FIND="/usr/bin/find"
+readonly READLINK="/usr/bin/readlink"
+readonly STAT="/usr/bin/stat"
+readonly DU="/usr/bin/du"
+readonly TAIL="/usr/bin/tail"
+
+status="PASS"
+
+warn() {
+  status="WARN"
+  printf 'RESULT: WARN %s\n' "$1"
+}
+
+fail() {
+  printf 'STATUS: FAIL\n'
+  printf 'RESULT: FAIL %s\n' "$1"
+  exit 1
+}
+
+printf 'CHECK: backup root\n'
+if [ ! -d "$BACKUP_ROOT" ]; then
+  fail "$BACKUP_ROOT missing"
+fi
+printf 'RESULT: PASS path=%s\n' "$BACKUP_ROOT"
+
+backup_count="$("$FIND" "$BACKUP_ROOT" -maxdepth 1 -type d -name 'dns-backup-*' | wc -l | tr -d ' ')"
+printf 'RESULT: backup_count=%s\n' "$backup_count"
+if [ "$backup_count" -eq 0 ]; then
+  fail "no dns-backup-* directories found"
+fi
+
+printf 'CHECK: latest backup\n'
+if [ ! -e "$LATEST_LINK" ]; then
+  fail "$LATEST_LINK missing"
+fi
+
+latest_path="$("$READLINK" -f "$LATEST_LINK" 2>/dev/null || true)"
+if [ -z "$latest_path" ] || [ ! -d "$latest_path" ]; then
+  fail "$LATEST_LINK does not resolve to a directory"
+fi
+printf 'RESULT: latest=%s\n' "$latest_path"
+"$DU" -sh "$latest_path" 2>/dev/null | awk '{print "RESULT: latest_size="$1}' || warn "could not read latest size"
+"$STAT" -c 'RESULT: latest_mtime=%y' "$latest_path" 2>/dev/null || warn "could not read latest mtime"
+
+printf 'CHECK: manifest and checksums\n'
+if [ -f "$latest_path/meta/manifest.txt" ]; then
+  printf 'RESULT: manifest=present\n'
+else
+  warn "manifest missing"
+fi
+
+if [ -f "$latest_path/meta/SHA256SUMS.txt" ]; then
+  printf 'RESULT: sha256=present\n'
+else
+  warn "SHA256SUMS missing"
+fi
+
+printf 'CHECK: backup-health state/log\n'
+for file in "$STATE_DIR/backup-health.last" "$LOG_DIR/backup-health.log" "$LOG_DIR/backup-health-fail.log"; do
+  if [ -f "$file" ]; then
+    printf 'RESULT: tail path=%s\n' "$file"
+    "$TAIL" -n 3 "$file" 2>/dev/null || warn "could not read $file"
+  else
+    printf 'RESULT: missing path=%s\n' "$file"
+  fi
+done
+
+printf 'STATUS: %s\n' "$status"

@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+# Purpose: Validate Unbound config and reload Unbound safely.
+# Author:  codex-agent | Date: 2026-05-05
+set -euo pipefail
+IFS=$'\n\t'
+
+readonly SYSTEMCTL="/usr/bin/systemctl"
+readonly DIG="/usr/bin/dig"
+readonly TIMEOUT="/usr/bin/timeout"
+
+find_unbound_checkconf() {
+  local candidate
+  for candidate in /usr/sbin/unbound-checkconf /usr/bin/unbound-checkconf /usr/local/sbin/unbound-checkconf /usr/local/bin/unbound-checkconf; do
+    if [ -x "$candidate" ]; then
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+  done
+  command -v unbound-checkconf 2>/dev/null || return 1
+}
+
+run_check() {
+  local cmd="$1"
+  printf 'CHECK: unbound-checkconf path=%s\n' "$cmd"
+  "$TIMEOUT" 20s "$cmd"
+  printf 'RESULT: PASS unbound config valid\n'
+}
+
+smoke_optional() {
+  local name="$1"
+  local host="$2"
+  printf 'CHECK: dig %s via 127.0.0.1:5335\n' "$name"
+  "$TIMEOUT" 10s "$DIG" @127.0.0.1 -p 5335 "$host" A +short || true
+}
+
+checkconf="$(find_unbound_checkconf)" || {
+  printf 'STATUS: FAIL\n'
+  printf 'RESULT: FAIL unbound-checkconf not found\n'
+  exit 1
+}
+
+run_check "$checkconf"
+
+printf 'CHECK: reload unbound\n'
+"$TIMEOUT" 20s "$SYSTEMCTL" reload unbound
+printf 'RESULT: PASS reload requested\n'
+
+printf 'CHECK: unbound active\n'
+"$TIMEOUT" 10s "$SYSTEMCTL" is-active --quiet unbound
+printf 'RESULT: PASS unbound active\n'
+
+smoke_optional "pi.home.lan" "pi.home.lan"
+smoke_optional "udr.home.lan" "udr.home.lan"
+
+printf 'STATUS: PASS\n'

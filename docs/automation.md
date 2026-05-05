@@ -25,7 +25,7 @@ The latest Pi timer cleanup keeps these active infra timers in scope:
 
 ## Runtime sudo hardening status (P0 fixed)
 
-Runtime and repo now use the hardened export boundary for auto-sync:
+Runtime and repo use the hardened export boundary for auto-sync:
 
 - `pi` is removed from the sudo group and does not have broad sudo.
 - no `NOPASSWD: ALL`.
@@ -33,6 +33,17 @@ Runtime and repo now use the hardened export boundary for auto-sync:
 - root-owned installed export script path: `/usr/local/lib/infra/backup-dns-configs.sh`.
 - root-owned wrapper path: `/usr/local/sbin/infra-backup-dns-export`.
 - sudo allowlist for export is wrapper-only: `pi ALL=(root) NOPASSWD: /usr/local/sbin/infra-backup-dns-export`.
+
+GitHub issue #14 extends this pattern to day-to-day safe infra operations through the Pi sudo wrapper model:
+
+- tracked wrapper sources: `scripts/sudo-wrappers/`
+- installer: `scripts/install/install-pi-sudo-wrappers.sh`
+- live target: `/usr/local/sbin/infra-*`
+- sudoers target: `/etc/sudoers.d/infra-pi-wrappers`
+- policy doc: `docs/security/pi-sudo-wrapper-model.md`
+- runbook: `runbooks/pi-sudo-wrapper-model.md`
+
+Phase 0 on 2026-05-05 found legacy direct sudo rules for `systemctl restart AdGuardHome`, `systemctl restart unbound`, and `unbound-control flush*`. Those rules are legacy/risk and should be migrated to wrappers, then removed in a separate approved sudoers cleanup.
 
 Operational consequence:
 
@@ -75,9 +86,18 @@ Timer cleanup applied 2026-04-29:
 | `scripts/maintenance/check-backups.sh` | Checks latest DNS backup age, manifest, and checksums | `logs/backup-health.log`, `logs/backup-health-fail.log`, `state/backup-health.last` | No commit/push | LOW/MEDIUM |
 | `scripts/backup/backup-dns-configs.sh` | Creates local DNS config backups and optional repo exports | `state/backups/`, `config/adguardhome/`, `config/unbound/` | No commit/push by itself | HIGH with `--export-repo` |
 | `/usr/local/sbin/infra-backup-dns-export` | Root-owned wrapper that executes fixed export path | Calls `/usr/local/lib/infra/backup-dns-configs.sh --export-repo` | No commit/push by itself | HIGH |
+| `scripts/sudo-wrappers/infra-dns-status` | Source for root-owned compact DNS status wrapper | read-only when installed | No commit/push | LOW |
+| `scripts/sudo-wrappers/infra-unbound-validate-reload` | Source for root-owned Unbound validate + reload wrapper | Reloads `unbound` when installed | No commit/push | MEDIUM |
+| `scripts/sudo-wrappers/infra-dns-reload` | Source for root-owned DNS reload + smoke test wrapper | Reloads `unbound` when installed | No commit/push | MEDIUM |
+| `scripts/sudo-wrappers/infra-dns-restart` | Source for guarded DNS restart wrapper | Restarts `unbound` and `AdGuardHome` when installed | No commit/push | HIGH |
+| `scripts/sudo-wrappers/infra-adguard-safe-restart` | Source for guarded AdGuard restart wrapper | Restarts `AdGuardHome` when installed | No commit/push | HIGH |
+| `scripts/sudo-wrappers/infra-health-report` | Source for compact health report wrapper | read-only when installed | No commit/push | LOW |
+| `scripts/sudo-wrappers/infra-backup-health-check` | Source for read-only backup health wrapper | read-only when installed | No commit/push | LOW |
+| `scripts/sudo-wrappers/infra-restore-drill-check` | Source for read-only restore drill readiness wrapper | read-only when installed | No commit/push | LOW |
 | `scripts/install/infra-auto-sync.sh` | Runtime automation script copied to `/usr/local/bin` | Repo config exports via wrapper, Git index/commits | Can commit and push | HIGH |
 | `scripts/maintenance/prune-dns-backups.sh` | Dry-run-first DNS backup retention | Deletes old `state/backups/dns-backup-*` only with `--apply` | No commit/push | LOW in dry-run, HIGH with `--apply` |
 | `scripts/install/infra-auto-sync-install.sh` | Installs wrapper sudoers model, runtime script, and systemd unit/timer | `/usr/local/lib/infra`, `/usr/local/sbin`, `/etc/sudoers.d`, `/usr/local/bin`, systemd | No commit/push | HIGH |
+| `scripts/install/install-pi-sudo-wrappers.sh` | Installs Pi infra sudo wrappers and exact sudoers allowlist | `/usr/local/sbin`, `/etc/sudoers.d/infra-pi-wrappers` | No commit/push | HIGH |
 | `scripts/install/tune-dns-socket-buffers.sh` | Tunes Unbound socket buffers and validates/restarts Unbound | `/etc/unbound`, local tuning logs, service state | No commit/push | HIGH |
 | `scripts/debug/debug-https-rr.sh` | Debugs and can install synthetic HTTPS RR Unbound drop-in | `/etc/unbound`, service state | No commit/push | HIGH |
 | `scripts/maintenance/dns-health-report.sh` | Prints DNS/service diagnostic report | stdout only | No commit/push | MEDIUM because output may include operational log excerpts |
@@ -112,6 +132,7 @@ Known automation write paths:
 - `/usr/local/bin/infra-auto-sync.sh`, runtime target for explicit install/update only
 - `/usr/local/lib/infra/backup-dns-configs.sh`, installed root-owned runtime export script
 - `/usr/local/sbin/infra-backup-dns-export`, installed root-owned runtime wrapper
+- `/usr/local/sbin/infra-*`, installed root-owned Pi sudo wrappers
 - `/etc/unbound`, only for operator-approved scripts
 - `/etc/sudoers.d` and systemd paths, only via install scripts with explicit `GO`
 

@@ -35,6 +35,27 @@ Related current inventories:
 
 > AdGuard DDR setting: `handle_ddr=false` sedan 2026-04-26. Inaktiverad medvetet — se `docs/dns-tls-baseline-2026-04-26.md`.
 
+### Pi privilege wrappers
+
+| Path | Status | Purpose | Note |
+|---|---|---|---|
+| `/usr/local/sbin/infra-backup-dns-export` | live | Root-owned DNS backup export wrapper | Preserved by the sudo wrapper installer. |
+| `/usr/local/sbin/infra-dns-status` | planned | Compact DNS/service/timer/log/disk status | Source: `scripts/sudo-wrappers/infra-dns-status`. |
+| `/usr/local/sbin/infra-unbound-validate-reload` | planned | Validate Unbound config and reload `unbound` | Uses fixed path or resolution for `unbound-checkconf`. |
+| `/usr/local/sbin/infra-dns-reload` | planned | Safe DNS reload path with smoke tests | Does not restart AdGuard Home. |
+| `/usr/local/sbin/infra-dns-restart` | planned | Guarded restart for `unbound` and `AdGuardHome` | Higher risk; do not run without separate approval. |
+| `/usr/local/sbin/infra-adguard-safe-restart` | planned | Guarded AdGuard Home restart without exposing raw config | Higher risk; do not run without separate approval. |
+| `/usr/local/sbin/infra-health-report` | planned | Agent-friendly health report | Read-only. |
+| `/usr/local/sbin/infra-backup-health-check` | planned | Read-only backup health check | No restore or mutation. |
+| `/usr/local/sbin/infra-restore-drill-check` | planned | Read-only restore drill readiness check | No restore or mutation. |
+
+Legacy/risk sudoers observed 2026-05-05 and targeted for wrapper migration:
+
+- `/bin/systemctl restart AdGuardHome`
+- `/bin/systemctl restart unbound`
+- `/usr/local/bin/unbound-control flush_zone *`
+- `/usr/local/bin/unbound-control flush *`
+
 ### Cleanup state from Pi service audit 2026-04-28
 
 Applied 2026-04-29. Ingen package removal, ingen maskning, och Cockpit lämnades enabled:

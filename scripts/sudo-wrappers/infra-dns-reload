@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# Purpose: Validate and reload DNS without restarting AdGuard Home.
+# Author:  codex-agent | Date: 2026-05-05
+set -euo pipefail
+IFS=$'\n\t'
+
+readonly SYSTEMCTL="/usr/bin/systemctl"
+readonly DIG="/usr/bin/dig"
+readonly TIMEOUT="/usr/bin/timeout"
+
+find_unbound_checkconf() {
+  local candidate
+  for candidate in /usr/sbin/unbound-checkconf /usr/bin/unbound-checkconf /usr/local/sbin/unbound-checkconf /usr/local/bin/unbound-checkconf; do
+    if [ -x "$candidate" ]; then
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+  done
+  command -v unbound-checkconf 2>/dev/null || return 1
+}
+
+require_dig() {
+  local label="$1"
+  local server="$2"
+  local port="$3"
+  local name="$4"
+  local out
+  printf 'CHECK: dig %s via %s:%s\n' "$label" "$server" "$port"
+  out="$("$TIMEOUT" 10s "$DIG" @"$server" -p "$port" "$name" A +short)"
+  if [ -z "$out" ]; then
+    printf 'STATUS: FAIL\n'
+    printf 'RESULT: FAIL empty DNS answer for %s\n' "$label"
+    exit 1
+  fi
+  printf '%s\n' "$out" | sed 's/^/RESULT: /'
+}
+
+checkconf="$(find_unbound_checkconf)" || {
+  printf 'STATUS: FAIL\n'
+  printf 'RESULT: FAIL unbound-checkconf not found\n'
+  exit 1
+}
+
+printf 'CHECK: unbound-checkconf path=%s\n' "$checkconf"
+"$TIMEOUT" 20s "$checkconf"
+printf 'RESULT: PASS unbound config valid\n'
+
+printf 'CHECK: reload unbound\n'
+"$TIMEOUT" 20s "$SYSTEMCTL" reload unbound
+printf 'RESULT: PASS reload requested\n'
+
+printf 'CHECK: service active states\n'
+"$TIMEOUT" 10s "$SYSTEMCTL" is-active --quiet unbound
+"$TIMEOUT" 10s "$SYSTEMCTL" is-active --quiet AdGuardHome
+printf 'RESULT: PASS unbound and AdGuardHome active\n'
+
+require_dig "unbound pi.home.lan" "127.0.0.1" "5335" "pi.home.lan"
+require_dig "adguard pi.home.lan" "192.168.1.55" "53" "pi.home.lan"
+require_dig "adguard cloudflare.com" "192.168.1.55" "53" "cloudflare.com"
+
+printf 'STATUS: PASS\n'
