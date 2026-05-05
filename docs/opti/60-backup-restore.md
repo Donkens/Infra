@@ -1,5 +1,21 @@
 # Backup and restore policy
 
+## Phase 1D baseline — 2026-05-05
+
+Proxmox backup automation baseline is live:
+
+| Component | Status |
+|---|---|
+| Scheduled backup job (VMs 101+102, daily 03:00, keep-last=3) | ✅ LIVE — `jobs.cfg` ID `ba5952c1` |
+| Off-host sync script + LaunchAgent (Mac mini 04:00 daily) | ✅ LIVE — `sync-proxmox-vm-backups.sh` |
+| VM 102 (docker) restore-test | ✅ PASS 2026-05-05 |
+| VM 101 (haos) restore-test | ✅ PASS 2026-05-03 |
+| Vaultwarden gate | ✅ Cleared — all conditions met |
+
+Vaultwarden can now be deployed. See `runbooks/opti-backup-restore-test.md` for both restore-test records.
+
+---
+
 ## Current status
 
 An interim Mac mini off-Pi target is live for Pi DNS backups:

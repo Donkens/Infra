@@ -3,7 +3,7 @@
 > Canonical host/user/repo baseline for this infrastructure.
 > Human owner: **Yasse**
 > ⚠️ Local Unix user differs by host — never assume username from context alone.
-> Last verified: 2026-04-27
+> Last verified: 2026-05-05
 
 ## Host Table
 
@@ -13,6 +13,7 @@
 | Mac mini M1 — primary ARM Mac, compute/scripts/automation | `mini` | `macmini.home.lan` | eth: `192.168.1.86` / wifi: `192.168.1.84` | `ssh mini` | `yasse` | `yasse` | `/Users/yasse` | arm64 (M1 T8103) | macOS 26.5 beta | `/opt/homebrew` | `/Users/yasse/repos/Infra` | Primary admin Mac. macOS beta as of 2026-04-27. |
 | Raspberry Pi 3B+ — DNS node | `pi` | `pi.home.lan` | `192.168.1.55` | `ssh pi` | `pi` | `pi` | `/home/pi` | aarch64 | Debian 13 trixie, kernel 6.12.75 | n/a | `/home/pi/repos/infra` | AdGuard Home + Unbound. **Repo path is lowercase `infra`.** |
 | UDR-7 — gateway, VLAN, firewall, WireGuard | `udrhomelan` | `udr.home.lan` | `192.168.1.1` | `ssh udr` | `root` | `root` | `/root` | aarch64 | Linux 5.4.213 (UniFi firmware) | n/a | n/a | **SSH user is `root`, not `ubnt`.** Hostname is `udrhomelan`. No persistent custom state written to router (firmware may reset). |
+| Opti — Proxmox VE hypervisor, VM host | `opti` | `opti.home.lan` | `192.168.1.60` | `ssh opti` (config.local) | `root` | `root` | `/root` | x86_64 | Proxmox VE 9.1.0, kernel 7.0.0-3-pve | n/a | n/a | Single NVMe 476.9GB. VMs: 101 haos (VLAN30), 102 docker (VLAN30). Backup jobs in `/etc/pve/jobs.cfg`. SSH key: `id_ed25519_macmini`. |
 
 ## Agent Verification Rules
 

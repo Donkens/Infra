@@ -1,6 +1,8 @@
 # Opti backup and restore-test checklist
 
-First Proxmox VM restore-test completed 2026-05-03 (Phase 2B). A Pi DNS off-Pi backup restore drill was completed on 2026-04-29.
+VM 101 restore-test: PASS 2026-05-03 (Phase 2B).
+VM 102 restore-test: PASS 2026-05-05 (Phase 1D).
+Pi DNS off-Pi restore drill: PASS 2026-04-29.
 
 ## Backup destination
 
@@ -25,6 +27,30 @@ Do not include media, downloads, or cache in the initial scope.
 5. Document the result.
 
 ## Completed restore tests
+
+### 2026-05-05 — Proxmox VM 102 (docker) restore-test — Phase 1D
+
+| Field | Value |
+| --- | --- |
+| Date | 2026-05-05 |
+| Operator | Yasse/Claude |
+| Source backup | `/var/lib/vz/dump/vzdump-qemu-102-2026_05_05-19_02_01.vma.zst` (1.29 GB, zstd, SHA256 `9e69b4e5…`) |
+| Off-host copy | `/Users/yasse/InfraBackups/proxmox-dumps/vzdump-qemu-102-2026_05_05-19_02_01.vma.zst` |
+| SHA256 match | ✅ identical on opti and Mac mini |
+| Restore target | VMID `199` (test-only, destroyed after drill) |
+| Restore command | `qmrestore local:backup/vzdump-qemu-102-2026_05_05-19_02_01.vma.zst 199 --storage local-lvm` |
+| Import time | ~8 seconds |
+| Safety modifications | `net0` deleted (prevent IP conflict with live Docker at 192.168.30.10), `onboot=0`, renamed to `docker-restore-test-199` |
+| Boot result | `status: running`; hostname confirmed `docker-restore-test-199` via QGA |
+| Docker validation | Docker Engine 29.4.2 responding via QGA ✅ |
+| `/srv/compose/` | caddy, dockge, dozzle, uptime-kuma — all present ✅ |
+| `/srv/appdata/` | caddy, dockge, dozzle, uptime-kuma — all present ✅ |
+| Containers | dockge Up (healthy), dozzle Up, uptime-kuma Up (healthy), caddy Exited 255 (expected — no network = ACME/TLS fails) ✅ |
+| QGA note | Guest agent active; fs-freeze/thaw confirmed at backup time; backup is guest-fs-frozen ✅ |
+| Cleanup | `qm stop 199` then `qm destroy 199 --purge`; LVM volumes `vm-199-disk-0` and `vm-199-cloudinit` removed ✅ |
+| Live VM 102 state | `running` throughout — no service interruption ✅ |
+| Result | **PASS** |
+| Follow-ups | Schedule quarterly restore-test; add USB SSD as external backup target; HAOS restore-test with `GO PROXMOX RESTORE TEST HAOS` |
 
 ### 2026-05-03 — Proxmox VM 101 (haos) restore-test — Phase 2B
 

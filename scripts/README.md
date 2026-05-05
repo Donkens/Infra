@@ -45,4 +45,5 @@ Läs `AGENTS.md § ENVIRONMENT` för iCloud-sökvägar och symlink-policy innan 
 | `prune-dns-backups.sh` | Pi | Rensa gamla DNS-backuper (default: dry-run, 45 d, min 10). Kräver `--apply` för faktisk borttagning. |
 | `docker-vm-backup.sh` | Docker VM 102 | Backup `/srv/compose` + `/srv/appdata` till `/srv/backups/docker-vm-102/`. Installerat som `/usr/local/sbin/docker-vm-backup` (root:root 755). Kör: `sudo /usr/local/sbin/docker-vm-backup`. SHA256-checksum inkluderat. Retention: 7 backups. Off-host: rsync till Mac mini `/Users/yasse/InfraBackups/docker-vm-102/`. |
 | `sync-pi-dns-backups-offpi.sh` | Mac mini | Recurring off-Pi sync av Pi DNS backups till encrypted sparsebundle (`/Volumes/pi-dns-backups/pi/state-backups`) |
+| `sync-proxmox-vm-backups.sh` | Mac mini | Daglig pull av Proxmox VM-backup dumps från opti `/var/lib/vz/dump/` till `/Users/yasse/InfraBackups/proxmox-dumps/`. LaunchAgent `com.yasse.proxmox-vm-backup-sync` kör 04:00. |
 | `unbound-mini-top.sh` | Pi | Realtidsvy Unbound-stats |
