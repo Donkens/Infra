@@ -1,0 +1,5 @@
+# AdGuard rewrite helper NOPASSWD rule
+# Managed in: /etc/sudoers.d/adguard-rewrite
+Defaults:pi !requiretty
+Defaults:pi !use_pty
+pi ALL=(root) NOPASSWD: /usr/local/sbin/adguard-rewrite

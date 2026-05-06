@@ -1,0 +1,349 @@
+#!/usr/bin/env python3
+# Purpose: Safe allowlisted AdGuard Home DNS rewrite helper.
+# Author:  codex-agent | Date: 2026-05-06
+from __future__ import annotations
+
+import argparse
+import http.cookiejar
+import ipaddress
+import json
+import os
+import re
+import ssl
+import stat
+import sys
+import syslog
+import urllib.error
+import urllib.request
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+
+DEFAULT_CREDENTIAL_FILE = Path("/root/.config/infra/adguard-rewrite.env")
+DEFAULT_ADGUARD_URL = "https://127.0.0.1"
+DOMAIN_RE = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$")
+HOME_LAN_SUFFIX = ".home.lan"
+TIMEOUT_SECONDS = 10
+RFC1918_NETWORKS = (
+    ipaddress.ip_network("10.0.0.0/8"),
+    ipaddress.ip_network("172.16.0.0/12"),
+    ipaddress.ip_network("192.168.0.0/16"),
+)
+
+EXIT_OK = 0
+EXIT_USAGE = 2
+EXIT_CONFIG = 3
+EXIT_API = 4
+EXIT_CONFLICT = 5
+EXIT_NOT_FOUND = 6
+
+
+class RewriteError(Exception):
+    exit_code = EXIT_USAGE
+
+
+class ConfigError(RewriteError):
+    exit_code = EXIT_CONFIG
+
+
+class APIError(RewriteError):
+    exit_code = EXIT_API
+
+
+class ConflictError(RewriteError):
+    exit_code = EXIT_CONFLICT
+
+
+class NotFoundError(RewriteError):
+    exit_code = EXIT_NOT_FOUND
+
+
+@dataclass(frozen=True)
+class Credentials:
+    base_url: str
+    username: str
+    password: str
+
+
+def normalize_domain(value: str) -> str:
+    domain = value.strip().rstrip(".").lower()
+    if not domain:
+        raise RewriteError("domain is required")
+    if "*" in domain:
+        raise RewriteError("wildcard domains are not allowed")
+    if not domain.endswith(HOME_LAN_SUFFIX):
+        raise RewriteError("domain must end with .home.lan")
+    if domain == HOME_LAN_SUFFIX.lstrip("."):
+        raise RewriteError("domain must be a fully qualified host name")
+    if not DOMAIN_RE.fullmatch(domain):
+        raise RewriteError("domain is not a valid exact DNS name")
+    labels = domain.split(".")
+    if len(labels) < 3:
+        raise RewriteError("domain must be a fully qualified host name")
+    return domain
+
+
+def validate_rfc1918_ipv4(value: str) -> str:
+    try:
+        ip = ipaddress.ip_address(value.strip())
+    except ValueError as exc:
+        raise RewriteError("answer must be a valid IPv4 address") from exc
+    if ip.version != 4:
+        raise RewriteError("answer must be IPv4")
+    if not any(ip in network for network in RFC1918_NETWORKS):
+        raise RewriteError("answer must be RFC1918 private IPv4")
+    return str(ip)
+
+
+def normalize_base_url(value: str) -> str:
+    base_url = value.strip().rstrip("/")
+    if base_url.endswith("/control"):
+        base_url = base_url[: -len("/control")]
+    if not base_url.startswith(("https://", "http://")):
+        raise ConfigError("ADGUARD_URL must start with https:// or http://")
+    return base_url
+
+
+def parse_env_file(path: Path) -> dict[str, str]:
+    if not path.exists():
+        raise ConfigError(f"credential file not found: {path}")
+
+    path_stat = path.stat()
+    mode = stat.S_IMODE(path_stat.st_mode)
+    if path_stat.st_uid != 0:
+        raise ConfigError(f"credential file owner must be root: {path}")
+    if mode & 0o077:
+        raise ConfigError(f"credential file permissions must be 0600 or stricter: {path}")
+
+    values: dict[str, str] = {}
+    for raw_line in path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if "=" not in line:
+            raise ConfigError(f"invalid credential file line in {path}")
+        key, raw_value = line.split("=", 1)
+        key = key.strip()
+        value = raw_value.strip().strip('"').strip("'")
+        if key:
+            values[key] = value
+    return values
+
+
+def load_credentials(path: Path = DEFAULT_CREDENTIAL_FILE) -> Credentials:
+    values = parse_env_file(path)
+    username = values.get("ADGUARD_USERNAME", "")
+    password = values.get("ADGUARD_PASSWORD", "")
+    base_url = normalize_base_url(values.get("ADGUARD_URL", DEFAULT_ADGUARD_URL))
+    if not username or not password:
+        raise ConfigError("ADGUARD_USERNAME and ADGUARD_PASSWORD are required")
+    return Credentials(base_url=base_url, username=username, password=password)
+
+
+def log_event(action: str, domain: str, answer: str, result: str) -> None:
+    sudo_user = os.environ.get("SUDO_USER", "")
+    message = (
+        f"action={action} domain={domain or '-'} answer={answer or '-'} "
+        f"result={result} sudo_user={sudo_user or '-'}"
+    )
+    try:
+        syslog.openlog("adguard-rewrite", syslog.LOG_PID, syslog.LOG_AUTH)
+        syslog.syslog(syslog.LOG_INFO, message)
+    except Exception:
+        # Logging must never block the DNS change path.
+        pass
+
+
+class AdGuardClient:
+    def __init__(self, credentials: Credentials) -> None:
+        self.credentials = credentials
+        self.cookie_jar = http.cookiejar.CookieJar()
+        if credentials.base_url.startswith("https://"):
+            # Local AdGuard uses a private CA certificate. The helper is intended
+            # for loopback-only API access from the Pi.
+            self.context = ssl._create_unverified_context()
+        else:
+            self.context = None
+        handlers: list[urllib.request.BaseHandler] = [urllib.request.HTTPCookieProcessor(self.cookie_jar)]
+        if self.context is not None:
+            handlers.append(urllib.request.HTTPSHandler(context=self.context))
+        self.opener = urllib.request.build_opener(*handlers)
+
+    def _url(self, endpoint: str) -> str:
+        return f"{self.credentials.base_url}/control/{endpoint.lstrip('/')}"
+
+    def _request(self, method: str, endpoint: str, payload: dict[str, Any] | None = None) -> Any:
+        data = None
+        headers = {"Accept": "application/json"}
+        if payload is not None:
+            data = json.dumps(payload, separators=(",", ":")).encode("utf-8")
+            headers["Content-Type"] = "application/json"
+        req = urllib.request.Request(self._url(endpoint), data=data, headers=headers, method=method)
+        try:
+            with self.opener.open(req, timeout=TIMEOUT_SECONDS) as response:
+                body = response.read()
+        except urllib.error.HTTPError as exc:
+            raise APIError(f"AdGuard API request failed with HTTP {exc.code}") from exc
+        except urllib.error.URLError as exc:
+            raise APIError("AdGuard API request failed") from exc
+        if not body:
+            return None
+        try:
+            return json.loads(body.decode("utf-8"))
+        except json.JSONDecodeError:
+            return None
+
+    def login(self) -> None:
+        self._request(
+            "POST",
+            "login",
+            {"name": self.credentials.username, "password": self.credentials.password},
+        )
+        if not list(self.cookie_jar):
+            raise APIError("AdGuard login did not return a session cookie")
+
+    def list_rewrites(self) -> list[dict[str, str]]:
+        data = self._request("GET", "rewrite/list")
+        if not isinstance(data, list):
+            raise APIError("AdGuard rewrite list response had unexpected shape")
+        rewrites: list[dict[str, str]] = []
+        for item in data:
+            if not isinstance(item, dict):
+                continue
+            domain = item.get("domain")
+            answer = item.get("answer")
+            if isinstance(domain, str) and isinstance(answer, str):
+                rewrites.append({"domain": domain.rstrip(".").lower(), "answer": answer})
+        return rewrites
+
+    def add_rewrite(self, domain: str, answer: str) -> None:
+        self._request("POST", "rewrite/add", {"domain": domain, "answer": answer})
+
+    def delete_rewrite(self, domain: str, answer: str) -> None:
+        self._request("POST", "rewrite/delete", {"domain": domain, "answer": answer})
+
+
+def find_entries(rewrites: list[dict[str, str]], domain: str) -> list[dict[str, str]]:
+    return [entry for entry in rewrites if entry["domain"] == domain]
+
+
+def has_exact_entry(rewrites: list[dict[str, str]], domain: str, answer: str) -> bool:
+    return any(entry["domain"] == domain and entry["answer"] == answer for entry in rewrites)
+
+
+def do_add(client: AdGuardClient, domain: str, answer: str) -> int:
+    rewrites = client.list_rewrites()
+    entries = find_entries(rewrites, domain)
+    if any(entry["answer"] == answer for entry in entries):
+        print(f"OK: rewrite already exists for {domain} -> {answer}; no change")
+        log_event("add", domain, answer, "noop")
+        return EXIT_OK
+    if entries:
+        raise ConflictError(f"conflict: {domain} already has {len(entries)} rewrite(s) with different answer")
+    client.add_rewrite(domain, answer)
+    print(f"OK: added rewrite {domain} -> {answer}")
+    log_event("add", domain, answer, "changed")
+    return EXIT_OK
+
+
+def do_delete(client: AdGuardClient, domain: str, answer: str) -> int:
+    rewrites = client.list_rewrites()
+    if not has_exact_entry(rewrites, domain, answer):
+        raise NotFoundError(f"not found: exact rewrite {domain} -> {answer}")
+    client.delete_rewrite(domain, answer)
+    print(f"OK: deleted rewrite {domain} -> {answer}")
+    log_event("delete", domain, answer, "changed")
+    return EXIT_OK
+
+
+def do_check(client: AdGuardClient, domain: str, answer: str | None) -> int:
+    rewrites = client.list_rewrites()
+    entries = find_entries(rewrites, domain)
+    if answer is not None:
+        if has_exact_entry(rewrites, domain, answer):
+            print(f"OK: exact rewrite exists for {domain} -> {answer}")
+            log_event("check", domain, answer, "present")
+            return EXIT_OK
+        if entries:
+            raise ConflictError(f"conflict: {domain} exists with {len(entries)} different answer(s)")
+        raise NotFoundError(f"not found: {domain} -> {answer}")
+    if entries:
+        print(f"OK: {domain} exists with {len(entries)} rewrite(s)")
+        log_event("check", domain, "", "present")
+        return EXIT_OK
+    raise NotFoundError(f"not found: {domain}")
+
+
+def do_list_summary(client: AdGuardClient) -> int:
+    rewrites = client.list_rewrites()
+    home_lan_count = sum(1 for entry in rewrites if entry["domain"].endswith(HOME_LAN_SUFFIX))
+    print(f"OK: rewrites_total={len(rewrites)} home_lan_rewrites={home_lan_count}")
+    log_event("list-summary", "", "", "ok")
+    return EXIT_OK
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Safe allowlisted AdGuard Home DNS rewrite helper")
+    parser.add_argument(
+        "--credentials",
+        default=str(DEFAULT_CREDENTIAL_FILE),
+        help=argparse.SUPPRESS,
+    )
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    add_parser = subparsers.add_parser("add")
+    add_parser.add_argument("domain")
+    add_parser.add_argument("answer")
+
+    delete_parser = subparsers.add_parser("delete")
+    delete_parser.add_argument("domain")
+    delete_parser.add_argument("answer")
+
+    check_parser = subparsers.add_parser("check")
+    check_parser.add_argument("domain")
+    check_parser.add_argument("answer", nargs="?")
+
+    list_parser = subparsers.add_parser("list")
+    list_parser.add_argument("--summary", action="store_true", required=True)
+
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+
+    domain = ""
+    answer = ""
+    try:
+        if args.command in {"add", "delete", "check"}:
+            domain = normalize_domain(args.domain)
+        if args.command in {"add", "delete"}:
+            answer = validate_rfc1918_ipv4(args.answer)
+        elif args.command == "check" and args.answer is not None:
+            answer = validate_rfc1918_ipv4(args.answer)
+
+        credentials = load_credentials(Path(args.credentials))
+        client = AdGuardClient(credentials)
+        client.login()
+
+        if args.command == "add":
+            return do_add(client, domain, answer)
+        if args.command == "delete":
+            return do_delete(client, domain, answer)
+        if args.command == "check":
+            return do_check(client, domain, answer or None)
+        if args.command == "list":
+            return do_list_summary(client)
+        parser.error("unknown command")
+        return EXIT_USAGE
+    except RewriteError as exc:
+        result = exc.__class__.__name__.replace("Error", "").lower() or "error"
+        log_event(getattr(args, "command", "unknown"), domain, answer, result)
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return exc.exit_code
+
+
+if __name__ == "__main__":
+    sys.exit(main())

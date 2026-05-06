@@ -30,7 +30,7 @@ Document only sanitized facts:
 - Optimistic cache: `true`
 - DNSSEC: `false`
 - DDR: `false`
-- Rewrites: `25` count only
+- Rewrites: snapshot/summary count only; use `config/adguardhome/AdGuardHome.summary.sanitized.yml` for the latest Git-tracked count
 - Filters: `4`
 - Whitelist filters: `0`
 - User rules: `6` count only
@@ -83,6 +83,22 @@ Do not paste credentials into prompts, shell commands, repo files, logs, or docu
 Use UI/API for supported settings when possible.
 
 Do not hardcode credentials. Do not echo credentials. Do not store session cookies in repo.
+
+## DNS rewrite helper
+
+For routine `.home.lan` A-record rewrites, prefer the allowlisted helper documented in `runbooks/adguard-rewrite-helper.md` once it is installed on the Pi.
+
+The helper must:
+
+- use the authenticated AdGuard API only
+- avoid all raw `AdGuardHome.yaml` reads and writes
+- avoid service restarts
+- validate exact `.home.lan` FQDNs and RFC1918 IPv4 answers
+- require exact `domain + answer` for delete
+- print only sanitized human-readable output
+- log only action, domain, answer, result, and `SUDO_USER`
+
+The helper does not replace this policy for broader AdGuard changes. Any setting outside DNS rewrites still follows the normal UI/API/YAML-fallback rules below.
 
 ## YAML fallback only
 
