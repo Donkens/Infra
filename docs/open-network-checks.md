@@ -9,6 +9,10 @@ None.
 
 ## Validated
 
+- Docker/proxy SSH reachability from admin Macs: CLOSED 2026-05-06.
+  mini and mbp now resolve `docker`, `docker.home.lan`, `proxy`, and `proxy.home.lan`
+  through SSH config to `192.168.30.10`, `User yasse`, `IdentityFile ~/.ssh/id_ed25519_macmini`,
+  `IdentitiesOnly yes`. BatchMode SSH verified from both hosts; Docker VM returned `docker/yasse`.
 - UDR SSH alias drift: CLOSED 2026-05-06.
   All five aliases (`udr`, `udr7`, `router`, `udr.home.lan`, `192.168.1.1`) now map to a single
   config block (`HostName udr.home.lan`, `User root`, `IdentityFile id_ed25519_udr2`,
