@@ -16,6 +16,13 @@ readonly LOG_FILE="/tmp/proxmox-vm-backup-sync.log"
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] [$SCRIPT_NAME] $*" | tee -a "$LOG_FILE" >&2; }
 die() { log "ERROR: $*"; exit 1; }
 
+# Ensure SSH agent is running with Keychain keys loaded.
+# LaunchAgent context has no SSH_AUTH_SOCK — without this, BatchMode SSH fails at 04:00.
+if [[ -z "${SSH_AUTH_SOCK:-}" ]] || ! ssh-add -l &>/dev/null; then
+    eval "$(ssh-agent -s)" >/dev/null 2>&1
+    ssh-add --apple-load-keychain 2>/dev/null || true
+fi
+
 log "Starting Proxmox VM backup sync: ${SRC_HOST}:${SRC_PATH} -> ${DEST_PATH}"
 
 [[ -d "$DEST_PATH" ]] || die "Destination directory does not exist: $DEST_PATH"
