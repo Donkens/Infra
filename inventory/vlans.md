@@ -46,7 +46,7 @@ Proxmox `vmbr0` is VLAN-aware. Future VM workloads use VLAN tag `30`:
 | VM | Planned IP | VLAN tag | Status |
 | --- | --- | ---: | --- |
 | `101` HAOS | `192.168.30.20` | `30` | live |
-| `102` Debian Docker | `192.168.30.10` | `30` | planned |
+| `102` Debian Docker | `192.168.30.10` | `30` | live |
 
 VLAN 30 VM/tap traffic was validated with a temporary CT on 2026-05-02.
 
@@ -65,7 +65,7 @@ Validated 2026-05-02 with temporary LXC CT `900` named
 | Internet ping | `1.1.1.1` passed |
 | Cleanup | CT `900` destroyed after validation |
 
-HAOS VM `101` is live on VLAN 30. Debian Docker VM `102` remains planned.
+HAOS VM `101` is live on VLAN 30. Debian Docker VM `102` is live as of 2026-05-04.
 
 ## MLO-LAN VLAN 40
 

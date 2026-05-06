@@ -1,7 +1,7 @@
 # UDR-7 baseline
 
 > Sanitized UDR-7 / UniFi Network baseline for the homelab.
-> Last verified: 2026-04-28 19:45 CEST
+> Last verified: 2026-05-06 CEST — Phase 0 audit via UniFi MCP
 
 ## Identity
 
@@ -11,7 +11,7 @@
 | Hostname | `udrhomelan` |
 | DNS name | `udr.home.lan` |
 | Model | `UDMA67A` |
-| UniFi OS / firmware | `5.0.16.30692` |
+| UniFi OS / firmware | `5.0.16.30692` (major `5.0.16` confirmed; full build from prior inventory, not re-verified by `ubnt-device-info firmware`) |
 | Network app | `10.3.58` |
 | Site | `default` |
 | Timezone | `Europe/Stockholm` |
@@ -24,7 +24,8 @@ UDR aliases `udr7` and `router` currently have SSH host-key drift from the Mac m
 - ISP: Tele2.
 - WAN IPv4 is present but not stored in this repository.
 - WAN IPv6 is disabled / absent.
-- UDR WAN DNS points to Pi DNS at `192.168.1.55`.
+- WAN DNS: `wan_dns1: 192.168.1.55` (Pi), `wan_dns2: ""` — Pi only, no secondary. Verified live 2026-05-06 via mongo `networkconf`.
+- WAN2 (`Internet 2`, ID `68fbe7ea2549353d5f544815`): configured failover-only profile (`wan_failover_priority: 2`, `wan_load_balance_type: failover-only`); physical port `eth4` is DOWN — no WAN2 cable connected. DNS preference is `auto` (DHCP-assigned if ever active). Not currently active.
 
 ## Gateway DNS listeners
 
@@ -38,7 +39,7 @@ UDR dnsmasq listens on gateway addresses, including:
 - `10.10.10.1:53`
 - ULA gateway addresses for active ULA networks
 
-Firewall policy must keep ordinary clients on Pi DNS. Default and MLO client bypass tests were verified blocked on 2026-04-28. Server VLAN 30 and IoT gateway-DNS behavior still need explicit client-side validation.
+Firewall policy must keep ordinary clients on Pi DNS. All VLAN bypass vectors verified blocked and runtime-validated as of 2026-05-06; see [`inventory/unifi-firewall.md`](../inventory/unifi-firewall.md) and [`docs/network-validation.md`](network-validation.md).
 
 ## DNS authority model
 
