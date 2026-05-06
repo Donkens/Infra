@@ -85,6 +85,9 @@ validation.
 - Do not add UDR root access in the first rollout.
 - Do not add HAOS in the first rollout.
 - No SSH targets are onboarded yet.
+- Pi target access depends on the minimal UniFi rule `allow-termix-to-pi-ssh`
+  (`69fbb2601bc6e72d27779357`): Docker VM `192.168.30.10` to Pi
+  `192.168.1.55` TCP `22` only.
 
 ## Backup and restore
 
@@ -120,6 +123,11 @@ Restore validation should confirm:
 - Uptime Kuma monitor `Termix HTTPS` added as ID `17`; `GET`
   `https://termix.home.lan`, `200-299`, `auth_method=mtls`,
   `tls_ca=<CA_PRESENT>`, `ignore_tls=0`, latest status `200 - OK`.
+- UniFi rule `allow-termix-to-pi-ssh` added for the Pi target path:
+  `192.168.30.10` → `192.168.1.55` TCP `22`, `ip_version: IPV4`,
+  `create_allow_respond: true`. Validation from Docker VM returned
+  `ssh22_exit=0`; Pi DNS TCP/UDP `53` still worked; Pi TCP `80`, Opti TCP `22`,
+  and Opti TCP `8006` still timed out.
 
 ## Next steps
 

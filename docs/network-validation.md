@@ -102,6 +102,31 @@ Observed baseline:
 - Server VLAN to Internal isolation behaves as expected:
   `192.168.1.60:8006` timed out, ICMP to Internal targets was blocked, and DNS
   to Pi remained allowed by explicit UDP/TCP `53` rules.
+- Termix on Docker VM has one minimal SSH exception to Pi:
+  Docker VM `192.168.30.10` to Pi `192.168.1.55` TCP `22` succeeds via
+  `allow-termix-to-pi-ssh` (`69fbb2601bc6e72d27779357`). Other checked Internal
+  paths stayed blocked: Pi TCP `80`, Opti TCP `22`, and Opti TCP `8006` timed out.
+
+Termix Pi SSH validation:
+
+```bash
+ssh docker 'timeout 5 nc -vz 192.168.1.55 22; echo "ssh22_exit=$?"'
+ssh docker 'timeout 5 nc -vz 192.168.1.55 53; echo "dns_tcp53_exit=$?"'
+ssh docker 'python3 - <<'"'"'PY'"'"'
+import socket
+q=b"\x12\x34\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\x02pi\x04home\x03lan\x00\x00\x01\x00\x01"
+s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM); s.settimeout(3)
+s.sendto(q,("192.168.1.55",53))
+data,addr=s.recvfrom(512)
+print("dns_udp53_response", addr[0], len(data), "rcode", data[3] & 0x0f)
+PY'
+```
+
+Expected:
+
+- `ssh22_exit=0`
+- TCP `53` succeeds.
+- UDP `53` returns `dns_udp53_response 192.168.1.55 ... rcode 0`.
 
 ## Proxmox VLAN 30 guest path
 
