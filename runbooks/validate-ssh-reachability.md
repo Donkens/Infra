@@ -8,6 +8,9 @@ Short read-only checks for admin-client SSH aliases. Use from `mini` or `mbp` on
 - Docker VM aliases: `docker`, `docker.home.lan`, `proxy`, `proxy.home.lan`
 - Expected target: `192.168.30.10`
 - Expected user: `yasse`
+- Expected keys:
+  - `mini`: `~/.ssh/id_ed25519_macmini`
+  - `mbp`: `~/.ssh/id_ed25519_mbp`
 
 ## DNS resolution
 
@@ -42,8 +45,14 @@ Expected effective values:
 ```text
 hostname 192.168.30.10
 user yasse
-identityfile ~/.ssh/id_ed25519_macmini
 identitiesonly yes
+```
+
+Expected client-specific keys:
+
+```text
+mini identityfile ~/.ssh/id_ed25519_macmini
+mbp identityfile ~/.ssh/id_ed25519_mbp
 ```
 
 ## BatchMode reachability
