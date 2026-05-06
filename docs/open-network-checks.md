@@ -1,15 +1,22 @@
 # Open network checks
 
 > Current follow-up list after the UDR-7 / UniFi baseline.
-> Last updated: 2026-04-28
+> Last updated: 2026-05-06
 
 ## P1
 
-- Validate Server VLAN 30 DNS bypass from an actual Server VLAN client.
-- Validate Server VLAN 30 gateway DNS block from `192.168.30.1`.
-- Validate Server VLAN 30 WAN DNS bypass block using `@1.1.1.1`.
-- Validate Server VLAN 30 firewall isolation before workloads.
 - Validate IoT-to-gateway DNS behavior from an IoT client.
+
+## Validated
+
+- Server VLAN 30 DNS bypass from an actual Server VLAN client: PASS
+  2026-05-06 from Docker VM `102` (`docker`, `192.168.30.10/24`).
+- Server VLAN 30 gateway DNS block from `192.168.30.1`: PASS
+  2026-05-06 (`@192.168.30.1 cloudflare.com A` timed out).
+- Server VLAN 30 WAN DNS bypass block using `@1.1.1.1`: PASS
+  2026-05-06 (`@1.1.1.1 cloudflare.com A` timed out).
+- Server VLAN 30 firewall isolation before workloads: PASS
+  2026-05-06 (`192.168.1.60:8006` timed out; Internal ICMP blocked; Pi DNS allowed).
 
 ## P2
 

@@ -68,6 +68,26 @@ ssh udr 'ss -tulpn 2>/dev/null | grep -E "(:53)\b" || true'
 
 UDR listening on gateway DNS is not by itself a failure. Client firewall behavior determines whether it is reachable as a bypass path.
 
+## Server VLAN 30 baseline validation
+
+Read-only PASS on 2026-05-06 from Docker VM `102`, the preferred live Server
+VLAN 30 test host.
+
+Observed baseline:
+
+- Host identity: `docker`, `192.168.30.10/24`, default gateway `192.168.30.1`.
+- Pi DNS works: `@192.168.1.55 cloudflare.com A` returned
+  `104.16.133.229`, `104.16.132.229`.
+- Pi DNS resolves Server service names:
+  `@192.168.1.55 proxy.home.lan A` returned `192.168.30.10`.
+- Gateway DNS bypass is blocked:
+  `@192.168.30.1 cloudflare.com A` returned `TIMEOUT`.
+- WAN DNS bypass is blocked:
+  `@1.1.1.1 cloudflare.com A` returned `TIMEOUT`.
+- Server VLAN to Internal isolation behaves as expected:
+  `192.168.1.60:8006` timed out, ICMP to Internal targets was blocked, and DNS
+  to Pi remained allowed by explicit UDP/TCP `53` rules.
+
 ## Proxmox VLAN 30 guest path
 
 Use a temporary guest, not a persistent workload. The 2026-05-02 validation used
