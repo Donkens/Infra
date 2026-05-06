@@ -9,6 +9,9 @@ None.
 
 ## Validated
 
+- `element-b85dc41a14f3982d` hidden SSID: CLOSED 2026-05-06.
+  Phase 0 audit: not present in controller WLAN list (4 managed WLANs) nor in RF scan (115 neighbors, min −90 dBm).
+  Was never controller-managed (UNKNOWN network/VLAN in original entry). Origin: likely transient external device. Risk: none.
 - IoT-to-gateway DNS behavior from an IoT client: PASS
   2026-05-06 from iPhone on `UniFi IOT` after adding
   `block-iot-gateway-dns-udp/tcp` (`@192.168.10.1 cloudflare.com A` timed out).
@@ -23,7 +26,6 @@ None.
 
 ## P2
 
-- Identify hidden `element-b85dc41a14f3982d` SSID or document owner/purpose.
 - Repair or standardize UDR SSH aliases `udr`, `udr7`, `router` after host-key drift review.
 
 ## P3
