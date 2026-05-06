@@ -9,6 +9,13 @@ None.
 
 ## Validated
 
+- UDR SSH alias drift: CLOSED 2026-05-06.
+  All five aliases (`udr`, `udr7`, `router`, `udr.home.lan`, `192.168.1.1`) now map to a single
+  config block (`HostName udr.home.lan`, `User root`, `IdentityFile id_ed25519_udr2`,
+  `IdentitiesOnly yes`) in the shared iCloud ssh-config.
+  Verified from mini and mbp: all aliases connect to `udrhomelan/root/5.0.16`.
+  Stale ECDSA known_hosts row for `192.168.1.1` removed from mini.
+  Pi is intentionally excluded — it is a DNS server, not a UDR admin client.
 - `element-b85dc41a14f3982d` hidden SSID: CLOSED 2026-05-06.
   Phase 0 audit: not present in controller WLAN list (4 managed WLANs) nor in RF scan (115 neighbors, min −90 dBm).
   Was never controller-managed (UNKNOWN network/VLAN in original entry). Origin: likely transient external device. Risk: none.
@@ -26,7 +33,7 @@ None.
 
 ## P2
 
-- Repair or standardize UDR SSH aliases `udr`, `udr7`, `router` after host-key drift review.
+None.
 
 ## P3
 

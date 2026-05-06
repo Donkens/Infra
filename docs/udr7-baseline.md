@@ -17,7 +17,19 @@
 | Timezone | `Europe/Stockholm` |
 | SSH user | `root` |
 
-UDR aliases `udr7` and `router` currently have SSH host-key drift from the Mac mini. Use `ssh udr` or direct `ssh 192.168.1.1` until aliases are deliberately repaired.
+All five SSH aliases are canonical and verified as of 2026-05-06:
+
+| Alias | Resolves to | User | Key |
+|---|---|---|---|
+| `ssh udr` | `udr.home.lan` | `root` | `id_ed25519_udr2` |
+| `ssh udr7` | `udr.home.lan` | `root` | `id_ed25519_udr2` |
+| `ssh router` | `udr.home.lan` | `root` | `id_ed25519_udr2` |
+| `ssh udr.home.lan` | `udr.home.lan` | `root` | `id_ed25519_udr2` |
+| `ssh 192.168.1.1` | `udr.home.lan` | `root` | `id_ed25519_udr2` |
+
+Canonical alias: `ssh udr`. All aliases share one config block in the iCloud-synced
+ssh-config (`Scripts/infra/ssh-config`), effective on mini and mbp.
+Pi is intentionally not configured as a UDR SSH client (DNS server role only).
 
 ## WAN
 
