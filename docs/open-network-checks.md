@@ -5,10 +5,13 @@
 
 ## P1
 
-- Validate IoT-to-gateway DNS behavior from an IoT client.
+None.
 
 ## Validated
 
+- IoT-to-gateway DNS behavior from an IoT client: PASS
+  2026-05-06 from iPhone on `UniFi IOT` after adding
+  `block-iot-gateway-dns-udp/tcp` (`@192.168.10.1 cloudflare.com A` timed out).
 - Server VLAN 30 DNS bypass from an actual Server VLAN client: PASS
   2026-05-06 from Docker VM `102` (`docker`, `192.168.30.10/24`).
 - Server VLAN 30 gateway DNS block from `192.168.30.1`: PASS

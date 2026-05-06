@@ -68,6 +68,21 @@ ssh udr 'ss -tulpn 2>/dev/null | grep -E "(:53)\b" || true'
 
 UDR listening on gateway DNS is not by itself a failure. Client firewall behavior determines whether it is reachable as a bypass path.
 
+## IoT VLAN 10 baseline validation
+
+Read-only PASS on 2026-05-06 from iPhone on `UniFi IOT` using Deep Dig after
+adding the IoT gateway DNS block policies.
+
+Observed baseline:
+
+- Pi DNS works: `@192.168.1.55 pi.home.lan A` returned `192.168.1.55`.
+- Pi DNS recursion works: `@192.168.1.55 cloudflare.com A` returned
+  `104.16.133.229`, `104.16.132.229`.
+- WAN DNS bypass is blocked:
+  `@1.1.1.1 cloudflare.com A` returned `TIMEOUT`.
+- Gateway DNS bypass is blocked:
+  `@192.168.10.1 cloudflare.com A` returned `TIMEOUT`.
+
 ## Server VLAN 30 baseline validation
 
 Read-only PASS on 2026-05-06 from Docker VM `102`, the preferred live Server
