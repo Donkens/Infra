@@ -46,6 +46,7 @@ As of 2026-05-02, `opti.home.lan` and `proxmox.home.lan` resolve to `192.168.1.6
 | `kuma.home.lan` | `192.168.30.10` | Uptime Kuma via Caddy | — | AdGuard rewrite | LIVE — DNS rewrite added 2026-05-04, `302 /dashboard` verified from Mac mini + MBP |
 | `dockge.home.lan` | `192.168.30.10` | Dockge via Caddy | — | AdGuard rewrite | DNS LIVE — Caddy route exists, backend intentionally not started until C2b |
 | `dozzle.home.lan` | `192.168.30.10` | Dozzle via Caddy | — | AdGuard rewrite | LIVE — Dozzle simple auth via Caddy verified 2026-05-04 (C2a) |
+| `termix.home.lan` | `192.168.30.10` | Termix SSH control panel via Caddy | — | AdGuard rewrite | DNS LIVE — Caddy route and container live 2026-05-06; rewrite verified via safe helper and `dig` on Pi |
 | `stremio.home.lan` | `192.168.30.10` | Optional Stremio Server | — | AdGuard planned | PLANNED |
 | `transmission.home.lan` | `192.168.30.10` | Optional, via Caddy only if used | — | AdGuard planned | PLANNED |
 | `mcp.home.lan` | `192.168.30.10` | Later MCP/dev services | — | AdGuard planned | PLANNED |
