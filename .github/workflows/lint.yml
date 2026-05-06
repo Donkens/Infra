@@ -74,3 +74,6 @@ pi:x:1000:
 
       - name: Markdown links
         run: python3 scripts/ci/check-markdown-links.py
+
+      - name: Agent repo preflight
+        run: scripts/ci/agent-preflight.sh

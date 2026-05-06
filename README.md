@@ -11,6 +11,7 @@ Current source-of-truth entry points:
 - [Agent autonomy matrix](docs/agent-autonomy-matrix.md)
 - [Agent token budget](docs/agent-token-budget.md)
 - [Agent repo autopilot](runbooks/agent-repo-autopilot.md)
+- [Agent preflight](scripts/ci/agent-preflight.sh)
 - [Repo map](docs/repo-map.md)
 - [DNS names](inventory/dns-names.md)
 - [UniFi networks](inventory/unifi-networks.md)
@@ -56,6 +57,7 @@ Use [Proxmox install preflight](runbooks/proxmox-install-preflight.md) on instal
 - `AGENTS.md` is canonical policy for AI agents and repo operators.
 - Agent autonomy defaults are documented in `docs/agent-autonomy-matrix.md`.
 - Agent output should be compact by default; see `docs/agent-token-budget.md`.
+- Run `scripts/ci/agent-preflight.sh` before autonomous docs/scripts commits.
 - GitHub `Donkens/Infra` `main` is canonical for repo history, docs, scripts, and sanitized snapshots.
 - Pi is the operational source of truth for live DNS service state.
 - Mac repos are working copies.

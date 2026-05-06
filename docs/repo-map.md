@@ -10,6 +10,7 @@
 | Agent autonomy matrix | [docs/agent-autonomy-matrix.md](agent-autonomy-matrix.md) | Decision table for safe autonomous work versus approval-required work. |
 | Agent token budget | [docs/agent-token-budget.md](agent-token-budget.md) | Compact-output policy to reduce token use by default. |
 | Agent repo autopilot | [runbooks/agent-repo-autopilot.md](../runbooks/agent-repo-autopilot.md) | Safe docs-only cleanup flow for agents. |
+| Agent preflight | [scripts/ci/agent-preflight.sh](../scripts/ci/agent-preflight.sh) | Local mirror of repo-only CI checks for autonomous docs/scripts work. |
 | Repo overview | [README.md](../README.md) | Human entry point; `AGENTS.md` wins on policy conflicts. |
 | DNS names | [inventory/dns-names.md](../inventory/dns-names.md) | Important live and planned `home.lan` names. |
 | DNS architecture | [docs/dns-architecture.md](dns-architecture.md) | Authority model: AdGuard, Unbound, UDR, Pi. |

@@ -151,11 +151,11 @@ logging:
 Avoid:
 
 ```yaml
-image: some/service:latest
+image: some/service:<pinned-version>
 network_mode: host
 privileged: true
 ports:
-  - "0.0.0.0:..."
+  - "<host-ip>:..."
 ```
 
 Use pinned or explicit tags when possible.
