@@ -9,7 +9,7 @@ compose-fil finns men containern är inte startad. Dozzle körs via Caddy.
 
 **Uptime Kuma monitor audit — 2026-05-05** — Live-state är WARN men grönt:
 alla aktiva monitors är UP. Docker/Caddy HTTPS monitors (`proxy`, `kuma`, `dockge`,
-`dozzle`) använder per-monitor Caddy CA med `auth_method=mtls`, `ignore_tls=0`,
+`dozzle`, `termix`) använder per-monitor Caddy CA med `auth_method=mtls`, `ignore_tls=0`,
 och tomma client cert/key-fält. HAOS-duplikatet städat: ID `9` pausad, ID `10`
 canonical HTTP-monitor. AdGuard-cleanup 2026-05-05: ID `5` omdöpt till `AdGuard
 DNS resolves proxy.home.lan`; ID `6` konverterad till HTTP `AdGuard UI`
@@ -20,6 +20,10 @@ pausad som `AdGuard TCP 443 (paused duplicate)`. Proxmox-monitor tillagd 2026-05
 `Docker VM` använder `docker.home.lan` avsiktligt (verifierar DNS-path + host);
 `maxretries=1` på `Docker VM` och `Dockge` är accepterad policy.
 Se `docs/opti/uptime-kuma-monitor-audit-2026-05-05.md`.
+
+**Termix monitor — 2026-05-06** — `Termix HTTPS` tillagd som monitor ID `17`:
+`http`, `https://termix.home.lan`, `GET`, `200-299`, `auth_method=mtls`,
+per-monitor Caddy `tlsCa`, `ignore_tls=0`, aktiv och UP `200 - OK`.
 
 **Phase 1C-C2a — 2026-05-04** — Dozzle live med simple auth (`users.yml` bcrypt,
 `DOZZLE_AUTH_PROVIDER=simple`). Docker socket read-only. Ingen host port. Via Caddy.
@@ -230,6 +234,7 @@ Phase 1C-C4b added the missing Dozzle monitor only:
 | Monitor | ID | Current URL | Method | TLS config | Latest status |
 | --- | ---: | --- | --- | --- | --- |
 | `Dozzle` | `14` | `https://dozzle.home.lan` | `GET` | `auth_method=mtls`, `tls_ca` present, `tls_cert` empty, `tls_key` empty, `ignore_tls=0` | UP: `200 - OK` |
+| `Termix HTTPS` | `17` | `https://termix.home.lan` | `GET` | `auth_method=mtls`, `tls_ca` present, `tls_cert` empty, `tls_key` empty, `ignore_tls=0` | UP: `200 - OK` |
 
 Note: Uptime Kuma `1.23.15` exposes the server CA field under `authMethod=mtls`.
 Only `tlsCa` is populated; client `tlsCert` and `tlsKey` are empty.
@@ -274,6 +279,7 @@ Only `tlsCa` is populated; client `tlsCert` and `tlsKey` are empty.
 | Caddy proxy | HTTP(S) | `https://proxy.home.lan` | `200 OK` | 🟢 UP — per-monitor Caddy `tlsCa`, `auth_method=mtls` |
 | Dockge | HTTP(S) | `https://dockge.home.lan` | `200 OK` | 🟢 UP — per-monitor Caddy `tlsCa`, `auth_method=mtls`; `maxretries=1` |
 | Dozzle | HTTP(S) | `https://dozzle.home.lan` | `200 OK` after redirect to login | 🟢 UP — monitor ID `14`, method `GET`, per-monitor Caddy `tlsCa`, `auth_method=mtls` |
+| Termix HTTPS | HTTP(S) | `https://termix.home.lan` | `200 OK` | 🟢 UP — monitor ID `17`, method `GET`, per-monitor Caddy `tlsCa`, `auth_method=mtls` |
 | Proxmox | HTTP(S) | `https://proxmox.home.lan:8006` | `200 OK` | ⚠️ ABSENT — expected paused monitor is not present in live Kuma DB |
 
 > Remaining approval gates for future cleanup: `GO KUMA FIX MONITORS`,
@@ -291,5 +297,6 @@ Only `tlsCa` is populated; client `tlsCert` and `tlsKey` are empty.
 8. ~~Start Dockge (C2b)~~ ✅ done 2026-05-04 — `200 OK`, password set, all stacks visible.
 9. ~~Add `tls internal` to Caddyfile + import Caddy root CA into macOS Keychain~~ ✅ Caddy TLS live 2026-05-05; Mac mini and MBP trust PASS.
 10. ~~Add Dozzle monitor explicitly~~ ✅ done 2026-05-05 (C4b), monitor ID `14`.
-11. Schedule Proxmox backup job (external target).
-12. Lös firewall-scope Docker VM → Proxmox och aktivera Proxmox-monitor.
+11. ~~Add Termix HTTPS monitor~~ ✅ done 2026-05-06, monitor ID `17`.
+12. Schedule Proxmox backup job (external target).
+13. Lös firewall-scope Docker VM → Proxmox och aktivera Proxmox-monitor.

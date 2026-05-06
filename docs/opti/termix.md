@@ -117,9 +117,11 @@ Restore validation should confirm:
 - Safe helper check confirmed exact rewrite `termix.home.lan -> 192.168.30.10`.
 - `dig @127.0.0.1 termix.home.lan A +short` returned `192.168.30.10`.
 - `dig @192.168.1.55 termix.home.lan A +short` returned `192.168.30.10`.
+- Uptime Kuma monitor `Termix HTTPS` added as ID `17`; `GET`
+  `https://termix.home.lan`, `200-299`, `auth_method=mtls`,
+  `tls_ca=<CA_PRESENT>`, `ignore_tls=0`, latest status `200 - OK`.
 
 ## Next steps
 
 1. Open Termix UI and create/admin-harden the app account.
-2. Add an Uptime Kuma HTTPS monitor for `https://termix.home.lan`.
-3. Plan a separate `id_ed25519_termix` SSH key rollout.
+2. Plan a separate `id_ed25519_termix` SSH key rollout.

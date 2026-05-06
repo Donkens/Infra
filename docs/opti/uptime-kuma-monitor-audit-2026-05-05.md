@@ -4,6 +4,13 @@ Phase: `Phase 0 read-only → Phase 2 applied`
 
 Status: PASS (remaining items accepted as policy — see `GO KUMA DOCS POLICY ONLY`)
 
+Update 2026-05-06, `GO KUMA ADD TERMIX HTTPS MONITOR`: Termix monitor added.
+- ID `17`, name `Termix HTTPS`, type `http`, URL `https://termix.home.lan`,
+  method `GET`, active.
+- `ignore_tls=0`, `auth_method=mtls`, `tls_ca=<CA_PRESENT>`,
+  `tls_cert=<EMPTY>`, `tls_key=<EMPTY>`.
+- Latest status after add: UP `200 - OK`.
+
 Update 2026-05-05, `GO KUMA DOCS POLICY ONLY`: Remaining WARN items closed as
 accepted policy. No monitor changes.
 - `Docker VM` (ID `7`) uses `docker.home.lan` intentionally: ping via DNS name
@@ -47,7 +54,7 @@ DNS, Proxmox, HAOS, containers, or the Kuma DB.
 ## Executive summary
 
 Kuma is operationally green: all active current monitors are UP. The Docker/Caddy
-HTTPS monitors for `proxy`, `kuma`, `dockge`, and `dozzle` match the expected
+HTTPS monitors for `proxy`, `kuma`, `dockge`, `dozzle`, and `termix` match the expected
 `tls internal` trust pattern with per-monitor Caddy CA, `auth_method=mtls`,
 `ignore_tls=0`, and empty client cert/key fields.
 
@@ -82,14 +89,16 @@ Resolved during HAOS cleanup:
 | 13 | Dockge | `http` | `https://dockge.home.lan` | `GET` | 60 | 60 | 48 | 1 | `200-299` | UP: `200 - OK` | `ignore_tls=0`, `auth_method=mtls`, `tls_ca=<CA_PRESENT>`, `tls_cert=<EMPTY>`, `tls_key=<EMPTY>` | PASS |
 | 14 | Dozzle | `http` | `https://dozzle.home.lan` | `GET` | 60 | 60 | 48 | 0 | `200-299` | UP: `200 - OK` | `ignore_tls=0`, `auth_method=mtls`, `tls_ca=<CA_PRESENT>`, `tls_cert=<EMPTY>`, `tls_key=<EMPTY>` | PASS |
 | 15 | Proxmox | `http` | `https://proxmox.home.lan:8006` | `GET` | 60 | 60 | 48 | 0 | `200-299` | PAUSED (never polled) | `ignore_tls=1` (self-signed cert); no CA/mtls | PASS |
+| 17 | Termix HTTPS | `http` | `https://termix.home.lan` | `GET` | 60 | 60 | 48 | 0 | `200-299` | UP: `200 - OK` | `ignore_tls=0`, `auth_method=mtls`, `tls_ca=<CA_PRESENT>`, `tls_cert=<EMPTY>`, `tls_key=<EMPTY>` | PASS |
 
 ## PASS items
 
 - Docker/Caddy HTTPS monitors use per-monitor Caddy CA:
-  `Caddy proxy`, `Uptime Kuma`, `Dockge`, and `Dozzle`.
+  `Caddy proxy`, `Uptime Kuma`, `Dockge`, `Dozzle`, and `Termix HTTPS`.
 - Docker/Caddy HTTPS monitors have `auth_method=mtls`, `tls_ca=<CA_PRESENT>`,
   `tls_cert=<EMPTY>`, `tls_key=<EMPTY>`, and `ignore_tls=0`.
 - Dozzle monitor ID `14` uses `GET` and is UP with `200 - OK`.
+- Termix monitor ID `17` uses `GET` and is UP with `200 - OK`.
 - All active current monitors are UP.
 - HAOS duplicate port monitor ID `9` is paused and clearly named.
 - AdGuard monitors ID `5`, `6`, `11` cleaned up 2026-05-05.
